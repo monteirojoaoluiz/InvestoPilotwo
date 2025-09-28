@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -42,6 +43,7 @@ const accountItems = [
 // Remove onItemClick and activeItem props
 export default function AppSidebar() {
   const [location] = useLocation();
+  const { setOpen } = useSidebar();
 
   const { data: assessment } = useQuery({
     queryKey: ['assessment'],
@@ -100,6 +102,7 @@ export default function AppSidebar() {
                           className="w-full flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                           data-testid={item.testId}
                           aria-label={item.title}
+                          onClick={() => setOpen(false)}
                         >
                           <item.icon className="h-4 w-4" />
                           <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
@@ -128,6 +131,7 @@ export default function AppSidebar() {
                         className="w-full flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                         data-testid={item.testId}
                         aria-label={item.title}
+                        onClick={() => setOpen(false)}
                       >
                         <item.icon className="h-4 w-4" />
                         <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
