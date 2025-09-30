@@ -76,60 +76,76 @@ function Dashboard() {
 
   // Compute 3-year metrics from combined performance series
   const metrics = useMemo(() => {
-    const pts = combined?.points || [];
-    if (pts.length < 2) return null;
+    try {
+      const pts = combined?.points || [];
+      if (!pts || pts.length < 2) return null;
 
-    const firstVal = pts[0].value;
-    const lastVal = pts[pts.length - 1].value;
-    const totalGainPct = ((lastVal / firstVal) - 1) * 100;
+      const firstVal = pts[0]?.value;
+      const lastVal = pts[pts.length - 1]?.value;
 
-    // Daily simple returns
-    const dailyReturns: number[] = [];
-    for (let i = 1; i < pts.length; i++) {
-      const prev = pts[i - 1].value;
-      const cur = pts[i].value;
-      if (prev > 0 && cur > 0) {
-        dailyReturns.push((cur / prev) - 1);
+      if (typeof firstVal !== 'number' || typeof lastVal !== 'number' || firstVal <= 0) {
+        return null;
       }
+
+      const totalGainPct = ((lastVal / firstVal) - 1) * 100;
+
+      // Daily simple returns
+      const dailyReturns: number[] = [];
+      for (let i = 1; i < pts.length; i++) {
+        const prev = pts[i - 1]?.value;
+        const cur = pts[i]?.value;
+        if (typeof prev === 'number' && typeof cur === 'number' && prev > 0 && cur > 0) {
+          dailyReturns.push((cur / prev) - 1);
+        }
+      }
+      const meanDaily = dailyReturns.length ? (dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length) : 0;
+      const varianceDaily = dailyReturns.length > 1
+        ? dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDaily, 2), 0) / (dailyReturns.length - 1)
+        : 0;
+      const stdDaily = Math.sqrt(varianceDaily);
+      const annualizedReturn = meanDaily * 252;
+      const annualizedVol = stdDaily * Math.sqrt(252);
+      const sharpe = annualizedVol > 0 ? (annualizedReturn / annualizedVol) : 0;
+
+      // Gains per calendar year (for last up to 3 years in series)
+      const yearMap = new Map<number, { first?: number; last?: number }>();
+      for (const p of pts) {
+        if (!p?.date || typeof p.value !== 'number') continue;
+        try {
+          const y = new Date(p.date).getFullYear();
+          const entry = yearMap.get(y) || {};
+          if (entry.first == null) entry.first = p.value;
+          entry.last = p.value;
+          yearMap.set(y, entry);
+        } catch (dateError) {
+          // Skip invalid dates
+          continue;
+        }
+      }
+      const years = Array.from(yearMap.keys()).sort((a, b) => a - b);
+      const lastThreeYears = years.slice(-3);
+      const gainsPerYear = lastThreeYears.map((y) => {
+        const e = yearMap.get(y);
+        const gain = (e?.first && e?.last && e.first > 0) ? ((e.last / e.first) - 1) * 100 : 0;
+        return { year: y, gainPct: gain };
+      });
+
+      // Calculate yearly average gain
+      const yearlyAvgGain = gainsPerYear.length > 0
+        ? gainsPerYear.reduce((sum, g) => sum + g.gainPct, 0) / gainsPerYear.length
+        : 0;
+
+      return {
+        totalGainPct,
+        annualizedVolPct: annualizedVol * 100,
+        sharpe,
+        gainsPerYear,
+        yearlyAvgGain,
+      };
+    } catch (error) {
+      console.error('Error calculating metrics:', error);
+      return null;
     }
-    const meanDaily = dailyReturns.length ? (dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length) : 0;
-    const varianceDaily = dailyReturns.length > 1
-      ? dailyReturns.reduce((sum, r) => sum + Math.pow(r - meanDaily, 2), 0) / (dailyReturns.length - 1)
-      : 0;
-    const stdDaily = Math.sqrt(varianceDaily);
-    const annualizedReturn = meanDaily * 252;
-    const annualizedVol = stdDaily * Math.sqrt(252);
-    const sharpe = annualizedVol > 0 ? (annualizedReturn / annualizedVol) : 0;
-
-    // Gains per calendar year (for last up to 3 years in series)
-    const yearMap = new Map<number, { first?: number; last?: number }>();
-    for (const p of pts) {
-      const y = new Date(p.date).getFullYear();
-      const entry = yearMap.get(y) || {};
-      if (entry.first == null) entry.first = p.value;
-      entry.last = p.value;
-      yearMap.set(y, entry);
-    }
-    const years = Array.from(yearMap.keys()).sort((a, b) => a - b);
-    const lastThreeYears = years.slice(-3);
-    const gainsPerYear = lastThreeYears.map((y) => {
-      const e = yearMap.get(y)!;
-      const gain = (e.first && e.last) ? ((e.last / e.first) - 1) * 100 : 0;
-      return { year: y, gainPct: gain };
-    });
-
-    // Calculate yearly average gain
-    const yearlyAvgGain = gainsPerYear.length > 0
-      ? gainsPerYear.reduce((sum, g) => sum + g.gainPct, 0) / gainsPerYear.length
-      : 0;
-
-    return {
-      totalGainPct,
-      annualizedVolPct: annualizedVol * 100,
-      sharpe,
-      gainsPerYear,
-      yearlyAvgGain,
-    };
   }, [combined?.points]);
 
   const { toast } = useToast();
@@ -142,12 +158,16 @@ function Dashboard() {
         throw new Error(`Failed to generate: ${res.statusText}`);
       }
       const newPortfolio = await res.json();
+      if (!newPortfolio) {
+        throw new Error('Invalid portfolio data received');
+      }
       await refetchPortfolio();
       toast({
         title: "Portfolio Generated!",
         description: "Your recommendations are now available.",
       });
     } catch (error) {
+      console.error('Portfolio generation error:', error);
       toast({
         title: "Failed to Generate",
         description: error instanceof Error ? error.message : "Please try again.",
@@ -266,10 +286,10 @@ function Dashboard() {
                   <ResponsiveContainer width={200} height={200}>
                     <PieChart>
                       <Pie
-                        data={portfolioData.allocations?.map((a: any) => ({
-                          name: a.ticker || a.name,
-                          value: a.percentage,
-                          color: a.color
+                        data={(portfolioData.allocations || [])?.map((a: any) => ({
+                          name: a?.ticker || a?.name || 'Unknown',
+                          value: typeof a?.percentage === 'number' ? a.percentage : 0,
+                          color: a?.color || '#8884d8'
                         }))}
                         cx="50%"
                         cy="50%"
@@ -278,8 +298,8 @@ function Dashboard() {
                         paddingAngle={2}
                         dataKey="value"
                       >
-                        {portfolioData.allocations?.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        {(portfolioData.allocations || [])?.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={entry?.color || '#8884d8'} />
                         ))}
                       </Pie>
                       <Tooltip formatter={(value: any) => [`${value}%`, 'Allocation']} />
@@ -289,27 +309,29 @@ function Dashboard() {
 
                 {/* Allocation List */}
                 <div className="w-full space-y-3">
-                  {portfolioData.allocations?.map((a: any) => (
-                    <div 
-                      key={`${a.ticker || a.name}`} 
-                      className="flex items-center justify-between py-2 cursor-pointer hover:bg-muted/50 rounded" 
+                  {(portfolioData.allocations || [])?.map((a: any, index: number) => (
+                    <div
+                      key={`${a?.ticker || a?.name || `allocation-${index}`}`}
+                      className="flex items-center justify-between py-2 cursor-pointer hover:bg-muted/50 rounded"
                       onClick={() => {
-                        setSelectedTicker(a.ticker);
-                        setModalOpen(true);
+                        if (a?.ticker) {
+                          setSelectedTicker(a.ticker);
+                          setModalOpen(true);
+                        }
                       }}
                     >
                       <div className="flex items-center gap-3 flex-1">
                         <div
                           className="w-4 h-4 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: a.color || '#8884d8' }}
+                          style={{ backgroundColor: a?.color || '#8884d8' }}
                         />
                         <div>
-                          <div className="font-semibold text-sm">{a.ticker || a.name}</div>
-                          <div className="text-xs text-muted-foreground">{a.assetType || 'ETF'}</div>
+                          <div className="font-semibold text-sm">{a?.ticker || a?.name || 'Unknown'}</div>
+                          <div className="text-xs text-muted-foreground">{a?.assetType || 'ETF'}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold text-sm">{a.percentage}%</div>
+                        <div className="font-semibold text-sm">{typeof a?.percentage === 'number' ? a.percentage : 0}%</div>
                       </div>
                     </div>
                   ))}
@@ -465,8 +487,14 @@ function Dashboard() {
                   <XAxis
                     dataKey={'date'}
                     tickFormatter={(dateStr) => {
-                      const date = new Date(dateStr);
-                      return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(-2)}`;
+                      try {
+                        if (!dateStr) return '';
+                        const date = new Date(dateStr);
+                        if (isNaN(date.getTime())) return '';
+                        return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(-2)}`;
+                      } catch {
+                        return '';
+                      }
                     }}
                     interval="preserveStartEnd"
                     minTickGap={50}
@@ -474,12 +502,18 @@ function Dashboard() {
                   <YAxis domain={['auto', 'auto']} />
                   <Tooltip
                     labelFormatter={(dateStr) => {
-                      const date = new Date(dateStr);
-                      return date.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      });
+                      try {
+                        if (!dateStr) return '';
+                        const date = new Date(dateStr);
+                        if (isNaN(date.getTime())) return '';
+                        return date.toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        });
+                      } catch {
+                        return '';
+                      }
                     }}
                   />
                   <Line type="monotone" dataKey={'value'} stroke="#8884d8" dot={false} />
@@ -519,6 +553,10 @@ function Assessment() {
       }
       const portfolio = await res.json();
 
+      if (!portfolio) {
+        throw new Error('Invalid portfolio data received from server');
+      }
+
       // Normalise allocations so the dashboard can render immediately
       const normalizedPortfolio = {
         ...portfolio,
@@ -533,7 +571,7 @@ function Assessment() {
       await queryClient.invalidateQueries({ queryKey: ['portfolio'] });
       // Navigate to dashboard
       navigate('/dashboard');
-      
+
       toast({
         title: "Portfolio Generated!",
         description: "Your personalized investment recommendations are ready.",
@@ -545,6 +583,8 @@ function Assessment() {
         description: error instanceof Error ? error.message : "Please try again or contact support.",
         variant: "destructive",
       });
+      // Still navigate to dashboard even if portfolio generation fails
+      navigate('/dashboard');
     }
   };
 
