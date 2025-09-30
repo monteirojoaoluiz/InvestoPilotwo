@@ -190,9 +190,14 @@ function Dashboard() {
   const { data: etfInfo } = useQuery({
     queryKey: ['etf-info', selectedTicker],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/etf/${selectedTicker}/info`);
-      if (!res.ok) throw new Error('Failed to fetch ETF info');
-      return res.json();
+      try {
+        const res = await apiRequest('GET', `/api/etf/${selectedTicker}/info`);
+        if (!res.ok) throw new Error('Failed to fetch ETF info');
+        return res.json();
+      } catch (error) {
+        console.error('Error fetching ETF info:', error);
+        throw error;
+      }
     },
     enabled: !!selectedTicker,
   });
@@ -434,13 +439,13 @@ function Dashboard() {
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold">Fund Name</h3>
-                <p>{etfInfo.longName || selectedTicker}</p>
+                <p>{etfInfo?.longName || selectedTicker}</p>
               </div>
               <div>
                 <h3 className="font-semibold">Category</h3>
-                <p>{etfInfo.category || 'N/A'}</p>
+                <p>{etfInfo?.category || 'N/A'}</p>
               </div>
-              {etfInfo.summaryProfile?.longBusinessSummary && (
+              {etfInfo?.summaryProfile?.longBusinessSummary && (
                 <div>
                   <h3 className="font-semibold">Description</h3>
                   <p className="text-sm">{etfInfo.summaryProfile.longBusinessSummary}</p>
@@ -449,8 +454,8 @@ function Dashboard() {
               <div>
                 <h3 className="font-semibold">Expense Ratio</h3>
                 <p>
-                  {etfInfo.summaryDetail?.annualReportExpenseRatio 
-                    ? `${(etfInfo.summaryDetail.annualReportExpenseRatio * 100).toFixed(2)}%` 
+                  {etfInfo?.summaryDetail?.annualReportExpenseRatio
+                    ? `${(etfInfo.summaryDetail.annualReportExpenseRatio * 100).toFixed(2)}%`
                     : 'N/A (not available via current API)'}
                 </p>
               </div>
@@ -1001,9 +1006,13 @@ function AuthenticatedRouter() {
 
   useEffect(() => {
     const updateCompactState = () => {
-      if (typeof window === 'undefined') return;
-      const width = window.innerWidth;
-      setIsCompactSidebar(width >= 768 && width < 1024);
+      try {
+        if (typeof window === 'undefined') return;
+        const width = window.innerWidth;
+        setIsCompactSidebar(width >= 768 && width < 1024);
+      } catch (error) {
+        console.error('Error updating compact sidebar state:', error);
+      }
     };
 
     updateCompactState();
@@ -1021,8 +1030,12 @@ function AuthenticatedRouter() {
   }, [isCompactSidebar]);
 
   const handleSidebarOpenChange = useCallback((open: boolean) => {
-    sidebarToggledByUserRef.current = true;
-    setIsSidebarOpen(open);
+    try {
+      sidebarToggledByUserRef.current = true;
+      setIsSidebarOpen(open);
+    } catch (error) {
+      console.error('Error changing sidebar state:', error);
+    }
   }, []);
 
   return (

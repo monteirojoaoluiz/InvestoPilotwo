@@ -204,14 +204,26 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
       return await response.json();
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["assessment"] });
-      toast({
-        title: "Assessment Complete!",
-        description: "Your risk profile has been saved successfully.",
-      });
-      onComplete?.(result);
+      try {
+        console.log('Risk assessment saved successfully:', result);
+        queryClient.invalidateQueries({ queryKey: ["assessment"] });
+        toast({
+          title: "Assessment Complete!",
+          description: "Your risk profile has been saved successfully.",
+        });
+        console.log('Calling onComplete with result');
+        onComplete?.(result);
+      } catch (error) {
+        console.error('Error in onSuccess callback:', error);
+        toast({
+          title: "Error",
+          description: "Assessment saved but an error occurred during completion.",
+          variant: "destructive",
+        });
+      }
     },
     onError: (error: any) => {
+      console.error('Risk assessment mutation error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to save assessment",
@@ -224,28 +236,39 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
   const handleNext = useCallback(() => {
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      const submission = {
-        lifeStage: answers.lifeStage,
-        riskTolerance: answers.riskTolerance,
-        timeHorizon: answers.timeHorizon,
-        usOnly: answers.usOnly === "yes",
-        esgOnly: answers.esgOnly === "yes",
-        incomeStability: answers.incomeStability,
-        emergencyFund: answers.emergencyFund,
-        debtLevel: answers.debtLevel,
-        investmentExperience: answers.investmentExperience,
-        investmentKnowledge: answers.investmentKnowledge,
-        behavioralReaction: answers.behavioralReaction,
-        incomeRange: answers.incomeRange,
-        netWorthRange: answers.netWorthRange,
-      };
+    try {
+      if (currentStep < totalSteps - 1) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        console.log('Submitting risk assessment answers:', answers);
+        const submission = {
+          lifeStage: answers.lifeStage,
+          riskTolerance: answers.riskTolerance,
+          timeHorizon: answers.timeHorizon,
+          usOnly: answers.usOnly === "yes",
+          esgOnly: answers.esgOnly === "yes",
+          incomeStability: answers.incomeStability,
+          emergencyFund: answers.emergencyFund,
+          debtLevel: answers.debtLevel,
+          investmentExperience: answers.investmentExperience,
+          investmentKnowledge: answers.investmentKnowledge,
+          behavioralReaction: answers.behavioralReaction,
+          incomeRange: answers.incomeRange,
+          netWorthRange: answers.netWorthRange,
+        };
 
-      mutation.mutate(submission);
+        console.log('Final submission object:', submission);
+        mutation.mutate(submission);
+      }
+    } catch (error) {
+      console.error('Error in handleNext:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     }
-  }, [answers, currentStep, mutation, totalSteps]);
+  }, [answers, currentStep, mutation, totalSteps, toast]);
 
   const handlePrevious = () => {
     if (currentStep > 0) {
