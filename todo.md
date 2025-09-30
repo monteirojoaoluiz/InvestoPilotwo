@@ -3,12 +3,12 @@
 ## 🚨 Priority 1: Critical Security & Stability
 
 ### Security Hardening
-- [ ] **Rate Limiting for Authentication**
+- [x] **Rate Limiting for Authentication**
   - Implement express-rate-limit on `/api/auth/*` endpoints
   - Set: 5 failed login attempts per 15 minutes per IP
   - Set: 3 registration attempts per hour per IP
   
-- [ ] **Password Reset Flow**
+- [x] **Password Reset Flow**
   - Add "Forgot Password" link on login modal
   - Generate secure reset tokens (crypto.randomBytes)
   - Send reset email via SendGrid with 1-hour expiration
@@ -16,20 +16,20 @@
   - Enforce same password requirements as registration
 
 ### Input Validation & Sanitization
-- [ ] **Server-Side Validation Enhancement**
+- [x] **Server-Side Validation Enhancement**
   - Add express-validator to all endpoints
   - Validate email format, password strength server-side
   - Sanitize all text inputs (strip HTML, limit length)
   - Add validation for numeric ranges (percentages, amounts)
 
 ### Error Handling & Monitoring
-- [ ] **Global Error Handler**
+- [x] **Global Error Handler**
   - Implement centralized error handler middleware
   - Log errors with winston or pino
   - Avoid leaking sensitive info in error messages
   - Add error tracking (Sentry or similar)
 
-- [ ] **React Error Boundaries**
+- [x] **React Error Boundaries**
   - Create ErrorBoundary component wrapping main app
   - Add specific boundaries for Dashboard, Assessment, Chat
   - Implement fallback UI with "Report Issue" button
@@ -38,12 +38,13 @@
 ## 🔧 Priority 2: Core Feature Enhancements
 
 ### Authentication & User Management
-- [ ] **Profile Management Page**
+- [x] **Profile Management Page**
   - Implement password change with current password verification
-  - Add email change with verification email to new address
+  - Addeijhcberkuvkerducbcfnirbdekcgunhutufekdvceuu
+   email change with verification email to new address
   - Show account creation date, last login timestamp
 
-- [ ] **Account Deletion**
+- [x] **Account Deletion**
   - Add "Delete Account" button in account settings (with warning)
   - Implement confirmation dialog with password re-entry
   - Cascade delete: risk_assessments, portfolios, messages, sessions
@@ -56,7 +57,7 @@
   - Display top 10 holdings for each ETF
 
 ### Risk Assessment Enhancements
-- [ ] **Expanded Questionnaire**
+- [x] **Expanded Questionnaire**
   - Add questions about: income stability, emergency fund, debt levels
   - Ask about investment experience and knowledge
   - Include behavioral finance questions (market reactions)
@@ -64,7 +65,7 @@
 
 
 ### AI Chat Enhancements
-- [ ] **Suggested Questions**
+- [x] **Suggested Questions**
   - Display 3-5 common questions users can click
   - Examples: "Explain my allocation", "How risky is this?"
   - Update suggestions based on portfolio state
