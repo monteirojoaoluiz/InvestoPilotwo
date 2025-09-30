@@ -605,7 +605,7 @@ function Assessment() {
 // Remove Chat function and route
 
   function Account() {
-    const [location] = useWouterLocation(); // for path
+    const [location, navigate] = useLocation(); // for path
     const { toast } = useToast();
 
     const { data: user } = useQuery({
@@ -774,6 +774,26 @@ function Assessment() {
           title: "Error",
           description: error.message || "Failed to delete account",
           variant: "destructive",
+        });
+      }
+    };
+
+    const handleLogout = async () => {
+      try {
+        const res = await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          throw new Error('Failed to log out');
+        }
+        navigate('/');
+        window.location.reload();
+      } catch (error: any) {
+        toast({
+          title: 'Logout Failed',
+          description: error?.message || 'Please try again.',
+          variant: 'destructive',
         });
       }
     };
