@@ -26,39 +26,10 @@ export const pool = new Pool({
 
 export const db = drizzle({ client: pool, schema });
 
-// Wipe database by dropping all tables
-export async function wipeDatabase() {
-  try {
-    console.log('Wiping database...');
-    // Get all table names in public schema
-    const result = await pool.query(`
-      SELECT tablename FROM pg_tables
-      WHERE schemaname = 'public'
-      AND tablename != 'schema_migrations'
-    `);
-
-    // Drop all tables with CASCADE to handle dependencies
-    for (const row of result.rows) {
-      const tableName = row.tablename;
-      await pool.query(`DROP TABLE IF EXISTS "${tableName}" CASCADE`);
-      console.log(`Dropped table: ${tableName}`);
-    }
-
-    console.log('Database wiped successfully');
-  } catch (error) {
-    console.error('Error wiping database:', error);
-    throw error;
-  }
-}
-
 // Run migrations on startup
 export async function runMigrations() {
   try {
     console.log('Running database migrations...');
-
-    // Wipe database first to start from scratch
-    await wipeDatabase();
-
     const migrationsFolder = path.join(__dirname, '../migrations');
     await migrate(db, { migrationsFolder });
     console.log('Migrations completed successfully');
