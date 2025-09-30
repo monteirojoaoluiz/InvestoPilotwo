@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(defaultTab);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -186,7 +188,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="login-password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="login-password">Password</Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
                 <Input
                   id="login-password"
                   type="password"
@@ -286,6 +297,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
           </TabsContent>
         </Tabs>
       </DialogContent>
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </Dialog>
   );
 }

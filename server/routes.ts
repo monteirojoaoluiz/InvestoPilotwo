@@ -4,6 +4,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertRiskAssessmentSchema, insertPortfolioMessageSchema } from "@shared/schema";
 import { z } from "zod";
+import rateLimit from 'express-rate-limit';
+import { body, validationResult } from 'express-validator';
 
 import crypto from 'crypto';
 import sgMail from '@sendgrid/mail';
@@ -95,6 +97,101 @@ const isAuthenticated = (req: any, res: any, next: any) => {
   res.status(401).json({ message: 'Unauthorized' });
 };
 
+// Validation middleware
+const handleValidationErrors = (req: any, res: any, next: any) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
+  }
+  next();
+};
+
+// Validation rules for auth endpoints
+const registerValidation = [
+  body('email')
+    .trim()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  body('password')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('Password must be between 8 and 128 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
+  handleValidationErrors,
+];
+
+const loginValidation = [
+  body('email')
+    .trim()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required'),
+  handleValidationErrors,
+];
+
+const emailValidation = [
+  body('email')
+    .trim()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  handleValidationErrors,
+];
+
+const resetPasswordValidation = [
+  body('token')
+    .notEmpty()
+    .withMessage('Reset token is required'),
+  body('password')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('Password must be between 8 and 128 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
+  handleValidationErrors,
+];
+
+// Rate limiters for authentication endpoints
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per window
+  message: { message: 'Too many login attempts. Please try again after 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Use IP as identifier
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+
+const registrationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 registration attempts per hour
+  message: { message: 'Too many registration attempts. Please try again after an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+
+const magicLinkLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 magic link requests per hour
+  message: { message: 'Too many magic link requests. Please try again after an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 password reset requests per hour
+  message: { message: 'Too many password reset requests. Please try again after an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
+});
+
 // Setup SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
@@ -119,21 +216,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(passport.session());
 
   // Password-based auth routes
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/auth/register', registrationLimiter, registerValidation, async (req, res) => {
     try {
       const { email, password } = req.body;
-
-      if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-      }
-
-      // Strong password validation
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(password)) {
-        return res.status(400).json({
-          message: 'Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'
-        });
-      }
 
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
@@ -168,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/login', (req, res, next) => {
+  app.post('/api/auth/login', loginLimiter, loginValidation, (req, res, next) => {
     console.log('Login attempt for:', req.body.email);
     passport.authenticate('local', (err: any, user: any, info: any) => {
       if (err) {
@@ -195,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth routes
-  app.post('/api/auth/send', async (req, res) => {
+  app.post('/api/auth/send', magicLinkLimiter, emailValidation, async (req, res) => {
     try {
       const { email } = req.body;
       if (!email) {
@@ -295,6 +380,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Password reset routes
+  app.post('/api/auth/forgot-password', passwordResetLimiter, emailValidation, async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      // Check if user exists
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if user exists or not for security
+        return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+      }
+
+      // Generate secure reset token
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiration
+
+      // Store reset token
+      await storage.createPasswordResetToken({
+        userId: user.id,
+        token,
+        expiresAt,
+        used: false,
+      });
+
+      // Send reset email
+      const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/reset-password?token=${token}`;
+      const msg = {
+        to: email,
+        from: 'monteirojoaoluiz@gmail.com',
+        subject: 'Reset Your InvestoPilot Password',
+        html: `
+          <h1>Password Reset Request</h1>
+          <p>You requested to reset your password for your InvestoPilot account.</p>
+          <p>Click the link below to reset your password:</p>
+          <a href="${resetUrl}">Reset Password</a>
+          <p>This link will expire in 1 hour.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        `,
+      };
+
+      await sgMail.send(msg);
+
+      res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      res.status(500).json({ message: 'Failed to process password reset request' });
+    }
+  });
+
+  app.post('/api/auth/reset-password', resetPasswordValidation, async (req, res) => {
+    try {
+      const { token, password } = req.body;
+
+      // Get and validate reset token
+      const resetToken = await storage.getPasswordResetToken(token);
+      if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
+        return res.status(400).json({ message: 'Invalid or expired reset token' });
+      }
+
+      // Hash new password with pepper
+      const pepperedPassword = password + PEPPER;
+      const hashedPassword = await bcrypt.hash(pepperedPassword, saltRounds);
+
+      // Update user password
+      await storage.updateUserPassword(resetToken.userId, hashedPassword);
+
+      // Mark token as used
+      await storage.markPasswordResetTokenAsUsed(resetToken.id);
+
+      res.json({ message: 'Password has been reset successfully. You can now log in with your new password.' });
+    } catch (error) {
+      console.error('Password reset error:', error);
+      res.status(500).json({ message: 'Failed to reset password' });
+    }
+  });
+
   // Debug endpoint
   app.get('/api/debug', (req, res) => {
     res.json({
@@ -310,6 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Cleanup expired tokens (call periodically or on startup)
   await storage.deleteExpiredTokens();
+  await storage.deleteExpiredPasswordResetTokens();
 
   // Risk assessment routes
   app.post('/api/risk-assessment', isAuthenticated, async (req: any, res) => {

@@ -37,6 +37,8 @@ import RiskAssessment from "./components/RiskAssessment";
 import PortfolioChat from "./components/PortfolioChat";
 import NotFound from "@/pages/not-found";
 import AuthModal from "./components/AuthModal";
+import ErrorBoundary from "./components/ErrorBoundary";
+import ResetPassword from "./pages/reset-password";
 
 function Dashboard() {
   const { data: portfolioData, refetch: refetchPortfolio } = useQuery({
@@ -681,12 +683,14 @@ function AuthenticatedRouter() {
             <ThemeToggle />
           </header>
           <main className="flex-1 overflow-auto">
-            <Switch>
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/assessment" component={Assessment} />
-              <Route path="/account" component={Account} />
-              <Route path="/" component={Dashboard} />
-            </Switch>
+            <ErrorBoundary>
+              <Switch>
+                <Route path="/dashboard" component={Dashboard} />
+                <Route path="/assessment" component={Assessment} />
+                <Route path="/account" component={Account} />
+                <Route path="/" component={Dashboard} />
+              </Switch>
+            </ErrorBoundary>
           </main>
         </div>
       </div>
@@ -731,6 +735,7 @@ function Router() {
         <Route path="/">
           <LandingPage onGetStarted={openRegisterModal} />
         </Route>
+        <Route path="/reset-password" component={ResetPassword} />
         <Route component={NotFound} />
       </Switch>
       <AuthModal
@@ -749,14 +754,16 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="investai-ui-theme">
-        <TooltipProvider>
-          <Router />
-          <Toaster />
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light" storageKey="investai-ui-theme">
+          <TooltipProvider>
+            <Router />
+            <Toaster />
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
