@@ -109,6 +109,38 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
     }
   });
 
+  // Compute suggested questions early to keep hook order stable
+  const suggestedQuestions = useMemo(() => {
+    try {
+      if (!portfolio?.allocations || !Array.isArray(portfolio.allocations) || portfolio.allocations.length === 0) {
+        return ['What should I invest in as a beginner?'];
+      }
+
+      const questions = ['Explain my current allocation'];
+      const bondPct = portfolio.allocations.reduce((sum: number, a: any) => sum + (a?.assetType === 'Bonds' ? (a?.percentage || 0) : 0), 0);
+      const stockPct = portfolio.allocations.reduce((sum: number, a: any) => sum + ((a?.assetType?.includes('Equity')) ? (a?.percentage || 0) : 0), 0);
+      const esg = portfolio.allocations.some((a: any) => a?.name?.includes('ESG'));
+
+      if (bondPct > 50) {
+        questions.push('Why is my portfolio so conservative?');
+      }
+      if (stockPct > 70) {
+        questions.push('How can I reduce risk in my portfolio?');
+      }
+      if (esg) {
+        questions.push('Tell me more about the ESG focus in my investments');
+      } else {
+        questions.push('Should I consider ESG investments?');
+      }
+      questions.push('What if the market drops 20%?');
+
+      return questions.slice(0, 5); // Limit to 5
+    } catch (error) {
+      console.error('Error generating suggested questions:', error);
+      return ['What should I invest in as a beginner?'];
+    }
+  }, [portfolio]);
+
   // If !portfolioId return loading
   if (!portfolioId) {
     if (portfolioData === null) {
@@ -197,37 +229,6 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
-
-  const suggestedQuestions = useMemo(() => {
-    try {
-      if (!portfolio?.allocations || !Array.isArray(portfolio.allocations) || portfolio.allocations.length === 0) {
-        return ['What should I invest in as a beginner?'];
-      }
-
-      const questions = ['Explain my current allocation'];
-      const bondPct = portfolio.allocations.reduce((sum: number, a: any) => sum + (a?.assetType === 'Bonds' ? (a?.percentage || 0) : 0), 0);
-      const stockPct = portfolio.allocations.reduce((sum: number, a: any) => sum + ((a?.assetType?.includes('Equity')) ? (a?.percentage || 0) : 0), 0);
-      const esg = portfolio.allocations.some((a: any) => a?.name?.includes('ESG'));
-
-      if (bondPct > 50) {
-        questions.push('Why is my portfolio so conservative?');
-      }
-      if (stockPct > 70) {
-        questions.push('How can I reduce risk in my portfolio?');
-      }
-      if (esg) {
-        questions.push('Tell me more about the ESG focus in my investments');
-      } else {
-        questions.push('Should I consider ESG investments?');
-      }
-      questions.push('What if the market drops 20%?');
-
-      return questions.slice(0, 5); // Limit to 5
-    } catch (error) {
-      console.error('Error generating suggested questions:', error);
-      return ['What should I invest in as a beginner?'];
-    }
-  }, [portfolio]);
 
   return (
     <Card className="flex flex-col h-[600px]">
