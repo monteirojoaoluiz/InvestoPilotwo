@@ -9,6 +9,9 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button"; // Add Button import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   ResponsiveContainer,
   PieChart,
@@ -161,6 +164,19 @@ function Dashboard() {
 
   const hasAssessmentButNoPortfolio = assessmentData && !portfolioData;
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTicker, setSelectedTicker] = useState('');
+
+  const { data: etfInfo } = useQuery({
+    queryKey: ['etf-info', selectedTicker],
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/etf/${selectedTicker}/info`);
+      if (!res.ok) throw new Error('Failed to fetch ETF info');
+      return res.json();
+    },
+    enabled: !!selectedTicker,
+  });
+
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">InvestoPilot Dashboard</h1>
@@ -274,8 +290,15 @@ function Dashboard() {
                 {/* Allocation List */}
                 <div className="w-full space-y-3">
                   {portfolioData.allocations?.map((a: any) => (
-                    <div key={`${a.ticker || a.name}`} className="flex items-center justify-between py-2">
-                      <div className="flex items-center gap-3">
+                    <div 
+                      key={`${a.ticker || a.name}`} 
+                      className="flex items-center justify-between py-2 cursor-pointer hover:bg-muted/50 rounded" 
+                      onClick={() => {
+                        setSelectedTicker(a.ticker);
+                        setModalOpen(true);
+                      }}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
                         <div
                           className="w-4 h-4 rounded-full flex-shrink-0"
                           style={{ backgroundColor: a.color || '#8884d8' }}
@@ -380,6 +403,50 @@ function Dashboard() {
           </Card>
         )}
       </div>
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selectedTicker} Details</DialogTitle>
+          </DialogHeader>
+          {etfInfo ? (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold">Fund Name</h3>
+                <p>{etfInfo.longName || selectedTicker}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Category</h3>
+                <p>{etfInfo.category || 'N/A'}</p>
+              </div>
+              {etfInfo.summaryProfile?.longBusinessSummary && (
+                <div>
+                  <h3 className="font-semibold">Description</h3>
+                  <p className="text-sm">{etfInfo.summaryProfile.longBusinessSummary}</p>
+                </div>
+              )}
+              <div>
+                <h3 className="font-semibold">Expense Ratio</h3>
+                <p>
+                  {etfInfo.summaryDetail?.annualReportExpenseRatio 
+                    ? `${(etfInfo.summaryDetail.annualReportExpenseRatio * 100).toFixed(2)}%` 
+                    : 'N/A (not available via current API)'}
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Top 10 Holdings</h3>
+                <p className="text-sm text-muted-foreground italic">
+                  Detailed holdings data not available via current API. Please refer to the ETF provider's website for complete holdings information.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p>Loading ETF details...</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Performance Chart and Chat - Only show if portfolio exists */}
       {portfolioData && (
         <div className="mt-6 space-y-6">
@@ -422,7 +489,7 @@ function Dashboard() {
           </Card>
 
           {/* Portfolio Chat */}
-          <PortfolioChat />
+          <PortfolioChat portfolio={portfolioData} />
         </div>
       )}
 
@@ -493,7 +560,7 @@ function Assessment() {
 // Remove Chat function and route
 
   function Account() {
-    const [, navigate] = useLocation();
+    const [location] = useWouterLocation(); // for path
     const { toast } = useToast();
 
     const { data: user } = useQuery({
@@ -519,25 +586,148 @@ function Assessment() {
       ? assessment.riskTolerance.charAt(0).toUpperCase() + assessment.riskTolerance.slice(1)
       : 'Not set';
 
-    const handleLogout = async () => {
-      try {
-        const res = await apiRequest('POST', '/api/auth/logout');
-        if (!res.ok) throw new Error('Logout failed');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
+    const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+    const [currentPass, setCurrentPass] = useState('');
+    const [newPass, setNewPass] = useState('');
+    const [confirmPass, setConfirmPass] = useState('');
+
+    const [changeEmailOpen, setChangeEmailOpen] = useState(false);
+    const [newEmail, setNewEmail] = useState('');
+
+    const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+
+    useEffect(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const success = urlParams.get('success');
+      const error = urlParams.get('error');
+
+      if (success === 'email_changed') {
         toast({
-          title: "Logged Out",
-          description: "You have been successfully logged out.",
+          title: "Success",
+          description: "Your email has been updated successfully.",
         });
+      } else if (error) {
+        let message = "An error occurred.";
+        if (error === 'invalid_token') message = "Invalid or expired verification link.";
+        else if (error === 'no_token') message = "No verification token provided.";
+        else if (error === 'server_error') message = "Server error. Please try again.";
 
-        // Redirect to home page
-        navigate('/');
-        // Refresh to clear auth state
-        window.location.reload();
-      } catch (error) {
-        console.error('Logout error:', error);
         toast({
           title: "Error",
-          description: "Failed to log out. Please try again.",
+          description: message,
+          variant: "destructive",
+        });
+      }
+
+      // Clear params
+      if (success || error) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }, []);
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (newPass !== confirmPass) {
+        toast({
+          title: "Error",
+          description: "New passwords do not match",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!passwordRegex.test(newPass)) {
+        toast({
+          title: "Weak Password",
+          description: "New password must contain uppercase, lowercase, number, and special character",
+          variant: "destructive",
+        });
+        return;
+      }
+      try {
+        const response = await fetch('/api/auth/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass, confirmPassword: confirmPass }),
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to change password');
+        }
+        toast({
+          title: "Success",
+          description: "Password changed successfully",
+        });
+        setChangePasswordOpen(false);
+        setCurrentPass('');
+        setNewPass('');
+        setConfirmPass('');
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to change password",
+          variant: "destructive",
+        });
+      }
+    };
+
+    const handleChangeEmail = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        const response = await fetch('/api/auth/change-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ newEmail }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to request email change');
+        }
+        const data = await response.json();
+        toast({
+          title: "Email Change Requested",
+          description: data.message || "Please check your new email for verification.",
+        });
+        setChangeEmailOpen(false);
+        setNewEmail('');
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to request email change",
+          variant: "destructive",
+        });
+      }
+    };
+
+    const handleDeleteAccount = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        const response = await fetch('/api/auth/delete-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ currentPassword: deletePassword }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete account');
+        }
+        toast({
+          title: "Account Deleted",
+          description: "Your account and all data have been permanently deleted.",
+        });
+        setDeleteAccountOpen(false);
+        setDeletePassword('');
+        navigate('/');
+        window.location.reload(); // to clear session
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete account",
           variant: "destructive",
         });
       }
@@ -571,6 +761,14 @@ function Assessment() {
                   <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{risk}</div>
                 </div>
               </div>
+              <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-purple-700 dark:text-purple-300">Last Login</div>
+                  <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">
+                    {user?.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -586,6 +784,125 @@ function Assessment() {
                   <div className="text-sm text-muted-foreground">Choose your preferred color scheme</div>
                 </div>
                 <ThemeToggle />
+              </div>
+
+              <div className="border-t pt-4">
+                <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full mb-2">
+                      Change Password
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Change Password</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleChangePassword} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="current-password">Current Password</Label>
+                        <Input
+                          id="current-password"
+                          type="password"
+                          value={currentPass}
+                          onChange={(e) => setCurrentPass(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">New Password</Label>
+                        <Input
+                          id="new-password"
+                          type="password"
+                          value={newPass}
+                          onChange={(e) => setNewPass(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Confirm New Password</Label>
+                        <Input
+                          id="confirm-password"
+                          type="password"
+                          value={confirmPass}
+                          onChange={(e) => setConfirmPass(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">
+                        Update Password
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="border-t pt-4">
+                <Dialog open={changeEmailOpen} onOpenChange={setChangeEmailOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full mb-2">
+                      Change Email
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Change Email Address</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleChangeEmail} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-email">New Email Address</Label>
+                        <Input
+                          id="new-email"
+                          type="email"
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">
+                        Send Verification
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="border-t pt-4">
+                <Dialog open={deleteAccountOpen} onOpenChange={setDeleteAccountOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="destructive" 
+                      className="w-full"
+                    >
+                      Delete Account
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Delete Account</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="text-destructive">
+                        <p className="font-medium">Warning: This action cannot be undone.</p>
+                        <p>Deleting your account will permanently remove all your data including portfolios, assessments, and chat history.</p>
+                      </div>
+                      <form onSubmit={handleDeleteAccount} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="delete-password">Enter your password to confirm</Label>
+                          <Input
+                            id="delete-password"
+                            type="password"
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <Button type="submit" variant="destructive" className="w-full">
+                          Permanently Delete My Account
+                        </Button>
+                      </form>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               <div className="border-t pt-4">

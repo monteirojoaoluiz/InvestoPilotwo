@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -20,9 +20,10 @@ interface Message {
 
 interface PortfolioChatProps {
   onSendMessage?: (message: string) => void;
+  portfolio?: any; // Add portfolio prop
 }
 
-export default function PortfolioChat({ onSendMessage }: PortfolioChatProps) {
+export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioChatProps) {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isNewChat, setIsNewChat] = useState(false);
@@ -36,7 +37,7 @@ export default function PortfolioChat({ onSendMessage }: PortfolioChatProps) {
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch portfolio on mount
-  const { data: portfolio } = useQuery({
+  const { data: portfolioData } = useQuery({
     queryKey: ['portfolio'],
     queryFn: async () => {
       const res = await apiRequest('GET', '/api/portfolio');
@@ -45,10 +46,10 @@ export default function PortfolioChat({ onSendMessage }: PortfolioChatProps) {
   });
 
   useEffect(() => {
-    if (portfolio?.id) {
-      setPortfolioId(portfolio.id);
+    if (portfolioData?.id) {
+      setPortfolioId(portfolioData.id);
     }
-  }, [portfolio]);
+  }, [portfolioData]);
 
   // Hide the new chat success message after 3 seconds
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function PortfolioChat({ onSendMessage }: PortfolioChatProps) {
 
   // If !portfolioId return loading
   if (!portfolioId) {
-    if (portfolio === null) {
+    if (portfolioData === null) {
       return (
         <Card className="flex flex-col h-[600px]">
           <div className="p-4 border-b">
@@ -196,6 +197,32 @@ export default function PortfolioChat({ onSendMessage }: PortfolioChatProps) {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const suggestedQuestions = useMemo(() => {
+    if (!portfolio?.allocations || portfolio.allocations.length === 0) {
+      return ['What should I invest in as a beginner?'];
+    }
+
+    const questions = ['Explain my current allocation'];
+    const bondPct = portfolio.allocations.reduce((sum: number, a: any) => sum + (a.assetType === 'Bonds' ? a.percentage : 0), 0);
+    const stockPct = portfolio.allocations.reduce((sum: number, a: any) => sum + (a.assetType?.includes('Equity') ? a.percentage : 0), 0);
+    const esg = portfolio.allocations.some((a: any) => a.name?.includes('ESG'));
+
+    if (bondPct > 50) {
+      questions.push('Why is my portfolio so conservative?');
+    }
+    if (stockPct > 70) {
+      questions.push('How can I reduce risk in my portfolio?');
+    }
+    if (esg) {
+      questions.push('Tell me more about the ESG focus in my investments');
+    } else {
+      questions.push('Should I consider ESG investments?');
+    }
+    questions.push('What if the market drops 20%?');
+
+    return questions.slice(0, 5); // Limit to 5
+  }, [portfolio]);
 
   return (
     <Card className="flex flex-col h-[600px]">
@@ -307,6 +334,26 @@ export default function PortfolioChat({ onSendMessage }: PortfolioChatProps) {
           </Button>
         </div>
       </form>
+
+      <div className="p-4 border-t">
+        <p className="text-xs text-muted-foreground mb-2">Suggested:</p>
+        <div className="flex flex-wrap gap-2">
+          {suggestedQuestions.map((q, i) => (
+            <Button
+              key={i}
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setMessage(q);
+                handleSendMessage({preventDefault: () => {}} as any); // Trigger send
+              }}
+              className="text-xs h-8 px-2"
+            >
+              {q}
+            </Button>
+          ))}
+        </div>
+      </div>
     </Card>
   );
 }

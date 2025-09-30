@@ -15,6 +15,14 @@ type AssessmentAnswers = {
   timeHorizon: string;
   usOnly: string;
   esgOnly: string;
+  incomeStability: string;
+  emergencyFund: string;
+  debtLevel: string;
+  investmentExperience: string;
+  investmentKnowledge: string;
+  behavioralReaction: string;
+  incomeRange: string;
+  netWorthRange: string;
 };
 
 type RadioOption = {
@@ -85,6 +93,90 @@ const QUESTIONS: Question[] = [
       { value: "no", label: "Standard investment options are fine" },
     ],
   },
+  {
+    id: "incomeStability",
+    title: "How stable do you expect your income to be over the next 5 years?",
+    description: "Income stability affects how much risk we can take with your investments.",
+    options: [
+      { value: "very-stable", label: "Very stable (e.g., government job, tenure)" },
+      { value: "somewhat-stable", label: "Somewhat stable (steady industry)" },
+      { value: "unstable", label: "Potentially unstable (commission-based, startup)" },
+    ],
+  },
+  {
+    id: "emergencyFund",
+    title: "Do you have an emergency fund?",
+    description: "An emergency fund provides a safety net, allowing for more aggressive investing.",
+    options: [
+      { value: "yes", label: "Yes, 3-6+ months of expenses" },
+      { value: "partial", label: "Partial (1-3 months)" },
+      { value: "no", label: "No emergency fund" },
+    ],
+  },
+  {
+    id: "debtLevel",
+    title: "What is your current debt situation?",
+    description: "High-interest debt may require more conservative investment strategies.",
+    options: [
+      { value: "low-none", label: "Low or no debt" },
+      { value: "manageable", label: "Manageable debt (mortgage, student loans)" },
+      { value: "high", label: "High-interest debt (credit cards)" },
+    ],
+  },
+  {
+    id: "investmentExperience",
+    title: "How would you describe your investment experience?",
+    description: "Your experience level helps us match complexity to your comfort.",
+    options: [
+      { value: "none", label: "No experience" },
+      { value: "beginner", label: "Beginner (a few years)" },
+      { value: "intermediate", label: "Intermediate (diversified portfolio)" },
+      { value: "advanced", label: "Advanced (active management)" },
+    ],
+  },
+  {
+    id: "investmentKnowledge",
+    title: "How knowledgeable are you about investing?",
+    description: "This helps us provide appropriate educational resources.",
+    options: [
+      { value: "beginner", label: "Beginner (learning basics)" },
+      { value: "intermediate", label: "Intermediate (understand diversification)" },
+      { value: "advanced", label: "Advanced (technical analysis, etc.)" },
+    ],
+  },
+  {
+    id: "behavioralReaction",
+    title: "If your portfolio dropped 20% in a year, what would you do?",
+    description: "Your likely reaction helps assess behavioral risk tolerance.",
+    options: [
+      { value: "sell-all", label: "Sell everything to stop the losses" },
+      { value: "sell-some", label: "Sell some to reduce exposure" },
+      { value: "hold", label: "Hold and wait for recovery" },
+      { value: "buy-more", label: "Buy more (buy the dip)" },
+    ],
+  },
+  {
+    id: "incomeRange",
+    title: "Approximate annual household income?",
+    description: "This helps contextualize your investment capacity.",
+    options: [
+      { value: "<50k", label: "Under $50,000" },
+      { value: "50-100k", label: "$50,000 - $100,000" },
+      { value: "100-250k", label: "$100,000 - $250,000" },
+      { value: "250k+", label: "$250,000+" },
+    ],
+  },
+  {
+    id: "netWorthRange",
+    title: "Approximate net worth (excluding primary residence)?",
+    description: "This provides context for diversification needs.",
+    options: [
+      { value: "<100k", label: "Under $100,000" },
+      { value: "100-500k", label: "$100,000 - $500,000" },
+      { value: "500k-1M", label: "$500,000 - $1,000,000" },
+      { value: "1M+", label: "$1,000,000+" },
+    ],
+  },
 ];
 
 export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
@@ -95,6 +187,14 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
     timeHorizon: "",
     usOnly: "",
     esgOnly: "",
+    incomeStability: "",
+    emergencyFund: "",
+    debtLevel: "",
+    investmentExperience: "",
+    investmentKnowledge: "",
+    behavioralReaction: "",
+    incomeRange: "",
+    netWorthRange: "",
   });
   const { toast } = useToast();
 
@@ -133,6 +233,14 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
         timeHorizon: answers.timeHorizon,
         usOnly: answers.usOnly === "yes",
         esgOnly: answers.esgOnly === "yes",
+        incomeStability: answers.incomeStability,
+        emergencyFund: answers.emergencyFund,
+        debtLevel: answers.debtLevel,
+        investmentExperience: answers.investmentExperience,
+        investmentKnowledge: answers.investmentKnowledge,
+        behavioralReaction: answers.behavioralReaction,
+        incomeRange: answers.incomeRange,
+        netWorthRange: answers.netWorthRange,
       };
 
       mutation.mutate(submission);

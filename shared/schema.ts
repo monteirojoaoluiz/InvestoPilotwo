@@ -24,6 +24,8 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  lastLogin: timestamp("last_login"),
+  deletedAt: timestamp("deleted_at"),
 });
 
 // Risk assessment table
@@ -35,6 +37,14 @@ export const riskAssessments = pgTable("risk_assessments", {
   usOnly: boolean("us_only").notNull().default(false),
   esgOnly: boolean("esg_only").notNull().default(false),
   lifeStage: varchar("life_stage").notNull(),
+  incomeStability: varchar("income_stability"),
+  emergencyFund: varchar("emergency_fund"),
+  debtLevel: varchar("debt_level"),
+  investmentExperience: varchar("investment_experience"),
+  investmentKnowledge: varchar("investment_knowledge"),
+  behavioralReaction: varchar("behavioral_reaction"),
+  incomeRange: varchar("income_range"),
+  netWorthRange: varchar("net_worth_range"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -79,11 +89,24 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const emailChangeTokens = pgTable("email_change_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  pendingEmail: varchar("pending_email").notNull(),
+  token: varchar("token").unique().notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export type AuthToken = typeof authTokens.$inferSelect;
 export type InsertAuthToken = typeof authTokens.$inferInsert;
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+export type EmailChangeToken = typeof emailChangeTokens.$inferSelect;
+export type InsertEmailChangeToken = typeof emailChangeTokens.$inferInsert;
 
 export const insertAuthTokenSchema = createInsertSchema(authTokens).omit({
   id: true,
@@ -95,8 +118,15 @@ export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTo
   createdAt: true,
 });
 
+export const insertEmailChangeTokenSchema = createInsertSchema(emailChangeTokens).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertAuthTokenInput = z.infer<typeof insertAuthTokenSchema>;
 export type InsertPasswordResetTokenInput = z.infer<typeof insertPasswordResetTokenSchema>;
+
+export type InsertEmailChangeTokenInput = z.infer<typeof insertEmailChangeTokenSchema>;
 
 // Schema types
 export type UpsertUser = typeof users.$inferInsert;

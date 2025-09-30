@@ -6,6 +6,7 @@ import {
   portfolioMessages,
   authTokens,
   passwordResetTokens,
+  emailChangeTokens,
   type User,
   type UpsertUser,
   type RiskAssessment,
@@ -18,9 +19,11 @@ import {
   type InsertAuthToken,
   type PasswordResetToken,
   type InsertPasswordResetToken,
+  type EmailChangeToken,
+  type InsertEmailChangeToken,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, lt, sql } from "drizzle-orm";
+import { eq, desc, and, lt, sql, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -53,12 +56,21 @@ export interface IStorage {
   markPasswordResetTokenAsUsed(tokenId: string): Promise<void>;
   deleteExpiredPasswordResetTokens(): Promise<void>;
   updateUserPassword(userId: string, hashedPassword: string): Promise<void>;
+  updateUserLastLogin(userId: string): Promise<void>;
+  // Email change operations
+  createEmailChangeToken(token: InsertEmailChangeToken): Promise<EmailChangeToken>;
+  getEmailChangeTokenByToken(token: string): Promise<EmailChangeToken | undefined>;
+  markEmailChangeTokenAsUsed(tokenId: string): Promise<void>;
+  deleteExpiredEmailChangeTokens(): Promise<void>;
+  updateUserEmail(userId: string, email: string): Promise<void>;
+  // User deletion
+  deleteUserData(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
   // User operations (mandatory for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await db.select().from(users).where(and(eq(users.id, id), isNull(users.deletedAt)));
     return user;
   }
 
@@ -78,7 +90,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    const [user] = await db.select().from(users).where(and(eq(users.email, email), isNull(users.deletedAt)));
     return user;
   }
 
@@ -225,6 +237,82 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId));
+  }
+
+  async updateUserLastLogin(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        lastLogin: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  // Email change operations
+  async createEmailChangeToken(token: InsertEmailChangeToken): Promise<EmailChangeToken> {
+    const [newToken] = await db.insert(emailChangeTokens).values(token).returning();
+    return newToken;
+  }
+
+  async getEmailChangeTokenByToken(token: string): Promise<EmailChangeToken | undefined> {
+    const [tokenData] = await db
+      .select()
+      .from(emailChangeTokens)
+      .where(eq(emailChangeTokens.token, token));
+    return tokenData;
+  }
+
+  async markEmailChangeTokenAsUsed(tokenId: string): Promise<void> {
+    await db
+      .update(emailChangeTokens)
+      .set({ used: true })
+      .where(eq(emailChangeTokens.id, tokenId));
+  }
+
+  async deleteExpiredEmailChangeTokens(): Promise<void> {
+    await db.delete(emailChangeTokens).where(
+      and(
+        lt(emailChangeTokens.expiresAt, sql`NOW()`),
+        eq(emailChangeTokens.used, false)
+      )
+    );
+  }
+
+  async updateUserEmail(userId: string, email: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        email,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async deleteUserData(userId: string): Promise<void> {
+    // Soft delete user
+    await db.update(users).set({ deletedAt: new Date() }).where(eq(users.id, userId));
+
+    // Hard delete related data (no grace for these)
+    await db.delete(authTokens).where(eq(authTokens.email, sql`(SELECT email FROM users WHERE id = ${userId})`));
+    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
+    await db.delete(emailChangeTokens).where(eq(emailChangeTokens.userId, userId));
+    await db.delete(portfolioMessages).where(eq(portfolioMessages.userId, userId));
+    await db.delete(portfolioRecommendations).where(eq(portfolioRecommendations.userId, userId));
+    await db.delete(riskAssessments).where(eq(riskAssessments.userId, userId));
+  }
+
+  async hardDeleteOldUsers(): Promise<void> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Get users to delete
+    const oldUsers = await db.select({id: users.id}).from(users).where(lt(users.deletedAt!, thirtyDaysAgo));
+
+    for (const user of oldUsers) {
+      await this.deleteUserData(user.id); // This now hard deletes everything
+      // Actually hard delete user after
+      await db.delete(users).where(eq(users.id, user.id));
+    }
   }
 }
 

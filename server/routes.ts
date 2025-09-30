@@ -142,6 +142,15 @@ const emailValidation = [
   handleValidationErrors,
 ];
 
+const changeEmailValidation = [
+  body('newEmail')
+    .trim()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  handleValidationErrors,
+];
+
 const resetPasswordValidation = [
   body('token')
     .notEmpty()
@@ -151,6 +160,33 @@ const resetPasswordValidation = [
     .withMessage('Password must be between 8 and 128 characters')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
+  handleValidationErrors,
+];
+
+// Add change password validation after resetPasswordValidation
+const changePasswordValidation = [
+  body('currentPassword')
+    .notEmpty()
+    .withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('New password must be between 8 and 128 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
+    .withMessage('New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
+  body('confirmPassword')
+    .custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        throw new Error('Passwords do not match');
+      }
+      return true;
+    }),
+  handleValidationErrors,
+];
+
+const deleteAccountValidation = [
+  body('currentPassword')
+    .notEmpty()
+    .withMessage('Current password is required'),
   handleValidationErrors,
 ];
 
@@ -184,6 +220,14 @@ const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3, // 3 password reset requests per hour
   message: { message: 'Too many password reset requests. Please try again after an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const emailChangeLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 email change requests per hour
+  message: { message: 'Too many email change requests. Please try again after an hour.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -236,10 +280,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Auto-login after registration
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) {
           console.error('Auto-login error:', err);
           return res.status(500).json({ message: 'Registration successful, but login failed' });
+        }
+        try {
+          await storage.updateUserLastLogin(user.id);
+        } catch (updateErr) {
+          console.error('Failed to update last login on register:', updateErr);
         }
         res.json({ message: 'Registration successful', user: { id: user.id, email: user.email } });
       });
@@ -251,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/auth/login', loginLimiter, loginValidation, (req, res, next) => {
     console.log('Login attempt for:', req.body.email);
-    passport.authenticate('local', (err: any, user: any, info: any) => {
+    passport.authenticate('local', async (err: any, user: any, info: any) => {
       if (err) {
         console.error('Login error:', err);
         return res.status(500).json({ message: 'Login failed' });
@@ -263,13 +312,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log('Login successful for user:', user.email);
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) {
           console.error('Session login error:', err);
           return res.status(500).json({ message: 'Login failed' });
         }
 
         console.log('Session created for user:', user.email);
+        try {
+          await storage.updateUserLastLogin(user.id);
+        } catch (updateErr) {
+          console.error('Failed to update last login on login:', updateErr);
+        }
         res.json({ message: 'Login successful', user: { id: user.id, email: user.email } });
       });
     })(req, res, next);
@@ -345,9 +399,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.markTokenAsUsed(authToken.id);
 
       // Login user
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) {
           return res.status(500).redirect('/?error=login_failed');
+        }
+        try {
+          await storage.updateUserLastLogin(user.id);
+        } catch (updateErr) {
+          console.error('Failed to update last login on magic link:', updateErr);
         }
         res.redirect('/dashboard');
       });
@@ -452,6 +511,163 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add change password route after password reset routes
+  app.post('/api/auth/change-password', isAuthenticated, changePasswordValidation, async (req: any, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const user = req.user;
+
+      if (!user.password) {
+        return res.status(400).json({ message: 'This account does not have a password set. Use password reset to set one.' });
+      }
+
+      // Verify current password
+      const pepperedCurrent = currentPassword + PEPPER;
+      const isValidCurrent = await bcrypt.compare(pepperedCurrent, user.password);
+      if (!isValidCurrent) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+
+      // Hash new password
+      const pepperedNew = newPassword + PEPPER;
+      const hashedNew = await bcrypt.hash(pepperedNew, saltRounds);
+
+      // Update password
+      await storage.updateUserPassword(user.id, hashedNew);
+
+      res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+      console.error('Change password error:', error);
+      res.status(500).json({ message: 'Failed to change password' });
+    }
+  });
+
+  app.post('/api/auth/change-email', isAuthenticated, emailChangeLimiter, changeEmailValidation, async (req: any, res) => {
+    try {
+      const { newEmail } = req.body;
+      const user = req.user;
+
+      if (newEmail === user.email) {
+        return res.status(400).json({ message: 'New email cannot be the same as current email' });
+      }
+
+      // Check if new email already exists
+      const existingUser = await storage.getUserByEmail(newEmail);
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email already in use by another account' });
+      }
+
+      // Generate secure token
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      // Store token
+      const tokenData = {
+        userId: user.id,
+        pendingEmail: newEmail,
+        token,
+        expiresAt,
+        used: false,
+      };
+
+      await storage.createEmailChangeToken(tokenData);
+
+      // Send confirmation email to new address
+      const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/verify-email-change?token=${token}`;
+      const msg = {
+        to: newEmail,
+        from: 'monteirojoaoluiz@gmail.com',
+        subject: 'Confirm Your Email Change - InvestoPilot',
+        html: `
+          <h1>Confirm Email Address Change</h1>
+          <p>You requested to change your email address for InvestoPilot.</p>
+          <p>Click the link below to confirm your new email address:</p>
+          <a href="${verifyUrl}">Confirm Email Change</a>
+          <p>This link will expire in 1 hour.</p>
+          <p>If you didn't request this change, please ignore this email.</p>
+        `,
+      };
+
+      await sgMail.send(msg);
+
+      res.json({ message: 'Verification email sent to new address. Please check your email to confirm the change.' });
+    } catch (error) {
+      console.error('Email change request error:', error);
+      res.status(500).json({ message: 'Failed to process email change request' });
+    }
+  });
+
+  app.post('/api/auth/delete-account', isAuthenticated, deleteAccountValidation, async (req: any, res) => {
+    try {
+      const { currentPassword } = req.body;
+      const user = req.user;
+
+      if (!user.password) {
+        return res.status(400).json({ message: 'Cannot delete account without password verification. Please set a password first.' });
+      }
+
+      // Verify current password
+      const pepperedCurrent = currentPassword + PEPPER;
+      const isValidCurrent = await bcrypt.compare(pepperedCurrent, user.password);
+      if (!isValidCurrent) {
+        return res.status(400).json({ message: 'Password incorrect' });
+      }
+
+      // Send farewell email
+      const farewellMsg = {
+        to: user.email,
+        from: 'monteirojoaoluiz@gmail.com',
+        subject: 'Account Deleted - InvestoPilot',
+        html: `
+          <h1>Your InvestoPilot Account Has Been Deleted</h1>
+          <p>This is to confirm that your account has been permanently deleted as per your request.</p>
+          <p>If this was a mistake, unfortunately we cannot recover deleted accounts.</p>
+          <p>Thank you for using InvestoPilot. We wish you the best in your investment journey!</p>
+        `,
+      };
+
+      await sgMail.send(farewellMsg).catch(console.error); // non-blocking
+
+      // Delete user data
+      await storage.deleteUserData(user.id);
+
+      // Logout
+      req.logout((err) => {
+        if (err) console.error('Logout error on delete:', err);
+      });
+
+      res.json({ message: 'Account deleted successfully. All data has been removed.' });
+    } catch (error) {
+      console.error('Delete account error:', error);
+      res.status(500).json({ message: 'Failed to delete account' });
+    }
+  });
+
+  app.get('/api/auth/verify-email-change', async (req, res) => {
+    try {
+      const { token } = req.query;
+      if (!token) {
+        return res.status(400).redirect('/account?error=no_token');
+      }
+
+      const emailToken = await storage.getEmailChangeTokenByToken(token as string);
+      if (!emailToken || emailToken.used || new Date() > emailToken.expiresAt) {
+        return res.status(400).redirect('/account?error=invalid_token');
+      }
+
+      // Update user email
+      await storage.updateUserEmail(emailToken.userId, emailToken.pendingEmail);
+
+      // Mark token as used
+      await storage.markEmailChangeTokenAsUsed(emailToken.id);
+
+      res.redirect('/account?success=email_changed');
+    } catch (error) {
+      console.error('Email change verification error:', error);
+      res.status(500).redirect('/account?error=server_error');
+    }
+  });
+
   // Debug endpoint
   app.get('/api/debug', (req, res) => {
     res.json({
@@ -468,6 +684,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cleanup expired tokens (call periodically or on startup)
   await storage.deleteExpiredTokens();
   await storage.deleteExpiredPasswordResetTokens();
+  await storage.deleteExpiredEmailChangeTokens();
+  await storage.hardDeleteOldUsers();
 
   // Risk assessment routes
   app.post('/api/risk-assessment', isAuthenticated, async (req: any, res) => {
@@ -595,6 +813,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching ETF history:', error);
       res.status(500).json({ message: 'Failed to fetch ETF history' });
+    }
+  });
+
+  app.get('/api/etf/:ticker/info', isAuthenticated, async (req: any, res) => {
+    try {
+      const { ticker } = req.params;
+      const quote = await yahooFinance.quote(ticker);
+      res.json(quote);
+    } catch (error) {
+      console.error('Error fetching ETF info:', error);
+      res.status(500).json({ message: 'Failed to fetch ETF information' });
     }
   });
 
