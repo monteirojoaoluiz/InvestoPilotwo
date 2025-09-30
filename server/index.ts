@@ -41,14 +41,17 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Test database connection
+  // Test database connection and run migrations
   try {
-    const { pool } = await import('./db');
+    const { pool, runMigrations } = await import('./db');
     console.log('Testing database connection...');
     const result = await pool.query('SELECT NOW()');
     console.log('Database connection successful:', result.rows[0]);
+    
+    // Run migrations
+    await runMigrations();
   } catch (error) {
-    console.error('Database connection failed:', error);
+    console.error('Database initialization failed:', error);
     throw error;
   }
 

@@ -2,7 +2,13 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 import { drizzle } from 'drizzle-orm/node-postgres';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import * as schema from "@shared/schema";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -19,3 +25,16 @@ export const pool = new Pool({
 });
 
 export const db = drizzle({ client: pool, schema });
+
+// Run migrations on startup
+export async function runMigrations() {
+  try {
+    console.log('Running database migrations...');
+    const migrationsFolder = path.join(__dirname, '../migrations');
+    await migrate(db, { migrationsFolder });
+    console.log('Migrations completed successfully');
+  } catch (error) {
+    console.error('Migration error:', error);
+    throw error;
+  }
+}

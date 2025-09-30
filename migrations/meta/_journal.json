@@ -8,6 +8,13 @@
       "when": 1758979825371,
       "tag": "0000_tired_alex_power",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1727696749000,
+      "tag": "0001_add_password_reset",
+      "breakpoints": true
     }
   ]
 }

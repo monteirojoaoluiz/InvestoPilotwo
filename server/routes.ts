@@ -161,8 +161,7 @@ const loginLimiter = rateLimit({
   message: { message: 'Too many login attempts. Please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
-  // Use IP as identifier
-  keyGenerator: (req) => req.ip || 'unknown',
+  // Remove custom keyGenerator to use default (which handles IPv6 properly)
 });
 
 const registrationLimiter = rateLimit({
@@ -171,7 +170,6 @@ const registrationLimiter = rateLimit({
   message: { message: 'Too many registration attempts. Please try again after an hour.' },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip || 'unknown',
 });
 
 const magicLinkLimiter = rateLimit({
@@ -180,7 +178,6 @@ const magicLinkLimiter = rateLimit({
   message: { message: 'Too many magic link requests. Please try again after an hour.' },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip || 'unknown',
 });
 
 const passwordResetLimiter = rateLimit({
@@ -189,7 +186,6 @@ const passwordResetLimiter = rateLimit({
   message: { message: 'Too many password reset requests. Please try again after an hour.' },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip || 'unknown',
 });
 
 // Setup SendGrid
