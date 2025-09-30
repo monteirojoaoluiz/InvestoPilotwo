@@ -681,11 +681,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Cleanup expired tokens (call periodically or on startup)
-  await storage.deleteExpiredTokens();
-  await storage.deleteExpiredPasswordResetTokens();
-  await storage.deleteExpiredEmailChangeTokens();
-  await storage.hardDeleteOldUsers();
+  // Cleanup expired tokens (wrapped for safety)
+  try {
+    await storage.deleteExpiredTokens();
+  } catch (err) {
+    console.warn('Failed to cleanup expired auth tokens:', err);
+  }
+  try {
+    await storage.deleteExpiredPasswordResetTokens();
+  } catch (err) {
+    console.warn('Failed to cleanup expired password reset tokens:', err);
+  }
+  try {
+    await storage.deleteExpiredEmailChangeTokens();
+  } catch (err) {
+    console.warn('Failed to cleanup expired email change tokens (table may not exist yet):', err);
+  }
+  try {
+    await storage.hardDeleteOldUsers();
+  } catch (err) {
+    console.warn('Failed to hard delete old users (feature may not be enabled yet):', err);
+  }
 
   // Risk assessment routes
   app.post('/api/risk-assessment', isAuthenticated, async (req: any, res) => {
