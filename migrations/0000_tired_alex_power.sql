@@ -1,4 +1,4 @@
-CREATE TABLE "auth_tokens" (
+CREATE TABLE IF NOT EXISTS "auth_tokens" (
 	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" varchar NOT NULL,
 	"token" varchar NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE "auth_tokens" (
 	CONSTRAINT "auth_tokens_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
-CREATE TABLE "portfolio_messages" (
+CREATE TABLE IF NOT EXISTS "portfolio_messages" (
 	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" varchar NOT NULL,
 	"portfolio_id" varchar NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE "portfolio_messages" (
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "portfolio_recommendations" (
+CREATE TABLE IF NOT EXISTS "portfolio_recommendations" (
 	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" varchar NOT NULL,
 	"risk_assessment_id" varchar NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE "portfolio_recommendations" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "risk_assessments" (
+CREATE TABLE IF NOT EXISTS "risk_assessments" (
 	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" varchar NOT NULL,
 	"risk_tolerance" varchar NOT NULL,
@@ -40,13 +40,13 @@ CREATE TABLE "risk_assessments" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "sessions" (
+CREATE TABLE IF NOT EXISTS "sessions" (
 	"sid" varchar PRIMARY KEY NOT NULL,
 	"sess" jsonb NOT NULL,
 	"expire" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
 	"id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" varchar,
 	"first_name" varchar,
@@ -57,9 +57,39 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-ALTER TABLE "portfolio_messages" ADD CONSTRAINT "portfolio_messages_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "portfolio_messages" ADD CONSTRAINT "portfolio_messages_portfolio_id_portfolio_recommendations_id_fk" FOREIGN KEY ("portfolio_id") REFERENCES "public"."portfolio_recommendations"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "portfolio_recommendations" ADD CONSTRAINT "portfolio_recommendations_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "portfolio_recommendations" ADD CONSTRAINT "portfolio_recommendations_risk_assessment_id_risk_assessments_id_fk" FOREIGN KEY ("risk_assessment_id") REFERENCES "public"."risk_assessments"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "risk_assessments" ADD CONSTRAINT "risk_assessments_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "IDX_session_expire" ON "sessions" USING btree ("expire");
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'portfolio_messages_user_id_users_id_fk') THEN
+		ALTER TABLE "portfolio_messages" ADD CONSTRAINT "portfolio_messages_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+	END IF;
+END $$;
+--> statement-breakpoint
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'portfolio_messages_portfolio_id_portfolio_recommendations_id_fk') THEN
+		ALTER TABLE "portfolio_messages" ADD CONSTRAINT "portfolio_messages_portfolio_id_portfolio_recommendations_id_fk" FOREIGN KEY ("portfolio_id") REFERENCES "public"."portfolio_recommendations"("id") ON DELETE no action ON UPDATE no action;
+	END IF;
+END $$;
+--> statement-breakpoint
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'portfolio_recommendations_user_id_users_id_fk') THEN
+		ALTER TABLE "portfolio_recommendations" ADD CONSTRAINT "portfolio_recommendations_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+	END IF;
+END $$;
+--> statement-breakpoint
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'portfolio_recommendations_risk_assessment_id_risk_assessments_id_fk') THEN
+		ALTER TABLE "portfolio_recommendations" ADD CONSTRAINT "portfolio_recommendations_risk_assessment_id_risk_assessments_id_fk" FOREIGN KEY ("risk_assessment_id") REFERENCES "public"."risk_assessments"("id") ON DELETE no action ON UPDATE no action;
+	END IF;
+END $$;
+--> statement-breakpoint
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'risk_assessments_user_id_users_id_fk') THEN
+		ALTER TABLE "risk_assessments" ADD CONSTRAINT "risk_assessments_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+	END IF;
+END $$;
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "sessions" USING btree ("expire");
