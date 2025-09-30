@@ -1,130 +1,189 @@
 # InvestoPilot - Future Improvements & Enhancements
 
-## 🚨 Critical Security Issues
-- [ ] **Rate Limiting**: Implement rate limiting for authentication endpoints to prevent brute force attacks
-- [ ] **Input Validation**: Add comprehensive input sanitization and validation for all user inputs
-- [ ] **CSRF Protection**: Implement CSRF tokens for all state-changing requests
-- [ ] **Security Headers**: Add security headers (CSP, HSTS, X-Frame-Options, etc.) via Helmet.js
-- [ ] **Password Reset**: Implement secure password reset functionality
-- [ ] **Account Lockout**: Add account lockout mechanism after failed login attempts
-- [ ] **Audit Logging**: Log security events for monitoring and compliance
+## 🚨 Priority 1: Critical Security & Stability
 
-## 🔧 Authentication & User Management
-- [ ] **Profile Management**: Allow users to update their email, password, and profile information
-- [ ] **Account Deletion**: Implement secure account deletion with data cleanup
-- [ ] **Session Management**: Add session timeout and refresh token functionality
+### Security Hardening
+- [ ] **Rate Limiting for Authentication**
+  - Implement express-rate-limit on `/api/auth/*` endpoints
+  - Set: 5 failed login attempts per 15 minutes per IP
+  - Set: 3 registration attempts per hour per IP
+  
+- [ ] **Password Reset Flow**
+  - Add "Forgot Password" link on login modal
+  - Generate secure reset tokens (crypto.randomBytes)
+  - Send reset email via SendGrid with 1-hour expiration
+  - Create reset password page with token validation
+  - Enforce same password requirements as registration
 
-## 🎨 User Experience Improvements
-- [ ] **Loading States**: Add skeleton loaders for better perceived performance
-- [ ] **Error Boundaries**: Implement React error boundaries for graceful error handling
-- [ ] **Offline Support**: Add service worker for basic offline functionality
-- [ ] **Progressive Web App**: Convert to PWA with app manifest and installability
-- [ ] **Accessibility**: Full WCAG compliance with proper ARIA labels and keyboard navigation
-- [ ] **Mobile Optimization**: Enhance mobile experience with touch gestures and responsive design
-- [ ] **Dark Mode Persistence**: Remember user's dark/light mode preference
+### Input Validation & Sanitization
+- [ ] **Server-Side Validation Enhancement**
+  - Add express-validator to all endpoints
+  - Validate email format, password strength server-side
+  - Sanitize all text inputs (strip HTML, limit length)
+  - Add validation for numeric ranges (percentages, amounts)
 
-## 📊 Portfolio & Financial Features
-- [ ] **Real-time Data**: Integrate with real financial APIs for live stock prices
-- [ ] **Portfolio Analytics**: Add advanced analytics (Sharpe ratio, beta, correlation analysis)
-- [ ] **Rebalancing Alerts**: Notify users when portfolio deviates from target allocation
-- [ ] **Tax Optimization**: Add tax-loss harvesting and tax-efficient rebalancing
-- [ ] **Goal Tracking**: Allow users to set and track financial goals
-- [ ] **Performance Benchmarking**: Compare portfolio performance against market indices
-- [ ] **Export Functionality**: Allow users to export portfolio data and reports
+### Error Handling & Monitoring
+- [ ] **Global Error Handler**
+  - Implement centralized error handler middleware
+  - Log errors with winston or pino
+  - Avoid leaking sensitive info in error messages
+  - Add error tracking (Sentry or similar)
 
-## 🤖 AI & Chat Enhancements
-- [ ] **Context Awareness**: Improve AI chat to remember conversation history across sessions
-- [ ] **Voice Input**: Add voice-to-text for chat input
-- [ ] **Multi-language Support**: Add support for multiple languages in chat
-- [ ] **Chat Analytics**: Track user engagement and improve AI responses based on feedback
-- [ ] **Integration APIs**: Allow third-party integrations (banks, brokerages, etc.)
+- [ ] **React Error Boundaries**
+  - Create ErrorBoundary component wrapping main app
+  - Add specific boundaries for Dashboard, Assessment, Chat
+  - Implement fallback UI with "Report Issue" button
+  - Log errors to monitoring service
 
-## 📈 Performance & Scalability
-- [ ] **Database Optimization**: Add database indexes and query optimization
-- [ ] **Caching Layer**: Implement Redis caching for frequently accessed data
-- [ ] **API Rate Limiting**: Implement rate limiting for all API endpoints
-- [ ] **Image Optimization**: Optimize and lazy-load images and charts
-- [ ] **Code Splitting**: Implement code splitting for better bundle sizes
-- [ ] **CDN Integration**: Serve static assets via CDN for faster global loading
+## 🔧 Priority 2: Core Feature Enhancements
 
-## 🧪 Testing & Quality Assurance
-- [ ] **Unit Tests**: Comprehensive unit test coverage for all components and utilities
-- [ ] **Integration Tests**: End-to-end tests for critical user flows
-- [ ] **API Testing**: Automated API tests for all endpoints
-- [ ] **Performance Testing**: Load testing and performance monitoring
-- [ ] **Security Testing**: Regular security audits and penetration testing
-- [ ] **Accessibility Testing**: Automated accessibility testing
+### Authentication & User Management
+- [ ] **Profile Management Page**
+  - Implement password change with current password verification
+  - Add email change with verification email to new address
+  - Show account creation date, last login timestamp
 
-## 📚 Documentation & Developer Experience
-- [ ] **API Documentation**: Complete OpenAPI/Swagger documentation
-- [ ] **User Documentation**: Comprehensive user guides and tutorials
-- [ ] **Code Documentation**: Add JSDoc comments and improve code documentation
-- [ ] **Contributing Guide**: Create guidelines for contributors
-- [ ] **Architecture Diagrams**: Document system architecture and data flow
-- [ ] **Deployment Guide**: Step-by-step deployment instructions
+- [ ] **Account Deletion**
+  - Add "Delete Account" button in account settings (with warning)
+  - Implement confirmation dialog with password re-entry
+  - Cascade delete: risk_assessments, portfolios, messages, sessions
+  - Send farewell email notification
+  - Add 30-day grace period before permanent deletion (optional)
 
-## 🔧 DevOps & Infrastructure
-- [ ] **CI/CD Pipeline**: Implement automated testing and deployment
-- [ ] **Monitoring**: Add application monitoring and alerting (error tracking, performance)
-- [ ] **Backup Strategy**: Implement automated database backups
-- [ ] **Environment Management**: Separate staging and production environments
-- [ ] **Containerization**: Docker containerization for easier deployment
-- [ ] **Auto-scaling**: Implement auto-scaling for traffic spikes
+### Portfolio Features
+- [ ] **Asset-Level Details**
+  - Add ETF detail modal with expense ratio, holdings, description
+  - Display top 10 holdings for each ETF
 
-## 🎯 Feature Enhancements
-- [ ] **Investment Education**: Add educational content and learning modules
-- [ ] **Social Features**: Allow users to share portfolios (anonymously) and compare performance
-- [ ] **Financial News**: Integrate financial news feed relevant to user's portfolio
-- [ ] **Risk Assessment Refinement**: More sophisticated risk profiling with dynamic questions
-- [ ] **Custom Portfolios**: Allow users to create custom portfolio strategies
-- [ ] **Advisor Integration**: Connect with certified financial advisors
-- [ ] **Subscription Model**: Implement premium features and subscription tiers
+### Risk Assessment Enhancements
+- [ ] **Expanded Questionnaire**
+  - Add questions about: income stability, emergency fund, debt levels
+  - Ask about investment experience and knowledge
+  - Include behavioral finance questions (market reactions)
+  - Add income and net worth ranges
 
-## 📱 Mobile & Cross-Platform
-- [ ] **React Native App**: Native mobile apps for iOS and Android
-- [ ] **Push Notifications**: Important portfolio alerts and market updates
-- [ ] **Biometric Authentication**: Fingerprint/Face ID login on mobile
-- [ ] **Offline Sync**: Sync data when device comes back online
 
-## 📊 Analytics & Insights
-- [ ] **User Analytics**: Track user behavior and feature usage
-- [ ] **A/B Testing**: Framework for testing different features and UI variants
-- [ ] **Conversion Optimization**: Improve user onboarding and engagement
-- [ ] **Financial Insights**: Provide market insights and trend analysis
+### AI Chat Enhancements
+- [ ] **Suggested Questions**
+  - Display 3-5 common questions users can click
+  - Examples: "Explain my allocation", "How risky is this?"
+  - Update suggestions based on portfolio state
 
-## 🌍 Internationalization & Localization
-- [ ] **Multi-language Support**: Support for multiple languages
-- [ ] **Currency Support**: Multiple currency support for international users
-- [ ] **Regional Compliance**: Adapt to different regulatory requirements
-- [ ] **Cultural Adaptation**: Customize content for different markets
+## 📊 Priority 3: Analytics & Reporting
 
-## 🔄 API & Integration Improvements
-- [ ] **Webhook Support**: Allow third-party integrations via webhooks
-- [ ] **RESTful API**: Complete REST API for all features
-- [ ] **GraphQL**: Consider GraphQL API for complex queries
-- [ ] **SDK**: Provide SDKs for different programming languages
+### Advanced Portfolio Metrics
+- [ ] **Additional Performance Metrics**
+  - Calculate and display Maximum Drawdown
+  - Add Beta calculation (vs S&P 500)
+  - Show Alpha (excess return over benchmark)
 
-## 🎨 Design System & UI/UX
-- [ ] **Design System**: Comprehensive design system with reusable components
-- [ ] **Animation Library**: Consistent micro-animations and transitions
-- [ ] **Theme Customization**: Allow users to customize color schemes
-- [ ] **Advanced Charts**: More sophisticated data visualization options
+- [ ] **Benchmark Comparison**
+  - Compare portfolio vs S&P 500, Total Bond Market
+  - Show outperformance/underperformance chart
+  - Display relative strength over time
+  - Add custom benchmark selection
 
-## 💰 Monetization & Business
-- [ ] **Freemium Model**: Define free vs premium features
-- [ ] **Payment Integration**: Secure payment processing for subscriptions
-- [ ] **Referral Program**: User referral incentives
-- [ ] **Affiliate Marketing**: Partnership opportunities with financial services
+- [ ] **Risk Analytics**
+  - Value at Risk (VaR) calculation
+  - Display portfolio diversification score
 
-## 🔒 Compliance & Legal
-- [ ] **GDPR Compliance**: Complete GDPR compliance for EU users
-- [ ] **Financial Regulations**: Ensure compliance with financial regulations
-- [ ] **Terms of Service**: Comprehensive legal agreements
-- [ ] **Privacy Policy**: Detailed privacy policy and data handling
+## 🎨 Priority 4: User Experience & Design
 
-## 🚀 Future Technology Stack
-- [ ] **Microservices**: Consider breaking into microservices architecture
-- [ ] **Serverless**: Evaluate serverless functions for certain features
-- [ ] **GraphQL**: Migrate to GraphQL for better API design
-- [ ] **Machine Learning**: Advanced ML models for better portfolio recommendations
-- [ ] **Blockchain**: Explore DeFi integrations for advanced users
+### Loading & Performance
+- [ ] **Skeleton Loaders**
+  - Add skeleton screens for dashboard cards during fetch
+  - Implement for charts, portfolio data, risk assessment
+  - Use shadcn/ui Skeleton component
+  - Match skeleton shape to actual content
+
+### Progressive Web App (PWA)
+- [ ] **PWA Implementation**
+  - Create web app manifest (manifest.json)
+  - Add app icons (192x192, 512x512)
+  - Configure service worker for offline functionality
+  - Add "Add to Home Screen" prompt
+  - Test on iOS and Android devices
+
+### Mobile Optimization
+- [ ] **Touch Gestures**
+  - Add swipe to navigate between dashboard sections
+  - Add touch-friendly button sizes (min 44x44px)
+  - Optimize tap targets spacing
+
+- [ ] **Mobile-Specific Features**
+  - Bottom sheet for mobile modals instead of center dialog
+  - Implement native-like navigation transitions
+  - Add haptic feedback for important actions (if supported)
+  - Optimize chart touch interactions
+
+- [ ] **Responsive Charts**
+  - Improve chart readability on small screens
+  - Add pinch-to-zoom for line charts
+  - Implement horizontal scrolling for dense data
+  - Show abbreviated labels on mobile
+
+### Animations & Micro-interactions
+- [ ] **Page Transitions**
+  - Add smooth fade/slide transitions between routes
+  - Implement shared element transitions (Framer Motion)
+  - Add loading animations for async operations
+  - Create success celebration animations
+
+- [ ] **Button Feedback**
+  - Add ripple effect on button clicks
+  - Implement loading spinners in buttons during async actions
+  - Show checkmark animation on successful actions
+  - Add subtle scale transforms on hover
+
+- [ ] **Chart Animations**
+  - Animate chart data entry (progressive drawing)
+  - Add smooth transitions when data updates
+  - Implement tooltip fade-in animations
+  - Create attention-grabbing animation for significant changes
+
+### Accessibility Enhancements
+- [ ] **Keyboard Navigation**
+  - Ensure all interactive elements are keyboard accessible
+  - Add visible focus indicators (2px outline)
+  - Implement skip navigation links
+  - Test with keyboard-only navigation
+
+### Theme & Customization
+- [ ] **Theme Persistence**
+  - Save theme preference to localStorage
+  - Sync theme preference to database (user settings)
+  - Respect system theme preference on first visit
+  - Add smooth theme transition animation
+
+## 🔒 Priority 8: Compliance & Legal
+
+### Data Privacy & GDPR
+- [ ] **GDPR Compliance**
+  - Implement "Download My Data" feature
+  - Add "Right to be Forgotten" (account deletion)
+
+### Financial Regulations & Disclaimers
+- [ ] **Investment Disclaimer**
+  - Add prominent disclaimer on all portfolio pages
+  - Include "Not Financial Advice" notice
+  - Link to SEC investor resources
+  - Add risk warnings for volatile assets
+
+- [ ] **Audit Trail**
+  - Log all portfolio recommendations with reasoning
+  - Store historical risk assessments
+
+## 🧹 Technical Debt & Code Quality
+
+### Refactoring
+- [ ] **Code Organization**
+  - Extract portfolio allocation logic to separate service
+  - Create dedicated auth service class
+  - Refactor large components into smaller pieces
+  - Establish clear folder structure conventions
+
+- [ ] **Shared Code**
+  - Move common types to shared folder
+  - Extract reusable utility functions
+  - Create shared validation schemas
+  - Establish component library patterns
