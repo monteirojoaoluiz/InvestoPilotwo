@@ -310,18 +310,22 @@
   - Fix: Test and ensure all inputs use `text-base` (16px) on mobile
 
 #### Chat Component Issues
-- [ ] **Portfolio chat message bubbles**
+- [x] **Portfolio chat message bubbles**
   - Message bubbles use `max-w-[80%]` which can be too wide on small screens
   - Issue: `PortfolioChat.tsx:274` - Responsive max-width needed
   - Fix: Use `max-w-[85%] sm:max-w-[80%]` for better mobile readability
 
-- [ ] **Suggested questions overflow**
-  - Suggested questions container (`PortfolioChat.tsx:318`) has horizontal scroll
-  - Scroll indicators not visible to users
-  - Fix: Add visual scroll indicators (fade gradient on edges)
-  - Consider vertical stacking on very small screens
+- [x] **Suggested questions overflow and scrolling**
+  - Suggested questions container has horizontal scroll but not obvious on mobile
+  - Added "Swipe →" hint visible only on mobile to indicate scrollability
+  - Added gradient fade indicators on both left and right edges
+  - Implemented snap-scroll behavior for smooth question navigation
+  - Added thin scrollbar with primary color on mobile
+  - Enhanced touch scrolling with `-webkit-overflow-scrolling: touch`
+  - Added `overscroll-behavior-x: contain` to prevent page scroll
+  - Made scrolling intuitive and smooth on touch devices
 
-- [ ] **Chat input area mobile optimization**
+- [x] **Chat input area mobile optimization**
   - Send button and input need better mobile spacing
   - Issue: `PortfolioChat.tsx:336-345` - Gap between input and button
   - Fix: Increase gap to `gap-3` on mobile for easier interaction

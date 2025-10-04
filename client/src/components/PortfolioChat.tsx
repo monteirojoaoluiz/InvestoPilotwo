@@ -315,8 +315,20 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       </ScrollArea>
 
       <div className="p-4 border-t">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 relative">
-          <div className="absolute right-0 top-0 bottom-2 w-6 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"></div>
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Suggested questions</span>
+          <span className="text-xs text-muted-foreground md:hidden">Swipe →</span>
+        </div>
+        <div 
+          className="flex gap-2 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'hsl(var(--primary) / 0.3) transparent',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          <div className="absolute left-0 top-0 bottom-2 w-6 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"></div>
+          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none z-10"></div>
           {suggestedQuestions.map((q, i) => (
             <Button
               key={i}
@@ -326,7 +338,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
                 setMessage(q);
                 handleSendMessage({preventDefault: () => {}} as any); // Trigger send
               }}
-              className="text-xs h-8 px-3 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0"
+              className="text-xs h-8 px-3 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 snap-start"
             >
               {q}
             </Button>

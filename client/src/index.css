@@ -390,6 +390,25 @@
     display: none;  /* Chrome, Safari and Opera */
   }
 
+  /* Smooth horizontal scrolling for touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    .overflow-x-auto {
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      overscroll-behavior-x: contain;
+    }
+
+    /* Make snap scrolling smoother on mobile */
+    .snap-x {
+      scroll-snap-type: x proximity;
+      scroll-padding-inline: 1rem;
+    }
+
+    .snap-start {
+      scroll-snap-align: start;
+    }
+  }
+
   /* Placeholder styling for contentEditable div */
   [contenteditable][data-placeholder]:empty::before {
     content: attr(data-placeholder);
