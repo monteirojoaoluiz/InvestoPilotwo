@@ -24,6 +24,27 @@ const groqClient = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
 });
 
+// Simple in-memory cache for Yahoo Finance data
+const yahooCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+async function getCachedYahooData(ticker: string, period1: Date, period2: Date, interval: string) {
+  const cacheKey = `${ticker}-${period1.getTime()}-${period2.getTime()}-${interval}`;
+  const cached = yahooCache.get(cacheKey);
+  
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    console.log(`Using cached data for ${ticker}`);
+    return cached.data;
+  }
+  
+  return null;
+}
+
+function setCachedYahooData(ticker: string, period1: Date, period2: Date, interval: string, data: any) {
+  const cacheKey = `${ticker}-${period1.getTime()}-${period2.getTime()}-${interval}`;
+  yahooCache.set(cacheKey, { data, timestamp: Date.now() });
+}
+
 // Setup session (moved from replitAuth)
 const getSession = () => {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -873,6 +894,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ points: [] });
       }
 
+      // Sort by weight (highest first) to prioritize most important tickers
+      tickers.sort((a, b) => b.weight - a.weight);
+      
+      // Limit to top 3 tickers to reduce rate limiting issues
+      if (tickers.length > 3) {
+        console.log(`Limiting to top 3 tickers by weight to avoid rate limiting: ${tickers.slice(0, 3).map(t => t.ticker).join(', ')}`);
+        tickers = tickers.slice(0, 3);
+        
+        // Renormalize weights
+        const newTotalWeight = tickers.reduce((sum, t) => sum + t.weight, 0);
+        if (newTotalWeight > 0) {
+          tickers = tickers.map((t) => ({ ...t, weight: t.weight / newTotalWeight }));
+        }
+      }
+
       // Yahoo requires UTC dates; set to midnight UTC for stability
       const now = new Date();
       const period2 = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -880,59 +916,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       threeYearsAgo.setUTCFullYear(threeYearsAgo.getUTCFullYear() - 3);
       const period1 = threeYearsAgo;
 
-      const charts = await Promise.all(
-        tickers.map(async (t) => {
-          try {
-            const chart: any = await yahooFinance.chart(t.ticker, { period1, period2, interval: '1d' } as any);
-
-            let points: Array<{ date: string; price: number }> = [];
-
-            // Case 1: quotes array with Date objects
-            if (Array.isArray(chart?.quotes) && chart.quotes.length > 0 && chart.quotes[0]?.date) {
-              points = chart.quotes
-                .map((q: any) => ({
-                  date: q.date instanceof Date ? q.date.toISOString().slice(0, 10) : q.date,
-                  price: typeof q.adjclose === 'number' ? q.adjclose : q.close,
-                }))
-                .filter((p: any) => typeof p.price === 'number');
-            } else if (Array.isArray(chart?.timestamp) && chart?.indicators) {
-              // Case 2: timestamp + indicators.quote/adjclose arrays
-              const ts: number[] = chart.timestamp;
-              const quote = Array.isArray(chart.indicators?.quote) ? chart.indicators.quote[0] : undefined;
-              const adj = Array.isArray(chart.indicators?.adjclose) ? chart.indicators.adjclose[0] : undefined;
-
-              points = ts.map((tSec: number, i: number) => {
-                const close = Array.isArray(quote?.close) ? quote.close[i] : undefined;
-                const adjClose = Array.isArray(adj?.adjclose) ? adj.adjclose[i] : undefined;
-                const price = typeof adjClose === 'number' ? adjClose : close;
-                return {
-                  date: new Date(tSec * 1000).toISOString().slice(0, 10),
-                  price,
-                };
-              }).filter((p: any) => typeof p.price === 'number');
+      // Sequential requests with delays to avoid rate limiting
+      const charts = [];
+      for (let i = 0; i < tickers.length; i++) {
+        const t = tickers[i];
+        
+        try {
+          // Check cache first
+          const cachedData = await getCachedYahooData(t.ticker, period1, period2, '1d');
+          let chart: any;
+          
+          if (cachedData) {
+            chart = cachedData;
+          } else {
+            // Add delay between requests to avoid rate limiting
+            if (i > 0) {
+              await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
             }
 
-            // Ensure ascending by date
-            points.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-
-            return { ticker: t.ticker, weight: t.weight, points };
-          } catch (error: any) {
-            console.error(`Error fetching chart data for ${t.ticker}:`, error.message);
-
-            // Handle rate limiting or other Yahoo Finance errors
-            if (error.message?.includes('Too Many Requests') ||
-                error.message?.includes('429') ||
-                error.message?.includes('rate limit')) {
-              console.warn(`Rate limit hit for ${t.ticker}, skipping this ticker`);
-              return { ticker: t.ticker, weight: t.weight, points: [] };
-            }
-
-            // For other errors, return empty points
-            console.warn(`Failed to fetch data for ${t.ticker}, using empty data`);
-            return { ticker: t.ticker, weight: t.weight, points: [] };
+            console.log(`Fetching data for ${t.ticker} (${i + 1}/${tickers.length})`);
+            chart = await yahooFinance.chart(t.ticker, { period1, period2, interval: '1d' } as any);
+            
+            // Cache the successful result
+            setCachedYahooData(t.ticker, period1, period2, '1d', chart);
           }
-        })
-      );
+
+          let points: Array<{ date: string; price: number }> = [];
+
+          // Case 1: quotes array with Date objects
+          if (Array.isArray(chart?.quotes) && chart.quotes.length > 0 && chart.quotes[0]?.date) {
+            points = chart.quotes
+              .map((q: any) => ({
+                date: q.date instanceof Date ? q.date.toISOString().slice(0, 10) : q.date,
+                price: typeof q.adjclose === 'number' ? q.adjclose : q.close,
+              }))
+              .filter((p: any) => typeof p.price === 'number');
+          } else if (Array.isArray(chart?.timestamp) && chart?.indicators) {
+            // Case 2: timestamp + indicators.quote/adjclose arrays
+            const ts: number[] = chart.timestamp;
+            const quote = Array.isArray(chart.indicators?.quote) ? chart.indicators.quote[0] : undefined;
+            const adj = Array.isArray(chart.indicators?.adjclose) ? chart.indicators.adjclose[0] : undefined;
+
+            points = ts.map((tSec: number, i: number) => {
+              const close = Array.isArray(quote?.close) ? quote.close[i] : undefined;
+              const adjClose = Array.isArray(adj?.adjclose) ? adj.adjclose[i] : undefined;
+              const price = typeof adjClose === 'number' ? adjClose : close;
+              return {
+                date: new Date(tSec * 1000).toISOString().slice(0, 10),
+                price,
+              };
+            }).filter((p: any) => typeof p.price === 'number');
+          }
+
+          // Ensure ascending by date
+          points.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+          console.log(`Successfully fetched ${points.length} data points for ${t.ticker}`);
+          charts.push({ ticker: t.ticker, weight: t.weight, points });
+        } catch (error: any) {
+          console.error(`Error fetching chart data for ${t.ticker}:`, error.message);
+
+          // Handle rate limiting or other Yahoo Finance errors
+          if (error.message?.includes('Too Many Requests') ||
+              error.message?.includes('429') ||
+              error.message?.includes('rate limit') ||
+              error.message?.includes('Unexpected token')) {
+            console.warn(`Rate limit hit for ${t.ticker}, skipping this ticker`);
+            charts.push({ ticker: t.ticker, weight: t.weight, points: [] });
+            
+            // If we hit rate limit, add extra delay before next request
+            if (i < tickers.length - 1) {
+              console.log('Adding extra delay due to rate limiting...');
+              await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+            }
+            continue;
+          }
+
+          // For other errors, return empty points
+          console.warn(`Failed to fetch data for ${t.ticker}, using empty data`);
+          charts.push({ ticker: t.ticker, weight: t.weight, points: [] });
+        }
+      }
 
       // Check if we have any valid data
       const chartsWithData = charts.filter(c => c.points.length > 0);
@@ -943,6 +1007,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           warning: 'Market data temporarily unavailable due to service limits. Performance chart will update when data becomes available.'
         });
       }
+
+      // If we have some data but not all, log the success rate
+      const successRate = (chartsWithData.length / charts.length) * 100;
+      console.log(`Successfully fetched data for ${chartsWithData.length}/${charts.length} tickers (${successRate.toFixed(1)}% success rate)`);
 
       // Determine a common start date where all series have data
       const firstDates = charts.map((c) => c.points[0]?.date).filter(Boolean) as string[];

@@ -247,6 +247,18 @@
   - Updated frontend to display warning messages in performance chart
   - Prevents 500 errors when Yahoo Finance hits rate limits
 
+- [x] **Yahoo Finance rate limiting optimization**
+  - Issue: Concurrent requests to Yahoo Finance API causing immediate rate limiting
+  - Root cause: Promise.all() making multiple simultaneous requests triggers rate limits
+  - Solutions implemented:
+    - Changed from concurrent to sequential requests with 1-second delays
+    - Added 5-minute in-memory cache to reduce API calls
+    - Limited to top 3 tickers by weight to reduce request volume
+    - Added extra 2-second delay when rate limit is hit
+    - Added success rate logging for monitoring
+    - Prioritizes most important tickers (highest percentage allocations)
+  - Result: Significantly reduced rate limiting, better data availability
+
 #### Mobile Width Not Respected
 - [x] **Critical mobile viewport width fix**
   - Issue: Website rendering at desktop width on mobile devices, ignoring viewport constraints
