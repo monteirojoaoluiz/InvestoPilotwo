@@ -333,10 +333,10 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
   }, [currentQuestion, handleNext, handleRadioChange, isStepComplete, mutation.isPending]);
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Investor Profile</h1>
+    <div className="max-w-2xl mx-auto p-4 sm:p-6">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold">Investor Profile</h1>
           <span className="text-sm text-muted-foreground">
             Step {currentStep + 1} of {totalSteps}
           </span>
@@ -346,24 +346,25 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{currentQuestion.title}</CardTitle>
-          <CardDescription>{currentQuestion.description}</CardDescription>
+          <CardTitle className="text-lg sm:text-xl">{currentQuestion.title}</CardTitle>
+          <CardDescription className="text-sm sm:text-base">{currentQuestion.description}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           <RadioGroup value={answers[currentQuestion.id]} onValueChange={handleRadioChange}>
             {currentQuestion.options.map((option, index) => {
               const shortcut = OPTION_SHORTCUTS[index];
 
               return (
-                <div key={option.value} className="flex items-center space-x-3 md:space-x-4 p-2 md:p-3 hover:bg-muted/50 touch-manipulation">
+                <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 hover:bg-muted/50 touch-manipulation rounded-lg">
                   <RadioGroupItem
                     value={option.value}
                     id={option.value}
                     data-testid={`radio-${option.value}`}
+                    className="mt-1"
                   />
-                  <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed">
+                  <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base">
                     {shortcut && (
-                      <span className="mr-2 text-sm font-medium text-muted-foreground">
+                      <span className="mr-2 text-xs sm:text-sm font-medium text-muted-foreground">
                         ({shortcut})
                       </span>
                     )}
@@ -374,13 +375,13 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
             })}
           </RadioGroup>
 
-          <div className="flex justify-between pt-6 gap-3">
+          <div className="flex flex-col sm:flex-row justify-between pt-4 sm:pt-6 gap-3">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 0}
               size="lg"
-              className="flex-1 min-h-[44px] touch-manipulation"
+              className="flex-1 min-h-[48px] touch-manipulation order-2 sm:order-1"
               data-testid="button-previous"
             >
               <ChevronLeft className="w-5 h-5 mr-2" />
@@ -391,7 +392,7 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
               onClick={handleNext}
               disabled={!isStepComplete || mutation.isPending}
               size="lg"
-              className="flex-1 min-h-[44px] touch-manipulation"
+              className="flex-1 min-h-[48px] touch-manipulation order-1 sm:order-2"
               data-testid="button-next"
             >
                 {mutation.isPending ? "Saving..." : currentStep === totalSteps - 1 ? "Complete Profile" : "Next"}

@@ -248,8 +248,8 @@ function Dashboard() {
   });
 
   return (
-    <div className="p-4 sm:p-6 max-w-full overflow-hidden">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">InvestoPilot Dashboard</h1>
+    <div className="p-4 sm:p-6 max-w-full overflow-x-hidden">
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">InvestoPilot Dashboard</h1>
       {hasAssessmentButNoPortfolio && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-800 mb-2">Your investor profile is complete, but no portfolio has been generated yet.</p>
@@ -261,7 +261,7 @@ function Dashboard() {
           </Button>
         </div>
       )}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-full">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -531,44 +531,46 @@ function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={combined?.points || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey={'date'}
-                    tickFormatter={(dateStr) => {
-                      try {
-                        if (!dateStr) return '';
-                        const date = new Date(dateStr);
-                        if (isNaN(date.getTime())) return '';
-                        return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(-2)}`;
-                      } catch {
-                        return '';
-                      }
-                    }}
-                    interval="preserveStartEnd"
-                    minTickGap={50}
-                  />
-                  <YAxis domain={['auto', 'auto']} />
-                  <Tooltip
-                    labelFormatter={(dateStr) => {
-                      try {
-                        if (!dateStr) return '';
-                        const date = new Date(dateStr);
-                        if (isNaN(date.getTime())) return '';
-                        return date.toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        });
-                      } catch {
-                        return '';
-                      }
-                    }}
-                  />
-                  <Line type="monotone" dataKey={'value'} stroke="#8884d8" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="w-full overflow-x-auto">
+                <ResponsiveContainer width="100%" height={300} minWidth={300}>
+                  <LineChart data={combined?.points || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey={'date'}
+                      tickFormatter={(dateStr) => {
+                        try {
+                          if (!dateStr) return '';
+                          const date = new Date(dateStr);
+                          if (isNaN(date.getTime())) return '';
+                          return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(-2)}`;
+                        } catch {
+                          return '';
+                        }
+                      }}
+                      interval="preserveStartEnd"
+                      minTickGap={50}
+                    />
+                    <YAxis domain={['auto', 'auto']} />
+                    <Tooltip
+                      labelFormatter={(dateStr) => {
+                        try {
+                          if (!dateStr) return '';
+                          const date = new Date(dateStr);
+                          if (isNaN(date.getTime())) return '';
+                          return date.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          });
+                        } catch {
+                          return '';
+                        }
+                      }}
+                    />
+                    <Line type="monotone" dataKey={'value'} stroke="#8884d8" dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
 
