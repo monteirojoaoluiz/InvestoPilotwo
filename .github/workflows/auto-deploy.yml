@@ -1,0 +1,17 @@
+name: Auto-Deploy on Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Deploy Hook
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -d '{"ref": "main"}' \
+          ${{ secrets.RENDER_DEPLOY_HOOK }}
