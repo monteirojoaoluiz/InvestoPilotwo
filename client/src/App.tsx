@@ -1076,7 +1076,7 @@ function AuthenticatedRouter() {
       try {
         if (typeof window === 'undefined') return;
         const width = window.innerWidth;
-        setIsCompactSidebar(width >= 768 && width < 1024);
+        setIsCompactSidebar(width < 1024); // Close sidebar on mobile and tablet
       } catch (error) {
         console.error('Error updating compact sidebar state:', error);
       }
