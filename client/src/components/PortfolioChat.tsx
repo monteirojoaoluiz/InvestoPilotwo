@@ -8,7 +8,6 @@ import { Send, Bot, User, Plus } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
@@ -34,7 +33,6 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   const [portfolioId, setPortfolioId] = useState<string | null>(null);
   // Must be declared before any early returns to keep hook order stable
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
-  const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch portfolio on mount
   const { data: portfolioData } = useQuery({
@@ -76,10 +74,6 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
     enabled: !!portfolioId,
   });
 
-  // Auto-scroll to bottom when messages update or when loading bubble shows
-  useEffect(() => {
-    scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, [messagesData.length, optimisticMessages.length, isLoading]);
 
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
@@ -317,9 +311,27 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
               </div>
             </div>
           )}
-          <div ref={scrollAnchorRef} />
         </div>
       </ScrollArea>
+
+      <div className="p-4 border-t">
+        <div className="flex flex-wrap gap-2">
+          {suggestedQuestions.map((q, i) => (
+            <Button
+              key={i}
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setMessage(q);
+                handleSendMessage({preventDefault: () => {}} as any); // Trigger send
+              }}
+              className="text-xs h-8 px-3 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+            >
+              {q}
+            </Button>
+          ))}
+        </div>
+      </div>
 
       <form onSubmit={handleSendMessage} className="p-4 border-t">
         <div className="flex gap-2">
@@ -340,26 +352,6 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
           </Button>
         </div>
       </form>
-
-      <div className="p-4 border-t">
-        <p className="text-xs text-muted-foreground mb-2">Suggested:</p>
-        <div className="flex flex-wrap gap-2">
-          {suggestedQuestions.map((q, i) => (
-            <Button
-              key={i}
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setMessage(q);
-                handleSendMessage({preventDefault: () => {}} as any); // Trigger send
-              }}
-              className="text-xs h-8 px-2"
-            >
-              {q}
-            </Button>
-          ))}
-        </div>
-      </div>
     </Card>
   );
 }

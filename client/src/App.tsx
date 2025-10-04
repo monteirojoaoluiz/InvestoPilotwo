@@ -5,7 +5,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button"; // Add Button import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +44,51 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ResetPassword from "./pages/reset-password";
 
 function Dashboard() {
+  const [location] = useLocation();
+
+  // Force scroll to top and prevent any scrolling behavior
+  useEffect(() => {
+    // Disable scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    // Multiple scroll attempts with increasing delays
+    const scrollToTop = () => window.scrollTo(0, 0);
+
+    scrollToTop(); // Immediate
+
+    const timeouts = [
+      setTimeout(scrollToTop, 0),
+      setTimeout(scrollToTop, 50),
+      setTimeout(scrollToTop, 100),
+      setTimeout(scrollToTop, 200),
+      setTimeout(scrollToTop, 500),
+    ];
+
+    // Keep scrolling to top for a short period to override any late scroll attempts
+    const interval = setInterval(scrollToTop, 100);
+
+    // Clean up after 1 second
+    const cleanup = setTimeout(() => {
+      clearInterval(interval);
+      // Re-enable scroll restoration
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'auto';
+      }
+    }, 1000);
+
+    return () => {
+      timeouts.forEach(clearTimeout);
+      clearInterval(interval);
+      clearTimeout(cleanup);
+      // Re-enable scroll restoration
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'auto';
+      }
+    };
+  }, [location]);
+
   const { data: portfolioData, refetch: refetchPortfolio } = useQuery({
     queryKey: ['portfolio'],
     queryFn: async () => {
@@ -1069,7 +1114,12 @@ function AuthenticatedRouter() {
         <AppSidebar />
         <div className="flex flex-col flex-1">
           <header className="flex items-center justify-between p-4 border-b">
-            <SidebarTrigger data-testid="button-sidebar-toggle" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">IP</span>
+              </div>
+              <span className="font-semibold text-lg">InvestoPilot</span>
+            </div>
             <ThemeToggle />
           </header>
           <main className="flex-1 overflow-auto">

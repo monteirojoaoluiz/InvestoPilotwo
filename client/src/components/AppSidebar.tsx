@@ -1,13 +1,15 @@
-import { Home, FileText, BarChart3, Settings, User, Lock } from "lucide-react";
+import { Home, FileText, BarChart3, Settings, User, Lock, PanelLeftIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
@@ -43,7 +45,7 @@ const accountItems = [
 // Remove onItemClick and activeItem props
 export default function AppSidebar() {
   const [location] = useLocation();
-  const { setOpen } = useSidebar();
+  const { setOpen, toggleSidebar } = useSidebar();
 
   const { data: assessment } = useQuery({
     queryKey: ['assessment'],
@@ -61,9 +63,14 @@ export default function AppSidebar() {
       <Sidebar collapsible="icon">
         <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Portfolio Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={toggleSidebar}>
+                  <PanelLeftIcon className="h-4 w-4" />
+                  <span className="group-data-[collapsible=icon]:hidden">Hide Menu</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {menuItems.map((item) => {
                 const isDashboard = item.url === '/dashboard';
                 const isDisabled = isDashboard && !hasAssessment;
