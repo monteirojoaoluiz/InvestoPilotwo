@@ -1113,7 +1113,7 @@ function AuthenticatedRouter() {
         {/* Update AppSidebar call - remove props */}
         <AppSidebar />
         <div className="flex flex-col flex-1">
-          <header className="flex items-center justify-between p-4 border-b">
+          <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="md:hidden mr-2" />
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">

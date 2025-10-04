@@ -315,7 +315,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       </ScrollArea>
 
       <div className="p-4 border-t">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
           {suggestedQuestions.map((q, i) => (
             <Button
               key={i}
@@ -325,7 +325,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
                 setMessage(q);
                 handleSendMessage({preventDefault: () => {}} as any); // Trigger send
               }}
-              className="text-xs h-8 px-3 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+              className="text-xs h-8 px-3 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0"
             >
               {q}
             </Button>

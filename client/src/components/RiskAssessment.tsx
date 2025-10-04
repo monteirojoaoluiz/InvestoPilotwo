@@ -355,14 +355,13 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
               const shortcut = OPTION_SHORTCUTS[index];
 
               return (
-                <div key={option.value} className="flex items-start space-x-4 p-3 rounded-lg hover:bg-muted/50 touch-manipulation">
+                <div key={option.value} className="flex items-center space-x-3 md:space-x-4 p-2 md:p-3 hover:bg-muted/50 touch-manipulation">
                   <RadioGroupItem
                     value={option.value}
                     id={option.value}
-                    className="mt-1"
                     data-testid={`radio-${option.value}`}
                   />
-                  <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed py-1">
+                  <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed">
                     {shortcut && (
                       <span className="mr-2 text-sm font-medium text-muted-foreground">
                         ({shortcut})
