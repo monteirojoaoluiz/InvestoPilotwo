@@ -328,14 +328,19 @@
   - Fix: Use `max-w-[85%] sm:max-w-[80%]` for better mobile readability
 
 - [x] **Suggested questions overflow and scrolling**
-  - Suggested questions container has horizontal scroll but not obvious on mobile
-  - Added "Swipe →" hint visible only on mobile to indicate scrollability
-  - Added gradient fade indicators on both left and right edges
-  - Implemented snap-scroll behavior for smooth question navigation
-  - Added thin scrollbar with primary color on mobile
-  - Enhanced touch scrolling with `-webkit-overflow-scrolling: touch`
-  - Added `overscroll-behavior-x: contain` to prevent page scroll
-  - Made scrolling intuitive and smooth on touch devices
+  - Issue: Horizontal scrolling for suggested questions not working on mobile
+  - Root cause: Missing CSS for mobile touch scrolling and snap behavior
+  - Solutions implemented:
+    - Added mobile-specific CSS with `@media (hover: none) and (pointer: coarse)`
+    - Enhanced touch scrolling with `-webkit-overflow-scrolling: touch`
+    - Implemented snap-scroll behavior with `scroll-snap-type: x proximity`
+    - Added "Swipe →" hint visible only on mobile to indicate scrollability
+    - Added gradient fade indicators on both left and right edges
+    - Increased number of suggested questions from 5 to 8 for better scrolling
+    - Added extra spacing at the end for smooth scroll completion
+    - Enhanced button styling with better touch targets and visual feedback
+    - Added `overscroll-behavior-x: contain` to prevent page scroll interference
+  - Result: Smooth, intuitive horizontal scrolling on mobile devices
 
 - [x] **Chat input area mobile optimization**
   - Send button and input need better mobile spacing

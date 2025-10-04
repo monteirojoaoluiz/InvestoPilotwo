@@ -110,11 +110,24 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
         return ['What should I invest in as a beginner?'];
       }
 
-      const questions = ['Explain my current allocation'];
+      const questions = [
+        'Explain my current allocation',
+        'What if the market drops 20%?',
+        'How can I reduce risk?',
+        'Should I rebalance?',
+        'What about ESG investing?',
+        'How much should I invest monthly?',
+        'When should I retire?',
+        'What about international stocks?',
+        'How to handle market volatility?',
+        'What are the tax implications?'
+      ];
+      
       const bondPct = portfolio.allocations.reduce((sum: number, a: any) => sum + (a?.assetType === 'Bonds' ? (a?.percentage || 0) : 0), 0);
       const stockPct = portfolio.allocations.reduce((sum: number, a: any) => sum + ((a?.assetType?.includes('Equity')) ? (a?.percentage || 0) : 0), 0);
       const esg = portfolio.allocations.some((a: any) => a?.name?.includes('ESG'));
 
+      // Add personalized questions based on portfolio
       if (bondPct > 50) {
         questions.push('Why is my portfolio so conservative?');
       }
@@ -126,9 +139,8 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       } else {
         questions.push('Should I consider ESG investments?');
       }
-      questions.push('What if the market drops 20%?');
 
-      return questions.slice(0, 5); // Limit to 5
+      return questions.slice(0, 8); // Show more questions for better scrolling
     } catch (error) {
       console.error('Error generating suggested questions:', error);
       return ['What should I invest in as a beginner?'];
@@ -320,15 +332,19 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
           <span className="text-xs text-muted-foreground md:hidden">Swipe →</span>
         </div>
         <div 
-          className="flex gap-2 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x"
+          className="flex gap-3 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: 'hsl(var(--primary) / 0.3) transparent',
-            WebkitOverflowScrolling: 'touch'
+            WebkitOverflowScrolling: 'touch',
+            scrollBehavior: 'smooth'
           }}
         >
-          <div className="absolute left-0 top-0 bottom-2 w-6 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"></div>
-          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none z-10"></div>
+          {/* Left gradient fade */}
+          <div className="absolute left-0 top-0 bottom-2 w-8 bg-gradient-to-r from-background via-background/90 to-transparent pointer-events-none z-10"></div>
+          {/* Right gradient fade */}
+          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background via-background/90 to-transparent pointer-events-none z-10"></div>
+          
           {suggestedQuestions.map((q, i) => (
             <Button
               key={i}
@@ -338,11 +354,14 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
                 setMessage(q);
                 handleSendMessage({preventDefault: () => {}} as any); // Trigger send
               }}
-              className="text-xs h-8 px-3 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 snap-start"
+              className="text-xs h-9 px-4 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 snap-start min-w-fit"
             >
               {q}
             </Button>
           ))}
+          
+          {/* Add some extra spacing at the end to ensure smooth scrolling */}
+          <div className="w-4 flex-shrink-0"></div>
         </div>
       </div>
 

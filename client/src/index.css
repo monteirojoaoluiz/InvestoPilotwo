@@ -493,3 +493,21 @@
     inset: -1px;
   }
 }
+
+/* Mobile scrolling enhancements for suggested questions */
+@media (hover: none) and (pointer: coarse) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+  }
+  
+  .snap-x {
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 1rem;
+  }
+  
+  .snap-start {
+    scroll-snap-align: start;
+  }
+}
