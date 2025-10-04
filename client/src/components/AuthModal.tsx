@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, LogIn } from "lucide-react";
+import { UserPlus, LogIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ForgotPasswordModal from "./ForgotPasswordModal";
 
@@ -211,13 +211,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full min-h-[44px] touch-manipulation"
                 disabled={isLoading}
                 data-testid="button-login"
               >
                 {isLoading ? (
                   <>
-                    <LogIn className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Signing in...
                   </>
                 ) : (
@@ -277,13 +277,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full min-h-[44px] touch-manipulation"
                 disabled={isLoading}
                 data-testid="button-register"
               >
                 {isLoading ? (
                   <>
-                    <UserPlus className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating account...
                   </>
                 ) : (

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, XCircle, Key } from "lucide-react";
+import { CheckCircle, XCircle, Key, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ResetPassword() {
@@ -191,7 +191,7 @@ export default function ResetPassword() {
             >
               {isLoading ? (
                 <>
-                  <Key className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Resetting Password...
                 </>
               ) : (

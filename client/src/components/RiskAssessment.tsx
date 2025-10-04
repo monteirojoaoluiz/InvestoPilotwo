@@ -355,13 +355,14 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
               const shortcut = OPTION_SHORTCUTS[index];
 
               return (
-                <div key={option.value} className="flex items-start space-x-3">
+                <div key={option.value} className="flex items-start space-x-4 p-3 rounded-lg hover:bg-muted/50 touch-manipulation">
                   <RadioGroupItem
                     value={option.value}
                     id={option.value}
+                    className="mt-1"
                     data-testid={`radio-${option.value}`}
                   />
-                  <Label htmlFor={option.value} className="flex-1 cursor-pointer">
+                  <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed py-1">
                     {shortcut && (
                       <span className="mr-2 text-sm font-medium text-muted-foreground">
                         ({shortcut})
@@ -374,24 +375,28 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
             })}
           </RadioGroup>
 
-          <div className="flex justify-between pt-6">
+          <div className="flex justify-between pt-6 gap-3">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 0}
+              size="lg"
+              className="flex-1 min-h-[44px] touch-manipulation"
               data-testid="button-previous"
             >
-              <ChevronLeft className="w-4 h-4 mr-2" />
+              <ChevronLeft className="w-5 h-5 mr-2" />
               Previous
             </Button>
 
             <Button
               onClick={handleNext}
               disabled={!isStepComplete || mutation.isPending}
+              size="lg"
+              className="flex-1 min-h-[44px] touch-manipulation"
               data-testid="button-next"
             >
                 {mutation.isPending ? "Saving..." : currentStep === totalSteps - 1 ? "Complete Profile" : "Next"}
-              {currentStep < totalSteps - 1 && !mutation.isPending && <ChevronRight className="w-4 h-4 ml-2" />}
+              {currentStep < totalSteps - 1 && !mutation.isPending && <ChevronRight className="w-5 h-5 ml-2" />}
             </Button>
           </div>
         </CardContent>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mail } from "lucide-react";
+import { Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ForgotPasswordModalProps {
@@ -96,7 +96,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               >
                 {isLoading ? (
                   <>
-                    <Mail className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Sending...
                   </>
                 ) : (

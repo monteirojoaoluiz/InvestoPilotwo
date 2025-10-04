@@ -248,6 +248,53 @@
     @apply hidden;
   }
 
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    /* Prevent zoom on input focus for iOS */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+
+    /* Improve touch targets */
+    button,
+    [role="button"],
+    input,
+    select,
+    textarea {
+      min-height: 44px;
+    }
+
+    /* Better spacing for mobile */
+    .space-y-4 > * + * {
+      margin-top: 1rem;
+    }
+
+    /* Improve readability on mobile */
+    body {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+  }
+
+  /* Touch feedback improvements */
+  @media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects on touch devices */
+    .hover\:bg-muted:hover {
+      background-color: transparent;
+    }
+
+    /* Add active states for touch feedback */
+    button:active,
+    [role="button"]:active {
+      transform: scale(0.98);
+      transition: transform 0.1s ease;
+    }
+  }
+
   /* Placeholder styling for contentEditable div */
   [contenteditable][data-placeholder]:empty::before {
     content: attr(data-placeholder);

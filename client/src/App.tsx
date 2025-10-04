@@ -248,8 +248,8 @@ function Dashboard() {
   });
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">InvestoPilot Dashboard</h1>
+    <div className="p-4 sm:p-6 max-w-full overflow-hidden">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">InvestoPilot Dashboard</h1>
       {hasAssessmentButNoPortfolio && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-800 mb-2">Your investor profile is complete, but no portfolio has been generated yet.</p>
@@ -261,7 +261,7 @@ function Dashboard() {
           </Button>
         </div>
       )}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -332,8 +332,8 @@ function Dashboard() {
             {portfolioData ? (
               <div className="flex flex-col items-center gap-6">
                 {/* Donut Chart */}
-                <div className="flex-shrink-0">
-                  <ResponsiveContainer width={200} height={200}>
+                <div className="flex-shrink-0 w-full max-w-[200px] mx-auto">
+                  <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
                       <Pie
                         data={(portfolioData.allocations || [])?.map((a: any) => ({
@@ -476,7 +476,7 @@ function Dashboard() {
         )}
       </div>
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedTicker} Details</DialogTitle>
           </DialogHeader>

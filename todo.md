@@ -106,22 +106,67 @@
   - Test on iOS and Android devices
 
 ### Mobile Optimization
-- [ ] **Touch Gestures**
-  - Add swipe to navigate between dashboard sections
-  - Add touch-friendly button sizes (min 44x44px)
-  - Optimize tap targets spacing
+- [x] **Critical Mobile UX Fixes**
+  - [x] Fix sidebar visibility on mobile (hamburger menu implemented)
+  - [x] Resolve dashboard layout overflow issues (responsive padding and grid)
+  - [x] Fix chart responsiveness (pie charts now scale properly)
+  - [x] Improve form input usability (44px touch targets, better spacing)
 
-- [ ] **Mobile-Specific Features**
-  - Bottom sheet for mobile modals instead of center dialog
-  - Implement native-like navigation transitions
-  - Add haptic feedback for important actions (if supported)
-  - Optimize chart touch interactions
+- [x] **Touch & Interaction Improvements**
+  - [x] Increase minimum touch target sizes to 44px (buttons, inputs, radio buttons)
+  - [x] Add proper spacing between interactive elements (min 8px gaps)
+  - [x] Implement touch-friendly radio button design (larger circles, better visual feedback)
+  - [x] Add visual feedback for touch interactions (active states, touch-manipulation)
+  - [x] Optimize keyboard appearance on mobile (16px font-size to prevent zoom)
 
-- [ ] **Responsive Charts**
-  - Improve chart readability on small screens
-  - Add pinch-to-zoom for line charts
-  - Implement horizontal scrolling for dense data
-  - Show abbreviated labels on mobile
+- [x] **Navigation & Layout**
+  - [x] Add mobile hamburger menu with slide-out sidebar
+  - [x] Fix dashboard grid layout for mobile (single column, proper spacing)
+  - [x] Optimize card layouts for mobile (responsive padding and spacing)
+  - [ ] Implement bottom navigation for primary actions (optional)
+  - [ ] Add swipe gestures for navigation between dashboard sections
+
+- [x] **Form-Specific Mobile Enhancements**
+  - [x] Improve Risk Assessment form mobile experience
+    - [x] Larger radio buttons with better spacing and touch targets
+    - [x] Progress indicator that's visible on mobile
+    - [x] Better question text wrapping and readability
+    - [x] Touch-friendly navigation buttons (44px height, full-width)
+  - [x] Optimize Auth Modal for mobile
+    - [x] Larger input fields and buttons (44px minimum height)
+    - [x] Better keyboard handling (16px font-size)
+    - [x] Clear visual hierarchy
+  - [x] Enhance Portfolio Chat mobile UX
+    - [x] Larger input area and send button (44px height)
+    - [x] Better message bubble design for mobile
+    - [x] Optimized suggested questions layout
+
+- [x] **Chart & Data Visualization**
+  - [x] Make all charts fully responsive (pie chart now scales properly)
+  - [x] Optimize chart labels and legends for small screens (responsive containers)
+  - [ ] Implement touch-friendly chart interactions
+  - [ ] Add horizontal scrolling for wide data tables
+  - [ ] Consider alternative chart types for mobile (simpler visualizations)
+
+- [x] **Modal & Dialog Improvements**
+  - [x] Ensure all dialogs fit within viewport (95vw width, 90vh height, scrollable)
+  - [x] Optimize ETF detail modal for mobile viewing
+  - [ ] Implement bottom sheet modals for mobile instead of centered dialogs
+  - [ ] Add swipe-to-dismiss functionality for modals
+
+- [ ] **Performance & Loading**
+  - [ ] Implement skeleton loaders for mobile (faster perceived performance)
+  - [ ] Optimize image loading and lazy loading for mobile networks
+  - [ ] Add pull-to-refresh functionality
+  - [ ] Ensure smooth animations and transitions on mobile devices
+
+- [x] **Accessibility & Testing**
+  - [x] Ensure proper viewport meta tags and responsive breakpoints
+  - [x] Add mobile-specific accessibility features (44px touch targets, proper spacing)
+  - [x] Prevent unwanted zoom on input focus (16px font-size)
+  - [x] Add touch feedback and interaction improvements
+  - [ ] Test all forms and interactions on actual mobile devices
+  - [ ] Test on various screen sizes and orientations
 
 ### Animations & Micro-interactions
 - [ ] **Page Transitions**
