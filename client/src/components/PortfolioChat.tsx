@@ -225,7 +225,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   };
 
   return (
-    <Card className="flex flex-col h-[600px]">
+    <Card className="flex flex-col h-[600px] w-full min-w-0 max-w-full">
       <div className="p-4 border-b">
         <div className="flex items-center justify-between">
           <div>

@@ -35,7 +35,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       {/* Hero Section */}
       <section
         className="relative min-h-[600px] flex items-center justify-center bg-cover bg-center bg-no-repeat"
@@ -50,8 +50,8 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
           loading="eager"
           decoding="async"
         />
-        <div className="container px-4 text-center text-white">
-          <h1 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
+        <div className="container px-4 text-center text-white w-full max-w-full">
+          <h1 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl break-words">
             AI-Powered
             <br />
             <span className="text-primary-foreground">Portfolio Advisor</span>

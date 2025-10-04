@@ -109,7 +109,7 @@ function Dashboard() {
 
   // Portfolio performance query for 3-year metrics
   const portfolioId = portfolioData?.id;
-  const { data: combined } = useQuery<{ points: { date: string; value: number }[] } | null>({
+  const { data: combined } = useQuery<{ points: { date: string; value: number }[]; warning?: string } | null>({
     queryKey: ['portfolio-performance', portfolioId || 'default'],
     queryFn: async () => {
       const res = await apiRequest('GET', `/api/portfolio/performance`);
@@ -123,7 +123,8 @@ function Dashboard() {
   const metrics = useMemo(() => {
     try {
       const pts = combined?.points || [];
-      if (!pts || pts.length < 2) return null;
+      // If we have a warning or no data, don't compute metrics
+      if (combined?.warning || !pts || pts.length < 2) return null;
 
       const firstVal = pts[0]?.value;
       const lastVal = pts[pts.length - 1]?.value;
@@ -248,8 +249,8 @@ function Dashboard() {
   });
 
   return (
-    <div className="p-4 sm:p-6 max-w-full overflow-x-hidden w-full">
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">InvestoPilot Dashboard</h1>
+    <div className="p-4 sm:p-6 w-full min-w-0 max-w-full overflow-x-hidden">
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 break-words">InvestoPilot Dashboard</h1>
       {hasAssessmentButNoPortfolio && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-800 mb-2">Your investor profile is complete, but no portfolio has been generated yet.</p>
@@ -261,7 +262,7 @@ function Dashboard() {
           </Button>
         </div>
       )}
-      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-full">
+      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-full min-w-0">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl lg:text-2xl">
@@ -528,6 +529,11 @@ function Dashboard() {
               <CardTitle>Portfolio Performance (3Y, Daily)</CardTitle>
               <CardDescription>
                 Normalized index (100 = start)
+                {combined?.warning && (
+                  <div className="mt-2 text-amber-600 dark:text-amber-400 text-sm">
+                    ⚠️ {combined.warning}
+                  </div>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -598,7 +604,7 @@ function Dashboard() {
 
 function Assessment() {
   const { toast } = useToast();
-  const [, navigate] = useLocation(); // Add useLocation
+  const [, navigate] = useLocation();
   
   const handleAssessmentComplete = async () => {
     try {
@@ -645,7 +651,7 @@ function Assessment() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 w-full min-w-0 max-w-full overflow-x-hidden">
       <RiskAssessment 
         onComplete={handleAssessmentComplete}
       />
@@ -850,9 +856,9 @@ function Assessment() {
     };
 
     return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">Account</h1>
-        <div className="max-w-2xl space-y-6">
+      <div className="p-6 w-full min-w-0 max-w-full overflow-x-hidden">
+        <h1 className="text-3xl font-bold mb-6 break-words">Account</h1>
+        <div className="max-w-2xl space-y-6 w-full">
           <Card>
             <CardHeader>
               <CardTitle>Account Information</CardTitle>
@@ -1118,23 +1124,23 @@ function AuthenticatedRouter() {
       open={isSidebarOpen}
       onOpenChange={handleSidebarOpenChange}
     >
-      <div className="flex h-screen w-full">
+      <div className="flex h-screen w-full max-w-full overflow-x-hidden">
         {/* Force sidebar to be hidden on mobile/tablet */}
         <div className={`${isCompactSidebar ? 'hidden' : ''}`}>
           <AppSidebar />
         </div>
-        <div className="flex flex-col flex-1">
-          <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2`} />
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+        <div className="flex flex-col flex-1 min-w-0 max-w-full overflow-x-hidden">
+          <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full max-w-full">
+            <div className="flex items-center gap-2 min-w-0">
+              <SidebarTrigger className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2 flex-shrink-0`} />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-primary-foreground font-bold text-sm">IP</span>
               </div>
-              <span className="font-semibold text-lg">InvestoPilot</span>
+              <span className="font-semibold text-lg truncate">InvestoPilot</span>
             </div>
             <ThemeToggle />
           </header>
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto w-full max-w-full">
             <ErrorBoundary>
               <Switch>
                 <Route path="/dashboard" component={Dashboard} />

@@ -236,6 +236,32 @@
 
 ## 🔍 Mobile Audit - Issues & Fixes Needed
 
+### **Critical Bug Fixes (Post-Launch)**
+
+#### Portfolio Performance API Rate Limiting
+- [x] **Yahoo Finance rate limiting crash fix**
+  - Added proper error handling for "Too Many Requests" responses from Yahoo Finance API
+  - Issue: API returns plain text instead of JSON when rate limited, causing JSON.parse() failures
+  - Fix: Wrapped yahooFinance.chart() calls in try-catch blocks, handle rate limit errors gracefully
+  - Added user-friendly warning message when market data is temporarily unavailable
+  - Updated frontend to display warning messages in performance chart
+  - Prevents 500 errors when Yahoo Finance hits rate limits
+
+#### Mobile Width Not Respected
+- [x] **Critical mobile viewport width fix**
+  - Issue: Website rendering at desktop width on mobile devices, ignoring viewport constraints
+  - Root cause: Missing width constraints on html, body, #root, and main containers
+  - Fixes implemented:
+    - Added `overflow-x: hidden`, `width: 100%`, `max-width: 100vw` to html, body, #root
+    - Updated AuthenticatedRouter layout with `min-w-0`, `max-w-full`, `overflow-x-hidden`
+    - Added width constraints to all Card components (Card, CardHeader, CardContent, CardTitle, CardDescription)
+    - Updated Dashboard, Assessment, Account page wrappers with proper width constraints
+    - Added mobile-specific CSS rules forcing all containers to respect 100vw max-width
+    - Added word-breaking and overflow-wrap to prevent text overflow
+    - Updated header to use `truncate` and flex-shrink-0 for proper mobile layout
+    - Added comprehensive mobile CSS with `!important` rules to enforce width constraints
+  - Result: Website now properly fits mobile screen width without horizontal scrolling
+
 ### Critical Mobile Issues (P0)
 
 #### Dashboard Layout & Width Problems

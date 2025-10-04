@@ -333,7 +333,7 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
   }, [currentQuestion, handleNext, handleRadioChange, isStepComplete, mutation.isPending]);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6">
+    <div className="max-w-2xl mx-auto p-4 sm:p-6 w-full min-w-0 overflow-x-hidden">
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
           <h1 className="text-xl sm:text-2xl font-bold">Investor Profile</h1>

@@ -882,41 +882,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const charts = await Promise.all(
         tickers.map(async (t) => {
-          const chart: any = await yahooFinance.chart(t.ticker, { period1, period2, interval: '1d' } as any);
+          try {
+            const chart: any = await yahooFinance.chart(t.ticker, { period1, period2, interval: '1d' } as any);
 
-          let points: Array<{ date: string; price: number }> = [];
+            let points: Array<{ date: string; price: number }> = [];
 
-          // Case 1: quotes array with Date objects
-          if (Array.isArray(chart?.quotes) && chart.quotes.length > 0 && chart.quotes[0]?.date) {
-            points = chart.quotes
-              .map((q: any) => ({
-                date: q.date instanceof Date ? q.date.toISOString().slice(0, 10) : q.date,
-                price: typeof q.adjclose === 'number' ? q.adjclose : q.close,
-              }))
-              .filter((p: any) => typeof p.price === 'number');
-          } else if (Array.isArray(chart?.timestamp) && chart?.indicators) {
-            // Case 2: timestamp + indicators.quote/adjclose arrays
-            const ts: number[] = chart.timestamp;
-            const quote = Array.isArray(chart.indicators?.quote) ? chart.indicators.quote[0] : undefined;
-            const adj = Array.isArray(chart.indicators?.adjclose) ? chart.indicators.adjclose[0] : undefined;
+            // Case 1: quotes array with Date objects
+            if (Array.isArray(chart?.quotes) && chart.quotes.length > 0 && chart.quotes[0]?.date) {
+              points = chart.quotes
+                .map((q: any) => ({
+                  date: q.date instanceof Date ? q.date.toISOString().slice(0, 10) : q.date,
+                  price: typeof q.adjclose === 'number' ? q.adjclose : q.close,
+                }))
+                .filter((p: any) => typeof p.price === 'number');
+            } else if (Array.isArray(chart?.timestamp) && chart?.indicators) {
+              // Case 2: timestamp + indicators.quote/adjclose arrays
+              const ts: number[] = chart.timestamp;
+              const quote = Array.isArray(chart.indicators?.quote) ? chart.indicators.quote[0] : undefined;
+              const adj = Array.isArray(chart.indicators?.adjclose) ? chart.indicators.adjclose[0] : undefined;
 
-            points = ts.map((tSec: number, i: number) => {
-              const close = Array.isArray(quote?.close) ? quote.close[i] : undefined;
-              const adjClose = Array.isArray(adj?.adjclose) ? adj.adjclose[i] : undefined;
-              const price = typeof adjClose === 'number' ? adjClose : close;
-              return {
-                date: new Date(tSec * 1000).toISOString().slice(0, 10),
-                price,
-              };
-            }).filter((p: any) => typeof p.price === 'number');
+              points = ts.map((tSec: number, i: number) => {
+                const close = Array.isArray(quote?.close) ? quote.close[i] : undefined;
+                const adjClose = Array.isArray(adj?.adjclose) ? adj.adjclose[i] : undefined;
+                const price = typeof adjClose === 'number' ? adjClose : close;
+                return {
+                  date: new Date(tSec * 1000).toISOString().slice(0, 10),
+                  price,
+                };
+              }).filter((p: any) => typeof p.price === 'number');
+            }
+
+            // Ensure ascending by date
+            points.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+            return { ticker: t.ticker, weight: t.weight, points };
+          } catch (error: any) {
+            console.error(`Error fetching chart data for ${t.ticker}:`, error.message);
+
+            // Handle rate limiting or other Yahoo Finance errors
+            if (error.message?.includes('Too Many Requests') ||
+                error.message?.includes('429') ||
+                error.message?.includes('rate limit')) {
+              console.warn(`Rate limit hit for ${t.ticker}, skipping this ticker`);
+              return { ticker: t.ticker, weight: t.weight, points: [] };
+            }
+
+            // For other errors, return empty points
+            console.warn(`Failed to fetch data for ${t.ticker}, using empty data`);
+            return { ticker: t.ticker, weight: t.weight, points: [] };
           }
-
-          // Ensure ascending by date
-          points.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-
-          return { ticker: t.ticker, weight: t.weight, points };
         })
       );
+
+      // Check if we have any valid data
+      const chartsWithData = charts.filter(c => c.points.length > 0);
+      if (chartsWithData.length === 0) {
+        console.warn('No valid chart data available for any tickers - likely due to rate limiting');
+        return res.json({
+          points: [],
+          warning: 'Market data temporarily unavailable due to service limits. Performance chart will update when data becomes available.'
+        });
+      }
 
       // Determine a common start date where all series have data
       const firstDates = charts.map((c) => c.points[0]?.date).filter(Boolean) as string[];
@@ -981,7 +1007,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ points });
     } catch (error) {
       console.error('Error computing portfolio performance:', error);
-      res.status(500).json({ message: 'Failed to compute performance' });
+      res.status(500).json({
+        message: 'Failed to compute portfolio performance. This may be due to temporary market data service limitations. Please try again later.',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   });
 
