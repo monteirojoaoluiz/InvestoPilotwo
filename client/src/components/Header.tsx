@@ -31,7 +31,7 @@ export default function Header({ onAuthClick, onMenuClick, showMenuButton = fals
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Button 
             variant="ghost" 
             onClick={onAuthClick}

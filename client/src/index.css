@@ -59,6 +59,7 @@
   --muted: 0 0% 96.08%;
 
   --muted-foreground: 0 0% 52.94%;
+  --muted-foreground-mobile: 0 0% 45%;
 
   --accent: 254.21 100% 92.55%;
 
@@ -177,6 +178,7 @@
   --muted: 0 0% 9.4118%;
 
   --muted-foreground: 210 3.3898% 46.2745%;
+  --muted-foreground-mobile: 210 5% 40%;
 
   --accent: 205.7143 70% 7.8431%;
 
@@ -250,6 +252,13 @@
 
   /* Mobile optimizations */
   @media (max-width: 768px) {
+    :root {
+      --muted-foreground: var(--muted-foreground-mobile);
+    }
+
+    .dark {
+      --muted-foreground: var(--muted-foreground-mobile);
+    }
     /* Prevent zoom on input focus for iOS */
     input[type="text"],
     input[type="email"],
@@ -319,8 +328,19 @@
 
     /* Add active states for touch feedback */
     button:active,
-    [role="button"]:active {
+    [role="button"]:active,
+    input:active,
+    textarea:active,
+    select:active,
+    [tabindex]:active {
       transform: scale(0.98);
+      transition: transform 0.1s ease;
+    }
+
+    /* Enhanced touch feedback for form elements */
+    button:active,
+    [role="button"]:active {
+      transform: scale(0.96);
       transition: transform 0.1s ease;
     }
   }

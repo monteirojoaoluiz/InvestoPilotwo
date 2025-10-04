@@ -37,14 +37,21 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section 
+      <section
         className="relative min-h-[600px] flex items-center justify-center bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `linear-gradient(rgba(34, 40, 49, 0.8), rgba(14, 88, 35, 0.6)), url(${heroImage})`
         }}
       >
+        <img
+          src={heroImage}
+          alt=""
+          className="hidden"
+          loading="eager"
+          decoding="async"
+        />
         <div className="container px-4 text-center text-white">
-          <h1 className="mb-6 text-5xl font-bold leading-tight md:text-6xl">
+          <h1 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
             AI-Powered
             <br />
             <span className="text-primary-foreground">Portfolio Advisor</span>
@@ -68,7 +75,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
       <section className="py-16 bg-muted/30">
         <div className="container px-4">
           <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="p-6 text-center hover-elevate">
                 <div className="flex justify-center mb-4">

@@ -158,7 +158,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Welcome to InvestoPilot</DialogTitle>
           <DialogDescription>

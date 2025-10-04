@@ -271,7 +271,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
               )}
               
               <div
-                className={`max-w-[80%] rounded-lg p-3 ${
+                className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-3 ${
                   msg.sender === "user"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted"
@@ -315,7 +315,8 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       </ScrollArea>
 
       <div className="p-4 border-t">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 relative">
+          <div className="absolute right-0 top-0 bottom-2 w-6 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"></div>
           {suggestedQuestions.map((q, i) => (
             <Button
               key={i}
@@ -334,7 +335,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       </div>
 
       <form onSubmit={handleSendMessage} className="p-4 border-t">
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}

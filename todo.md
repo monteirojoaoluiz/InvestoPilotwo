@@ -233,3 +233,187 @@
   - Extract reusable utility functions
   - Create shared validation schemas
   - Establish component library patterns
+
+## 🔍 Mobile Audit - Issues & Fixes Needed
+
+### Critical Mobile Issues (P0)
+
+#### Dashboard Layout & Width Problems
+- [ ] **Dashboard page too wide on mobile**
+  - Dashboard container doesn't properly constrain width on phone screens
+  - Cards overflow viewport causing horizontal scroll
+  - Issue: `App.tsx:251` - Dashboard wrapper needs better width constraints
+  - Fix: Add `max-w-[100vw]` and ensure all child elements respect parent width
+  
+- [ ] **Performance chart causes horizontal overflow**
+  - LineChart has `minWidth={300}` which forces horizontal scroll on screens < 300px
+  - Issue: `App.tsx:535` - ResponsiveContainer minWidth property
+  - Fix: Remove `minWidth={300}` or use conditional rendering for mobile
+  - Alternative: Wrap chart in horizontal scrollable container with scroll indicators
+
+- [ ] **Dashboard grid cards spacing issues**
+  - Grid cards (`App.tsx:264`) need tighter spacing on mobile
+  - Card content has inconsistent padding across breakpoints
+  - Fix: Reduce gap from `gap-4` to `gap-3` on mobile, ensure all cards use `p-3 sm:p-4`
+
+#### Radio Buttons Appearing as Ovals Instead of Circles
+- [ ] **Radio buttons not circular on mobile**
+  - Radio buttons in RiskAssessment form render as ovals instead of circles
+  - Issue: `radio-group.tsx:29` - RadioGroupItem uses `h-4 w-4` (only 16px)
+  - Root cause: `aspect-square` not enforced properly, width/height mismatch
+  - Fix: Increase size to `h-6 w-6` (24px minimum for touch), add `flex-shrink-0`
+  - Ensure `.radio-mobile-circle` CSS class properly applies `border-radius: 50%` and equal width/height
+  
+- [ ] **Radio buttons too small for touch targets**
+  - Current size (16px) is below minimum 44x44px touch target guideline
+  - Fix: Increase to at least `h-11 w-11` (44px) with proper spacing
+  - Add larger tap area using padding on parent label element
+
+### High Priority Mobile Issues (P1)
+
+#### Form & Input Issues
+- [ ] **Risk Assessment form mobile layout**
+  - Radio button labels wrap awkwardly on small screens
+  - Spacing between options too tight for accurate tapping
+  - Issue: `RiskAssessment.tsx:358` - Padding needs adjustment
+  - Fix: Increase `p-3 sm:p-4` to `p-4 sm:p-5` for better tap spacing
+
+- [ ] **Input field keyboard handling**
+  - Modal inputs might trigger zoom on iOS (fixed with 16px font-size, verify)
+  - Input fields in dialogs need better focus/scroll behavior
+  - Fix: Test and ensure all inputs use `text-base` (16px) on mobile
+
+#### Chat Component Issues
+- [ ] **Portfolio chat message bubbles**
+  - Message bubbles use `max-w-[80%]` which can be too wide on small screens
+  - Issue: `PortfolioChat.tsx:274` - Responsive max-width needed
+  - Fix: Use `max-w-[85%] sm:max-w-[80%]` for better mobile readability
+
+- [ ] **Suggested questions overflow**
+  - Suggested questions container (`PortfolioChat.tsx:318`) has horizontal scroll
+  - Scroll indicators not visible to users
+  - Fix: Add visual scroll indicators (fade gradient on edges)
+  - Consider vertical stacking on very small screens
+
+- [ ] **Chat input area mobile optimization**
+  - Send button and input need better mobile spacing
+  - Issue: `PortfolioChat.tsx:336-345` - Gap between input and button
+  - Fix: Increase gap to `gap-3` on mobile for easier interaction
+
+#### Modal & Dialog Issues
+- [ ] **ETF Detail modal mobile view**
+  - Modal uses `max-w-2xl w-[95vw]` which is good but content might overflow
+  - Issue: `App.tsx:479` - DialogContent needs scroll testing
+  - Fix: Ensure all content within modal is properly wrapped and scrollable
+  - Test with long ETF descriptions and holdings lists
+
+- [ ] **Auth modal on small screens**
+  - Modal content might be cramped on phones < 375px width
+  - Fix: Add more responsive padding, test on iPhone SE size (320px)
+  - Consider reducing modal padding to `p-4` on mobile
+
+### Medium Priority Mobile Issues (P2)
+
+#### Landing Page Mobile Experience
+- [ ] **Hero section text sizing**
+  - Hero title (`text-5xl md:text-6xl`) might be too large on small screens
+  - Issue: `LandingPage.tsx:47` - Text wrapping and spacing
+  - Fix: Use `text-4xl sm:text-5xl md:text-6xl` for better mobile scaling
+
+- [ ] **Landing page card layouts**
+  - Feature cards could have better mobile spacing
+  - Fix: Ensure grid uses `grid-cols-1 sm:grid-cols-2 md:grid-cols-3`
+  - Add more vertical spacing between cards on mobile
+
+#### Navigation & Header Issues
+- [ ] **Header button spacing on mobile**
+  - Header buttons might be too close together on small screens
+  - Issue: `Header.tsx:34` - Gap between buttons
+  - Fix: Stack buttons vertically or reduce button size on very small screens
+
+- [ ] **Sidebar mobile overlay**
+  - Sidebar overlay on mobile needs better backdrop blur
+  - Consider adding swipe-to-close gesture for mobile
+  - Fix: Test sidebar interaction on various mobile devices
+
+#### Chart & Data Visualization
+- [ ] **Pie chart sizing on mobile**
+  - Pie chart might be too small or too large on different screen sizes
+  - Issue: `App.tsx:335-358` - ResponsiveContainer height and width
+  - Fix: Use dynamic sizing based on viewport width
+  - Consider min/max constraints for optimal viewing
+
+- [ ] **Chart tooltips on mobile**
+  - Chart tooltips (Recharts) might be hard to trigger on touch devices
+  - Consider replacing hover tooltips with tap/long-press
+  - Fix: Add mobile-specific tooltip trigger behavior
+
+- [ ] **Performance chart data labels**
+  - X-axis labels on line chart might overlap on mobile
+  - Issue: `App.tsx:538-551` - XAxis tickFormatter
+  - Fix: Reduce number of ticks shown on mobile or rotate labels
+
+#### Typography & Readability
+- [ ] **Dashboard card titles**
+  - Some card titles might be too large on small screens
+  - Fix: Review all `text-xl sm:text-2xl` and adjust for mobile
+  - Ensure consistent responsive text scaling across dashboard
+
+- [ ] **Muted text contrast**
+  - `text-muted-foreground` might have insufficient contrast on mobile in bright light
+  - Fix: Test color contrast ratios for WCAG AA compliance
+  - Consider slightly darker muted colors for mobile
+
+### Low Priority Mobile Issues (P3)
+
+#### Performance & Optimization
+- [ ] **Image loading on mobile networks**
+  - Hero image in landing page could be optimized for mobile
+  - Issue: `LandingPage.tsx:43` - Background image loading
+  - Fix: Add responsive image loading with smaller sizes for mobile
+
+- [ ] **Animation performance on older devices**
+  - Some animations might be janky on older mobile devices
+  - Fix: Add `will-change` CSS property or reduce animations on mobile
+  - Test on older iPhone/Android devices
+
+#### Touch Interactions
+- [ ] **Active states for touch feedback**
+  - Some buttons lack clear active/pressed states on mobile
+  - Fix: Ensure all interactive elements have `:active` states
+  - Add scale transform on press for better feedback
+
+- [ ] **Long-press context menus**
+  - Consider adding long-press actions for cards/items on mobile
+  - Could provide quick actions without navigation
+  - Fix: Implement using touch event handlers
+
+#### Accessibility on Mobile
+- [ ] **Focus indicators on mobile**
+  - Focus indicators might not be visible when using keyboard on mobile
+  - Fix: Enhance focus styles for mobile browsers
+  - Test with mobile screen readers (VoiceOver, TalkBack)
+
+- [ ] **Touch target spacing**
+  - Verify all interactive elements have minimum 8px spacing between them
+  - Issue: Some buttons and links might be too close
+  - Fix: Audit all interactive elements for proper spacing
+
+### Testing & Validation
+- [ ] **Cross-device testing**
+  - Test on iPhone (various sizes: SE, 12/13, 14 Pro Max)
+  - Test on Android (Samsung, Pixel)
+  - Test on tablets (iPad, Android tablets)
+  - Test in landscape and portrait orientations
+
+- [ ] **Browser compatibility**
+  - Test on Safari iOS (main browser)
+  - Test on Chrome mobile
+  - Test on Firefox mobile
+  - Verify PWA functionality on mobile
+
+- [ ] **Performance metrics**
+  - Measure and optimize Lighthouse mobile scores
+  - Target: 90+ performance score on mobile
+  - Check for layout shifts (CLS) on mobile
+  - Measure Time to Interactive (TTI) on 3G networks

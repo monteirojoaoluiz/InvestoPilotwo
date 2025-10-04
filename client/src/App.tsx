@@ -248,7 +248,7 @@ function Dashboard() {
   });
 
   return (
-    <div className="p-4 sm:p-6 max-w-full overflow-x-hidden">
+    <div className="p-4 sm:p-6 max-w-full overflow-x-hidden w-full">
       <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">InvestoPilot Dashboard</h1>
       {hasAssessmentButNoPortfolio && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -261,10 +261,10 @@ function Dashboard() {
           </Button>
         </div>
       )}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-full">
+      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-full">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl lg:text-2xl">
               <Target className="h-5 w-5 text-primary" />
               Investor Profile
             </CardTitle>
@@ -325,14 +325,14 @@ function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recommended Portfolio</CardTitle>
+            <CardTitle className="text-lg sm:text-xl lg:text-2xl">Recommended Portfolio</CardTitle>
             <CardDescription>Your personalized investment allocations</CardDescription>
           </CardHeader>
           <CardContent>
             {portfolioData ? (
               <div className="flex flex-col items-center gap-6">
                 {/* Donut Chart */}
-                <div className="flex-shrink-0 w-full max-w-[200px] mx-auto">
+                <div className="flex-shrink-0 w-full max-w-[220px] sm:max-w-[200px] mx-auto">
                   <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
                       <Pie
@@ -399,7 +399,7 @@ function Dashboard() {
         {portfolioData && metrics ? (
           <Card>
             <CardHeader>
-              <CardTitle>3-Year Performance</CardTitle>
+              <CardTitle className="text-lg sm:text-xl lg:text-2xl">3-Year Performance</CardTitle>
               <CardDescription>Historical portfolio metrics</CardDescription>
             </CardHeader>
             <CardContent>
@@ -476,7 +476,7 @@ function Dashboard() {
         )}
       </div>
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl w-[95vw] max-h-[85vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>{selectedTicker} Details</DialogTitle>
           </DialogHeader>
@@ -532,7 +532,7 @@ function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="w-full overflow-x-auto">
-                <ResponsiveContainer width="100%" height={300} minWidth={300}>
+                <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={combined?.points || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
@@ -548,7 +548,11 @@ function Dashboard() {
                         }
                       }}
                       interval="preserveStartEnd"
-                      minTickGap={50}
+                      minTickGap={80}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      className="text-xs"
                     />
                     <YAxis domain={['auto', 'auto']} />
                     <Tooltip
