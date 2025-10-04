@@ -278,6 +278,36 @@
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
+
+    /* Force mobile layout - ensure sidebar is hidden */
+    .sidebar-mobile-hidden {
+      display: none !important;
+    }
+
+    /* Force toast close button visible on mobile */
+    .toast-close-mobile {
+      opacity: 1 !important;
+    }
+
+    /* Ensure radio buttons are circular on mobile */
+    .radio-mobile-circle {
+      border-radius: 50% !important;
+      aspect-ratio: 1 !important;
+    }
+  }
+
+  /* iOS Safari specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    /* Force mobile layout for iOS */
+    @media (max-width: 1024px) {
+      .sidebar-mobile-hidden {
+        display: none !important;
+      }
+
+      .toast-close-mobile {
+        opacity: 1 !important;
+      }
+    }
   }
 
   /* Touch feedback improvements */

@@ -1067,16 +1067,19 @@ function AuthenticatedRouter() {
     "--sidebar-width-icon": "3rem",
   } as React.CSSProperties;
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Start closed for mobile
   const sidebarToggledByUserRef = useRef(false);
-  const [isCompactSidebar, setIsCompactSidebar] = useState(false);
+  const [isCompactSidebar, setIsCompactSidebar] = useState(true); // Assume mobile by default
 
   useEffect(() => {
     const updateCompactState = () => {
       try {
         if (typeof window === 'undefined') return;
         const width = window.innerWidth;
-        setIsCompactSidebar(width < 1024); // Close sidebar on mobile and tablet
+        // Force sidebar closed on mobile (< 768px) and tablet (768-1024px)
+        const shouldBeCompact = width < 1024;
+        console.log('Screen width:', width, 'Compact sidebar:', shouldBeCompact, 'User agent:', navigator.userAgent);
+        setIsCompactSidebar(shouldBeCompact);
       } catch (error) {
         console.error('Error updating compact sidebar state:', error);
       }
@@ -1112,12 +1115,14 @@ function AuthenticatedRouter() {
       onOpenChange={handleSidebarOpenChange}
     >
       <div className="flex h-screen w-full">
-        {/* Update AppSidebar call - remove props */}
-        <AppSidebar />
+        {/* Force sidebar to be hidden on mobile/tablet */}
+        <div className={`${isCompactSidebar ? 'hidden' : ''}`}>
+          <AppSidebar />
+        </div>
         <div className="flex flex-col flex-1">
           <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="md:hidden mr-2" />
+              <SidebarTrigger className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2`} />
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">IP</span>
               </div>
