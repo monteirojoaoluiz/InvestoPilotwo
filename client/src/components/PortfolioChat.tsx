@@ -327,12 +327,12 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       </ScrollArea>
 
       <div className="p-4 border-t">
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-center sm:justify-between">
           <span className="text-xs text-muted-foreground">Suggested questions</span>
-          <span className="text-xs text-muted-foreground md:hidden">Swipe →</span>
+          <span className="text-xs text-muted-foreground hidden sm:block">Swipe →</span>
         </div>
         <div 
-          className="flex gap-3 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent"
+          className="flex flex-col sm:flex-row sm:gap-3 sm:overflow-x-auto sm:pb-2 relative snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: 'hsl(var(--primary) / 0.3) transparent',
@@ -341,9 +341,9 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
           }}
         >
           {/* Left gradient fade */}
-          <div className="absolute left-0 top-0 bottom-2 w-8 bg-gradient-to-r from-background via-background/90 to-transparent pointer-events-none z-10"></div>
+          <div className="hidden sm:absolute sm:left-0 sm:top-0 sm:bottom-2 sm:w-8 sm:bg-gradient-to-r sm:from-background sm:via-background/90 sm:to-transparent sm:pointer-events-none sm:z-10"></div>
           {/* Right gradient fade */}
-          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background via-background/90 to-transparent pointer-events-none z-10"></div>
+          <div className="hidden sm:absolute sm:right-0 sm:top-0 sm:bottom-2 sm:w-8 sm:bg-gradient-to-l sm:from-background sm:via-background/90 sm:to-transparent sm:pointer-events-none sm:z-10"></div>
           
           {suggestedQuestions.map((q, i) => (
             <Button
@@ -354,14 +354,14 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
                 setMessage(q);
                 handleSendMessage({preventDefault: () => {}} as any); // Trigger send
               }}
-              className="text-xs h-9 px-4 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 snap-start min-w-fit"
+              className="text-xs h-9 px-3 sm:px-4 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 w-full sm:whitespace-nowrap sm:flex-shrink-0 sm:snap-start sm:min-w-fit"
             >
               {q}
             </Button>
           ))}
           
           {/* Add some extra spacing at the end to ensure smooth scrolling */}
-          <div className="w-4 flex-shrink-0"></div>
+          <div className="hidden sm:w-4 sm:flex-shrink-0"></div>
         </div>
       </div>
 
