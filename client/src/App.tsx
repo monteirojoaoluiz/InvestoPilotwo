@@ -1149,7 +1149,7 @@ function AuthenticatedRouter() {
             <div className="flex items-center gap-2 min-w-0">
               <SidebarTrigger className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2 flex-shrink-0`} />
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-foreground font-bold text-sm">IP</span>
+                <span className="text-primary-foreground font-bold text-sm">S16</span>
               </div>
               <span className="font-semibold text-lg truncate">Stack16</span>
             </div>
