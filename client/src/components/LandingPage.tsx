@@ -55,8 +55,8 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
           loading="eager"
           decoding="async"
         />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white w-full max-w-5xl">
-          <div className="max-w-4xl mx-auto">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white w-full">
+          <div className="max-w-5xl mx-auto">
             <h1 className="mb-6 text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl break-words">
               AI-Powered
               <br />
@@ -82,9 +82,9 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
 
       {/* How It Works */}
       <section className="py-16 bg-muted/30">
-        <div className="container px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <Card key={index} className="p-6 text-center hover-elevate">
                 <div className="flex justify-center mb-4">
@@ -102,8 +102,8 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
 
       {/* Benefits */}
       <section className="py-16">
-        <div className="container px-4">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div>
               <h2 className="text-3xl font-bold mb-6">
                 Why Choose InvestAI?
@@ -120,7 +120,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
             <Card className="p-8">
               <h3 className="text-2xl font-semibold mb-4">Get Started Today</h3>
               <p className="text-muted-foreground mb-6">
-                Join thousands of investors who trust InvestAI to manage their portfolios. 
+                Join thousands of investors who trust InvestAI to manage their portfolios.
                 Start with our quick assessment and get your personalized recommendations.
               </p>
               <Button

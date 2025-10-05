@@ -315,8 +315,13 @@
       overflow-y: visible !important;
     }
 
-    /* General containers should allow vertical scrolling */
-    div, section, article, aside, nav {
+    /* General containers should allow vertical scrolling, but exclude layout containers */
+    div:not(.container):not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
+    section:not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
+    article:not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
+    aside:not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
+    nav:not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
+    header:not([class*="container"]):not(.mx-auto):not([class*="max-w"]) {
       max-width: 100vw !important;
       overflow-x: hidden !important;
       overflow-y: visible !important;
