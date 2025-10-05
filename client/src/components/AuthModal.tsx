@@ -110,26 +110,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
       const data = await response.json();
       console.log('Registration successful:', data);
 
-      // Auto login after successful registration
-      console.log('Attempting auto-login after registration...');
-      const loginResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-
-      console.log('Auto-login response status:', loginResponse.status);
-
-      if (!loginResponse.ok) {
-        const loginError = await loginResponse.json();
-        console.error('Auto-login failed:', loginError);
-        throw new Error('Registration successful, but auto-login failed');
-      }
-
-      const loginData = await loginResponse.json();
-      console.log('Auto-login successful:', loginData);
-
       toast({
         title: "Account Created",
         description: "Welcome to InvestoPilot! You're now signed in.",
@@ -158,7 +138,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] p-4 sm:p-6">
+      <DialogContent className="sm:max-w-md w-[95vw] max-w-[420px] mx-auto p-4 sm:p-6 min-h-[500px] flex flex-col">
         <DialogHeader>
           <DialogTitle>Welcome to InvestoPilot</DialogTitle>
           <DialogDescription>
@@ -166,13 +146,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Sign In</TabsTrigger>
             <TabsTrigger value="register">Sign Up</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="login" className="space-y-4">
+          <TabsContent value="login" className="space-y-4 flex-1">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="login-email">Email Address</Label>
@@ -183,6 +163,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="min-h-[44px] touch-manipulation"
                   data-testid="input-login-email"
                 />
               </div>
@@ -205,6 +186,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="min-h-[44px] touch-manipulation"
                   data-testid="input-login-password"
                 />
               </div>
@@ -230,7 +212,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
             </form>
           </TabsContent>
 
-          <TabsContent value="register" className="space-y-4">
+          <TabsContent value="register" className="space-y-4 flex-1">
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="register-email">Email Address</Label>
@@ -241,6 +223,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="min-h-[44px] touch-manipulation"
                   data-testid="input-register-email"
                 />
               </div>
@@ -255,6 +238,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
+                  className="min-h-[44px] touch-manipulation"
                   data-testid="input-register-password"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -271,6 +255,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  className="min-h-[44px] touch-manipulation"
                   data-testid="input-confirm-password"
                 />
               </div>
