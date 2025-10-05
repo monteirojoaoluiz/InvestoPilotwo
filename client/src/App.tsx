@@ -360,6 +360,7 @@ function Dashboard() {
                         outerRadius={90}
                         paddingAngle={2}
                         dataKey="value"
+                        stroke="none"
                       >
                         {(portfolioData.allocations || [])?.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={entry?.color || '#8884d8'} />
