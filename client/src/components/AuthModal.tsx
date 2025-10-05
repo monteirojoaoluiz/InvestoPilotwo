@@ -161,12 +161,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
     // Don't reset state immediately - wait for animation to complete
     onClose();
 
-    // Reset state after animation completes (200ms for mobile dialogs)
+    // Reset state after animation completes (250ms for mobile dialogs)
     setTimeout(() => {
       setEmail("");
       setPassword("");
       setConfirmPassword("");
-    }, 200);
+    }, 250);
   };
 
   // Reset initialization flag when modal closes
