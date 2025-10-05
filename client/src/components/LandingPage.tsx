@@ -58,9 +58,9 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white w-full">
           <div className="max-w-5xl mx-auto">
             <h1 className="mb-6 text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl break-words">
-              AI-Powered
+              Stack 16
               <br />
-              <span className="text-primary-foreground">Portfolio Advisor</span>
+              <span className="text-primary-foreground">Automate tomorrow.</span>
             </h1>
             <p className="mb-8 text-lg sm:text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
               Get personalized investment recommendations powered by advanced AI.
