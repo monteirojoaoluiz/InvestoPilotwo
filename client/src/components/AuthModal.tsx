@@ -166,7 +166,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
       setEmail("");
       setPassword("");
       setConfirmPassword("");
-    }, 250);
+    }, 200);
   };
 
   // Reset initialization flag when modal closes
