@@ -1,4 +1,4 @@
-import { Home, FileText, BarChart3, Settings, User, Lock, PanelLeftIcon, Database } from "lucide-react";
+import { Home, FileText, BarChart3, Settings, User, Lock, Database, PanelLeftIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -72,18 +72,12 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => {
-                    if (isMobile) {
-                      setOpenMobile(false);
-                    } else {
-                      setOpen(false);
-                    }
-                  }}
-                >
+                <SidebarTrigger className="w-full h-auto p-2 justify-start">
                   <PanelLeftIcon className="h-4 w-4" />
-                  <span className="group-data-[collapsible=icon]:hidden">Hide Menu</span>
-                </SidebarMenuButton>
+                  <span className="group-data-[collapsible=icon]:hidden">
+                    {isMobile ? "Close Menu" : "Toggle Menu"}
+                  </span>
+                </SidebarTrigger>
               </SidebarMenuItem>
               {menuItems.map((item) => {
                 const isDashboard = item.url === '/dashboard';
@@ -123,13 +117,6 @@ export default function AppSidebar() {
                           className="w-full flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                           data-testid={item.testId}
                           aria-label={item.title}
-                          onClick={() => {
-                            if (isMobile) {
-                              setOpenMobile(false);
-                            } else {
-                              setOpen(false);
-                            }
-                          }}
                         >
                           <item.icon className="h-4 w-4" />
                           <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
@@ -158,13 +145,6 @@ export default function AppSidebar() {
                         className="w-full flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                         data-testid={item.testId}
                         aria-label={item.title}
-                        onClick={() => {
-                          if (isMobile) {
-                            setOpenMobile(false);
-                          } else {
-                            setOpen(false);
-                          }
-                        }}
                       >
                         <item.icon className="h-4 w-4" />
                         <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
