@@ -323,6 +323,22 @@
       font-size: 16px !important;
     }
 
+    /* Ensure dialogs don't cause layout shifts */
+    [data-radix-dialog-overlay] {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 50 !important;
+    }
+
+    /* Prevent any transform issues on body/html during dialog interactions */
+    body.dialog-open,
+    body.dialog-open html {
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
     /* Improve touch targets */
     button,
     [role="button"],
@@ -364,13 +380,25 @@
       animation-duration: 150ms !important;
     }
 
-    /* Reduce animation complexity on mobile devices */
+    /* Disable complex animations on mobile devices for better performance */
     @media (max-width: 768px) {
+      /* Apply simple fade animations only on mobile */
       [data-state="open"].mobile-dialog-simple {
         animation: fadeIn 0.15s ease-out !important;
       }
 
       [data-state="closed"].mobile-dialog-simple {
+        animation: fadeOut 0.15s ease-in !important;
+      }
+
+      /* Override any complex transform animations on mobile */
+      .mobile-dialog-simple[data-state="open"] {
+        transform: translate(-50%, -50%) scale(1) !important;
+        animation: fadeIn 0.15s ease-out !important;
+      }
+
+      .mobile-dialog-simple[data-state="closed"] {
+        transform: translate(-50%, -50%) scale(0.95) !important;
         animation: fadeOut 0.15s ease-in !important;
       }
     }
@@ -397,22 +425,20 @@
       background-color: transparent;
     }
 
-    /* Add active states for touch feedback */
-    button:active,
-    [role="button"]:active,
+    /* Add active states for touch feedback - avoid transforms that cause layout shifts */
     input:active,
     textarea:active,
     select:active,
     [tabindex]:active {
-      transform: scale(0.98);
-      transition: transform 0.1s ease;
+      opacity: 0.9;
+      transition: opacity 0.1s ease;
     }
 
-    /* Enhanced touch feedback for form elements */
+    /* Enhanced touch feedback for form elements - avoid transforms that cause layout shifts */
     button:active,
     [role="button"]:active {
-      transform: scale(0.96);
-      transition: transform 0.1s ease;
+      opacity: 0.9;
+      transition: opacity 0.1s ease;
     }
   }
 
