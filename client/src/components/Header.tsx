@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
-import stack16Logo from "@assets/generated_images/Dark Logo.png";
+import stack16Logo from "@assets/generated_images/White Favicon.png";
 
 interface HeaderProps {
   onSignInClick?: () => void;

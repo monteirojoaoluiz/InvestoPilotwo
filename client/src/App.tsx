@@ -25,7 +25,7 @@ import {
   Tooltip,
 } from "recharts";
 import { TrendingUp, Clock, Heart, MapPin, Target, LogOut, Download, Trash2 } from "lucide-react";
-import stack16Logo from "@assets/generated_images/Dark Logo.png";
+import stack16Logo from "@assets/generated_images/White Favicon.png";
 
 // Hooks
 import { useAuth } from "./hooks/useAuth";
