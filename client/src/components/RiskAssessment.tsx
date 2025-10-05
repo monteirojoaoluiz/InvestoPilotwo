@@ -381,27 +381,29 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
         </CardHeader>
         <CardContent className="space-y-3 sm:space-y-4 pt-2">
           {currentQuestion.id === "geographicFocus" ? (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {currentQuestion.options.map((option, index) => {
                 const shortcut = OPTION_SHORTCUTS[index];
                 const isChecked = (answers[currentQuestion.id] as string[]).includes(option.value);
 
                 return (
-                  <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[68px] sm:min-h-[64px] border border-transparent hover:border-muted-foreground/20 transition-colors">
+                  <div key={option.value} className="flex items-center space-x-3 p-3 sm:p-4 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[56px] border border-transparent hover:border-muted-foreground/20 transition-colors">
                     <Checkbox
                       id={option.value}
                       checked={isChecked}
                       onCheckedChange={(checked: boolean | "indeterminate") => handleCheckboxChange(option.value, checked)}
                       data-testid={`checkbox-${option.value}`}
-                      className="flex-shrink-0 mt-1 sm:mt-0.5 min-h-[24px] min-w-[24px]"
+                      className="flex-shrink-0 min-h-[20px] min-w-[20px]"
                     />
                     <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium py-1">
-                      {shortcut && (
-                        <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded inline-block mb-1">
-                          {shortcut}
-                        </span>
-                      )}
-                      <span className="text-foreground block">{option.label}</span>
+                      <div className="flex items-center gap-2">
+                        {shortcut && (
+                          <span className="text-xs font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                            {shortcut}
+                          </span>
+                        )}
+                        <span className="text-foreground">{option.label}</span>
+                      </div>
                     </Label>
                   </div>
                 );
@@ -409,28 +411,32 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
             </div>
           ) : (
             <RadioGroup value={answers[currentQuestion.id]} onValueChange={handleRadioChange}>
-              {currentQuestion.options.map((option, index) => {
-                const shortcut = OPTION_SHORTCUTS[index];
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                {currentQuestion.options.map((option, index) => {
+                  const shortcut = OPTION_SHORTCUTS[index];
 
-                return (
-                  <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[68px] sm:min-h-[64px] border border-transparent hover:border-muted-foreground/20 transition-colors">
-                    <RadioGroupItem
-                      value={option.value}
-                      id={option.value}
-                      data-testid={`radio-${option.value}`}
-                      className="flex-shrink-0 mt-1 sm:mt-0.5 min-h-[24px] min-w-[24px]"
-                    />
-                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium py-1">
-                      {shortcut && (
-                        <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded inline-block mb-1">
-                          {shortcut}
-                        </span>
-                      )}
-                      <span className="text-foreground block">{option.label}</span>
-                    </Label>
-                  </div>
-                );
-              })}
+                  return (
+                    <div key={option.value} className="flex items-center space-x-3 p-3 sm:p-4 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[56px] border border-transparent hover:border-muted-foreground/20 transition-colors">
+                      <RadioGroupItem
+                        value={option.value}
+                        id={option.value}
+                        data-testid={`radio-${option.value}`}
+                        className="flex-shrink-0 min-h-[20px] min-w-[20px]"
+                      />
+                      <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium py-1">
+                        <div className="flex items-center gap-2">
+                          {shortcut && (
+                            <span className="text-xs font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                              {shortcut}
+                            </span>
+                          )}
+                          <span className="text-foreground">{option.label}</span>
+                        </div>
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
             </RadioGroup>
           )}
 
