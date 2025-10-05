@@ -286,27 +286,36 @@ function Dashboard() {
                 <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">Time Horizon</div>
-                    <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{assessmentData.timeHorizon?.replace(/-/g, ' ') || '—'}</div>
+                    <div className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">Investment Timeline</div>
+                    <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{assessmentData.timeHorizon?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || '—'}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                   <Heart className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">Life Stage</div>
-                    <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">{assessmentData.lifeStage?.replace(/-/g, ' ') || '—'}</div>
+                    <div className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">Career Stage</div>
+                    <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">{assessmentData.lifeStage?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || '—'}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                   <MapPin className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wide">Geographic Focus</div>
+                    <div className="text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wide">Investment Regions</div>
                     <div className="text-sm font-semibold text-green-900 dark:text-green-100">
                       {Array.isArray(assessmentData.geographicFocus)
-                        ? assessmentData.geographicFocus.map((focus: string) => focus.replace(/-/g, ' ')).join(', ')
-                        : assessmentData.geographicFocus?.replace(/-/g, ' ') || '—'}
+                        ? assessmentData.geographicFocus
+                            .map((focus: string) =>
+                              focus.replace(/-/g, ' ')
+                                   .replace(/\b\w/g, l => l.toUpperCase())
+                                   .replace(/ex us/g, 'ex-US')
+                                   .replace(/ex nl/g, 'ex-NL')
+                                   .replace(/europe ex nl/g, 'Europe ex-NL')
+                                   .replace(/developed ex us europe/g, 'Developed ex-US & ex-Europe')
+                            )
+                            .join(', ')
+                        : assessmentData.geographicFocus?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || '—'}
                     </div>
                   </div>
                 </div>
@@ -314,16 +323,16 @@ function Dashboard() {
                 <div className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
                   <Target className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">ESG Preference</div>
-                    <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{assessmentData.esgOnly ? 'ESG Focused' : 'Standard'}</div>
+                    <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">Sustainability Focus</div>
+                    <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{assessmentData.esgOnly ? 'ESG Focused' : 'Standard Investments'}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
                   <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
                   <div className="flex-1">
-                    <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">Investment Style</div>
-                    <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{assessmentData.dividendVsGrowth?.replace(/-/g, ' ') || '—'}</div>
+                    <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">Investment Objective</div>
+                    <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{assessmentData.dividendVsGrowth?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || '—'}</div>
                   </div>
                 </div>
               </div>
