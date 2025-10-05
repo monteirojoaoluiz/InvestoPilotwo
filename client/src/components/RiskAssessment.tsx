@@ -375,11 +375,11 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">{currentQuestion.title}</CardTitle>
-          <CardDescription className="text-sm sm:text-base">{currentQuestion.description}</CardDescription>
+        <CardHeader className="pb-4 sm:pb-6">
+          <CardTitle className="text-lg sm:text-xl leading-tight">{currentQuestion.title}</CardTitle>
+          <CardDescription className="text-sm sm:text-base leading-relaxed">{currentQuestion.description}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6">
+        <CardContent className="space-y-3 sm:space-y-4 pt-2">
           {currentQuestion.id === "geographicFocus" ? (
             <div className="space-y-3">
               {currentQuestion.options.map((option, index) => {
@@ -387,21 +387,21 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
                 const isChecked = (answers[currentQuestion.id] as string[]).includes(option.value);
 
                 return (
-                  <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[64px] sm:min-h-[60px] border border-transparent hover:border-muted-foreground/20 transition-colors">
+                  <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[68px] sm:min-h-[64px] border border-transparent hover:border-muted-foreground/20 transition-colors">
                     <Checkbox
                       id={option.value}
                       checked={isChecked}
                       onCheckedChange={(checked: boolean | "indeterminate") => handleCheckboxChange(option.value, checked)}
                       data-testid={`checkbox-${option.value}`}
-                      className="flex-shrink-0 mt-1 sm:mt-0.5"
+                      className="flex-shrink-0 mt-1 sm:mt-0.5 min-h-[24px] min-w-[24px]"
                     />
-                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium">
+                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium py-1">
                       {shortcut && (
-                        <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded inline-block mb-1">
                           {shortcut}
                         </span>
                       )}
-                      <span className="text-foreground">{option.label}</span>
+                      <span className="text-foreground block">{option.label}</span>
                     </Label>
                   </div>
                 );
@@ -413,20 +413,20 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
                 const shortcut = OPTION_SHORTCUTS[index];
 
                 return (
-                  <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[64px] sm:min-h-[60px] border border-transparent hover:border-muted-foreground/20 transition-colors">
+                  <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[68px] sm:min-h-[64px] border border-transparent hover:border-muted-foreground/20 transition-colors">
                     <RadioGroupItem
                       value={option.value}
                       id={option.value}
                       data-testid={`radio-${option.value}`}
-                      className="flex-shrink-0 mt-1 sm:mt-0.5"
+                      className="flex-shrink-0 mt-1 sm:mt-0.5 min-h-[24px] min-w-[24px]"
                     />
-                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium">
+                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium py-1">
                       {shortcut && (
-                        <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded inline-block mb-1">
                           {shortcut}
                         </span>
                       )}
-                      <span className="text-foreground">{option.label}</span>
+                      <span className="text-foreground block">{option.label}</span>
                     </Label>
                   </div>
                 );

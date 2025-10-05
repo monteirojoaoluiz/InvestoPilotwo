@@ -55,24 +55,28 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
           loading="eager"
           decoding="async"
         />
-        <div className="container mx-auto px-4 text-center text-white w-full max-w-4xl">
-          <h1 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl break-words">
-            AI-Powered
-            <br />
-            <span className="text-primary-foreground">Portfolio Advisor</span>
-          </h1>
-          <p className="mb-8 text-xl text-gray-200 max-w-2xl mx-auto leading-relaxed">
-            Get personalized investment recommendations powered by advanced AI.
-            Build your wealth with data-driven insights and professional-grade portfolio management.
-          </p>
-          <Button
-            size="lg"
-            className="text-lg px-8 py-6 min-h-[60px] touch-manipulation"
-            onClick={handleGetStarted}
-            data-testid="button-hero-get-started"
-          >
-            Start Building Your Portfolio
-          </Button>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white w-full max-w-5xl">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="mb-6 text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl break-words">
+              AI-Powered
+              <br />
+              <span className="text-primary-foreground">Portfolio Advisor</span>
+            </h1>
+            <p className="mb-8 text-lg sm:text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
+              Get personalized investment recommendations powered by advanced AI.
+              Build your wealth with data-driven insights and professional-grade portfolio management.
+            </p>
+            <div className="flex justify-center">
+              <Button
+                size="lg"
+                className="text-lg px-8 py-6 min-h-[60px] touch-manipulation"
+                onClick={handleGetStarted}
+                data-testid="button-hero-get-started"
+              >
+                Start Building Your Portfolio
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 

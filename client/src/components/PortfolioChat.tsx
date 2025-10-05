@@ -345,7 +345,8 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
             touchAction: 'pan-x',
             scrollSnapType: 'x mandatory',
             // Ensure proper scrolling on mobile
-            minHeight: '44px', // Ensure touch target size
+            minHeight: '56px', // Ensure touch target size and better scrolling
+            maxHeight: '120px', // Prevent excessive height on mobile
           }}
         >
           {/* Left gradient fade */}
@@ -363,13 +364,16 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
                 setMessage(q);
                 handleSendMessage(e);
               }}
-              className="text-xs h-auto py-2.5 px-4 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 min-w-fit touch-manipulation transition-all duration-200 active:scale-95 scroll-snap-align-start"
+              className="text-xs sm:text-sm h-auto py-3 px-4 sm:px-5 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 min-w-fit touch-manipulation transition-all duration-200 active:scale-95 scroll-snap-align-start"
               style={{
                 // Ensure minimum touch target size on mobile
-                minHeight: '44px',
+                minHeight: '48px',
+                minWidth: 'max-content',
                 // Prevent text selection during scroll
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
+                // Better mobile touch scrolling
+                touchAction: 'manipulation',
               }}
             >
               {q}

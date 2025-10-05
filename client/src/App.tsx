@@ -870,16 +870,17 @@ function Assessment() {
     return (
       <div className="p-6 w-full min-w-0 max-w-full overflow-x-hidden">
         <h1 className="text-3xl font-bold mb-6 break-words">Account</h1>
-        <div className="max-w-2xl space-y-6 w-full">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Information</CardTitle>
-              <CardDescription>Your account details and investment profile</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-blue-700 dark:text-blue-300">Email</div>
+        <div className="max-w-6xl w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Information</CardTitle>
+                <CardDescription>Your account details and investment profile</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-blue-700 dark:text-blue-300">Email</div>
                   <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{user?.email || '—'}</div>
                 </div>
               </div>
@@ -906,11 +907,11 @@ function Assessment() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Settings</CardTitle>
-              <CardDescription>Customize your account preferences</CardDescription>
-            </CardHeader>
+            <Card>
+              <CardHeader>
+                <CardTitle>Settings</CardTitle>
+                <CardDescription>Customize your account preferences</CardDescription>
+              </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div>
@@ -1051,7 +1052,8 @@ function Assessment() {
                 </Button>
               </div>
             </CardContent>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
     );
