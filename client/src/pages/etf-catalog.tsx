@@ -21,6 +21,7 @@ interface ETF {
   riskLevel: 'Low' | 'Moderate' | 'High';
   dividendYield?: number;
   yearlyGain?: number; // Annualized return since inception
+  lastPrice?: number; // Current/last price
   color: string;
 }
 
@@ -36,6 +37,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 1.32,
     yearlyGain: 12.5,
+    lastPrice: 268.50,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -48,6 +50,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 2.85,
     yearlyGain: 8.2,
+    lastPrice: 62.15,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -60,6 +63,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 3.12,
     yearlyGain: 4.1,
+    lastPrice: 73.25,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -72,6 +76,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 3.87,
     yearlyGain: 9.8,
+    lastPrice: 88.90,
     color: 'hsl(var(--chart-4))'
   },
   {
@@ -84,6 +89,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'High',
     dividendYield: 0.48,
     yearlyGain: 15.2,
+    lastPrice: 475.20,
     color: 'hsl(var(--chart-5))'
   },
   {
@@ -96,6 +102,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 1.78,
     yearlyGain: 11.8,
+    lastPrice: 184.75,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -108,6 +115,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 4.35,
     yearlyGain: 7.5,
+    lastPrice: 71.20,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -120,6 +128,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'High',
     dividendYield: 3.12,
     yearlyGain: 6.8,
+    lastPrice: 43.85,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -132,6 +141,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 1.18,
     yearlyGain: 12.2,
+    lastPrice: 95.60,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -144,6 +154,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 2.45,
     yearlyGain: 8.1,
+    lastPrice: 79.45,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -156,6 +167,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 2.89,
     yearlyGain: 3.8,
+    lastPrice: 24.75,
     color: 'hsl(var(--chart-3))'
   },
   // Additional ETFs from the comprehensive list
@@ -169,6 +181,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 1.25,
     yearlyGain: 12.3,
+    lastPrice: 120.45,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -181,6 +194,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 2.15,
     yearlyGain: 10.8,
+    lastPrice: 165.80,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -193,6 +207,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 1.95,
     yearlyGain: 10.5,
+    lastPrice: 49.20,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -205,6 +220,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 2.05,
     yearlyGain: 11.2,
+    lastPrice: 155.30,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -217,6 +233,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 1.85,
     yearlyGain: 10.9,
+    lastPrice: 125.60,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -229,6 +246,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 1.95,
     yearlyGain: 11.8,
+    lastPrice: 185.40,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -241,6 +259,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'High',
     dividendYield: 1.75,
     yearlyGain: 10.2,
+    lastPrice: 155.80,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -253,6 +272,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 2.85,
     yearlyGain: 7.8,
+    lastPrice: 50.15,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -265,6 +285,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 2.65,
     yearlyGain: 8.1,
+    lastPrice: 74.80,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -277,6 +298,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'High',
     dividendYield: 2.45,
     yearlyGain: 6.5,
+    lastPrice: 53.20,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -289,6 +311,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 4.85,
     yearlyGain: 2.1,
+    lastPrice: 100.05,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -301,6 +324,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 4.95,
     yearlyGain: 2.3,
+    lastPrice: 50.45,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -313,6 +337,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 3.25,
     yearlyGain: 2.8,
+    lastPrice: 48.60,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -325,6 +350,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 2.85,
     yearlyGain: 3.9,
+    lastPrice: 107.20,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -337,6 +363,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 2.75,
     yearlyGain: 4.2,
+    lastPrice: 46.80,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -349,6 +376,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 3.15,
     yearlyGain: 4.0,
+    lastPrice: 99.15,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -361,6 +389,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Low',
     dividendYield: 2.95,
     yearlyGain: 3.2,
+    lastPrice: 49.25,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -373,6 +402,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 4.85,
     yearlyGain: 5.8,
+    lastPrice: 89.60,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -385,6 +415,7 @@ const ETF_DATA: ETF[] = [
     riskLevel: 'Moderate',
     dividendYield: 5.15,
     yearlyGain: 4.9,
+    lastPrice: 63.40,
     color: 'hsl(var(--chart-3))'
   }
 ];
@@ -420,6 +451,8 @@ export default function ETFCatalog() {
           return (b.dividendYield || 0) - (a.dividendYield || 0);
         case 'yearlyGain':
           return (b.yearlyGain || 0) - (a.yearlyGain || 0);
+        case 'lastPrice':
+          return (a.lastPrice || 0) - (b.lastPrice || 0);
         default:
           return 0;
       }
@@ -545,6 +578,7 @@ export default function ETFCatalog() {
                 <SelectItem value="expenseRatio">Expense Ratio (Low to High)</SelectItem>
                 <SelectItem value="dividendYield">Dividend Yield (High to Low)</SelectItem>
                 <SelectItem value="yearlyGain">Annual Return (High to Low)</SelectItem>
+                <SelectItem value="lastPrice">Price (Low to High)</SelectItem>
               </SelectContent>
               </Select>
             </div>
@@ -642,6 +676,15 @@ export default function ETFCatalog() {
                         <div>
                           <span className="font-medium">Annual Return:</span>
                           <p className="text-muted-foreground">{etf.yearlyGain}%</p>
+                        </div>
+                      </div>
+                    )}
+                    {etf.lastPrice && (
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <span className="font-medium">Last Price:</span>
+                          <p className="text-muted-foreground">${etf.lastPrice.toFixed(2)}</p>
                         </div>
                       </div>
                     )}
