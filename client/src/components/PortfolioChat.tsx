@@ -326,7 +326,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t overflow-hidden">
+      <div className="p-4 border-t overflow-hidden relative">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-medium text-foreground">Suggested questions</span>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -334,25 +334,22 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
             <span className="sm:hidden">← Swipe →</span>
           </span>
         </div>
-        <div
-          className="suggested-questions-container flex gap-2 overflow-x-auto overflow-y-hidden pb-2 -mx-4 px-4 relative scrollbar-hide [&::-webkit-scrollbar]:hidden"
-          style={{
-            WebkitOverflowScrolling: 'touch',
-            scrollBehavior: 'smooth',
-            overscrollBehaviorX: 'contain',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            touchAction: 'pan-x',
-            scrollSnapType: 'x mandatory',
-            // Ensure proper scrolling on mobile
-            minHeight: '56px', // Ensure touch target size and better scrolling
-            maxHeight: '120px', // Prevent excessive height on mobile
-          }}
-        >
-          {/* Left gradient fade */}
-          <div className="absolute left-0 top-0 bottom-2 w-8 sm:w-12 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"></div>
-          {/* Right gradient fade */}
-          <div className="absolute right-0 top-0 bottom-2 w-8 sm:w-12 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"></div>
+        <div className="relative">
+          <div
+            className="suggested-questions-container flex gap-2 overflow-x-auto overflow-y-hidden pb-2 -mx-4 px-4 scrollbar-hide [&::-webkit-scrollbar]:hidden"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              scrollBehavior: 'smooth',
+              overscrollBehaviorX: 'contain',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              touchAction: 'pan-x',
+              scrollSnapType: 'x mandatory',
+              // Ensure proper scrolling on mobile
+              minHeight: '56px', // Ensure touch target size and better scrolling
+              maxHeight: '120px', // Prevent excessive height on mobile
+            }}
+          >
           
           {suggestedQuestions.map((q, i) => (
             <Button
@@ -379,9 +376,15 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
               {q}
             </Button>
           ))}
-          
+
           {/* Add padding at the end for better scrolling experience */}
           <div className="w-1 flex-shrink-0"></div>
+          </div>
+
+          {/* Left gradient fade - positioned relative to parent */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"></div>
+          {/* Right gradient fade - positioned relative to parent */}
+          <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"></div>
         </div>
       </div>
 
