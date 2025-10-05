@@ -363,42 +363,42 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
   }, [currentQuestion, handleNext, handleRadioChange, isStepComplete, mutation.isPending]);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 w-full min-w-0 overflow-x-hidden">
+    <div className="max-w-4xl mx-auto p-3 sm:p-6 w-full min-w-0 overflow-x-hidden">
       <div className="mb-6 sm:mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-          <h1 className="text-xl sm:text-2xl font-bold">Investor Profile</h1>
-          <span className="text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold">Investor Profile</h1>
+          <span className="text-base sm:text-lg text-muted-foreground font-medium">
             Step {currentStep + 1} of {totalSteps}
           </span>
         </div>
-        <Progress value={progress} className="h-2" />
+        <Progress value={progress} className="h-3" />
       </div>
 
-      <Card>
-        <CardHeader className="pb-4 sm:pb-6">
-          <CardTitle className="text-lg sm:text-xl leading-tight">{currentQuestion.title}</CardTitle>
-          <CardDescription className="text-sm sm:text-base leading-relaxed">{currentQuestion.description}</CardDescription>
+      <Card className="shadow-lg">
+        <CardHeader className="pb-6 sm:pb-8 px-4 sm:px-6">
+          <CardTitle className="text-xl sm:text-2xl leading-tight pr-0">{currentQuestion.title}</CardTitle>
+          <CardDescription className="text-base sm:text-lg leading-relaxed text-muted-foreground mt-2">{currentQuestion.description}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3 sm:space-y-4 pt-2">
+        <CardContent className="space-y-4 sm:space-y-6 pt-0 px-4 sm:px-6">
           {currentQuestion.id === "geographicFocus" ? (
-            <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:gap-5">
               {currentQuestion.options.map((option, index) => {
                 const shortcut = OPTION_SHORTCUTS[index];
                 const isChecked = (answers[currentQuestion.id] as string[]).includes(option.value);
 
                 return (
-                  <div key={option.value} className="flex items-center space-x-3 p-3 sm:p-4 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[56px] border border-transparent hover:border-muted-foreground/20 transition-colors">
+                  <div key={option.value} className="flex items-center space-x-4 p-4 sm:p-5 hover:bg-muted/30 touch-manipulation rounded-xl min-h-[64px] border border-border hover:border-primary/20 transition-all duration-200 bg-card">
                     <Checkbox
                       id={option.value}
                       checked={isChecked}
                       onCheckedChange={(checked: boolean | "indeterminate") => handleCheckboxChange(option.value, checked)}
                       data-testid={`checkbox-${option.value}`}
-                      className="flex-shrink-0 min-h-[20px] min-w-[20px]"
+                      className="flex-shrink-0 min-h-[24px] min-w-[24px] mt-0.5"
                     />
-                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium py-1">
-                      <div className="flex items-center gap-2">
+                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-base sm:text-lg font-medium py-2">
+                      <div className="flex items-center gap-3">
                         {shortcut && (
-                          <span className="text-xs font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                          <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded-full min-w-[28px] text-center">
                             {shortcut}
                           </span>
                         )}
@@ -411,22 +411,22 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
             </div>
           ) : (
             <RadioGroup value={answers[currentQuestion.id]} onValueChange={handleRadioChange}>
-              <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:gap-5">
                 {currentQuestion.options.map((option, index) => {
                   const shortcut = OPTION_SHORTCUTS[index];
 
                   return (
-                    <div key={option.value} className="flex items-center space-x-3 p-3 sm:p-4 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[56px] border border-transparent hover:border-muted-foreground/20 transition-colors">
+                    <div key={option.value} className="flex items-center space-x-4 p-4 sm:p-5 hover:bg-muted/30 touch-manipulation rounded-xl min-h-[64px] border border-border hover:border-primary/20 transition-all duration-200 bg-card">
                       <RadioGroupItem
                         value={option.value}
                         id={option.value}
                         data-testid={`radio-${option.value}`}
-                        className="flex-shrink-0 min-h-[20px] min-w-[20px]"
+                        className="flex-shrink-0 min-h-[24px] min-w-[24px] mt-0.5"
                       />
-                      <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium py-1">
-                        <div className="flex items-center gap-2">
+                      <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-base sm:text-lg font-medium py-2">
+                        <div className="flex items-center gap-3">
                           {shortcut && (
-                            <span className="text-xs font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                            <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded-full min-w-[28px] text-center">
                               {shortcut}
                             </span>
                           )}
@@ -440,13 +440,13 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
             </RadioGroup>
           )}
 
-          <div className="flex flex-col sm:flex-row justify-between pt-6 sm:pt-8 gap-4">
+          <div className="flex flex-col sm:flex-row justify-between pt-8 sm:pt-10 gap-4">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 0}
               size="lg"
-              className="flex-1 min-h-[52px] touch-manipulation order-2 sm:order-1 text-base font-medium"
+              className="flex-1 min-h-[56px] touch-manipulation order-2 sm:order-1 text-lg font-semibold"
               data-testid="button-previous"
             >
               <ChevronLeft className="w-5 h-5 mr-2" />
@@ -457,7 +457,7 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
               onClick={handleNext}
               disabled={!isStepComplete || mutation.isPending}
               size="lg"
-              className="flex-1 min-h-[52px] touch-manipulation order-1 sm:order-2 text-base font-medium"
+              className="flex-1 min-h-[56px] touch-manipulation order-1 sm:order-2 text-lg font-semibold"
               data-testid="button-next"
             >
                 {mutation.isPending ? "Saving..." : currentStep === totalSteps - 1 ? "Complete Profile" : "Next"}
