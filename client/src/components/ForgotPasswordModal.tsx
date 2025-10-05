@@ -57,7 +57,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Reset Your Password</DialogTitle>
           <DialogDescription>
@@ -79,11 +79,11 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 sm:gap-3">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 min-h-[44px] touch-manipulation"
                 onClick={handleClose}
                 disabled={isLoading}
               >
@@ -91,7 +91,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               </Button>
               <Button
                 type="submit"
-                className="flex-1"
+                className="flex-1 min-h-[44px] touch-manipulation"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -115,7 +115,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                 Check your email for a password reset link. The link will expire in 1 hour.
               </p>
             </div>
-            <Button onClick={handleClose} className="w-full">
+            <Button onClick={handleClose} className="w-full min-h-[44px] touch-manipulation">
               Close
             </Button>
           </div>
