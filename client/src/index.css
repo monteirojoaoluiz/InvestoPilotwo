@@ -379,6 +379,15 @@
       opacity: 1 !important;
     }
 
+    /* Ensure toast close button has proper touch target on mobile */
+    @media (max-width: 768px) {
+      [toast-close] {
+        min-height: 44px !important;
+        min-width: 44px !important;
+        padding: 8px !important;
+      }
+    }
+
     /* Ensure radio buttons are circular on mobile */
     .radio-mobile-circle {
       border-radius: 50% !important;
