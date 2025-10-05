@@ -1,4 +1,4 @@
-import { Home, FileText, BarChart3, Settings, User, Lock, PanelLeftIcon } from "lucide-react";
+import { Home, FileText, BarChart3, Settings, User, Lock, PanelLeftIcon, Database } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +24,12 @@ const menuItems = [
     url: "/dashboard",
     icon: Home,
     testId: "link-dashboard"
+  },
+  {
+    title: "ETF Catalog",
+    url: "/etf-catalog",
+    icon: Database,
+    testId: "link-etf-catalog"
   },
   {
     title: "Investor Profile",

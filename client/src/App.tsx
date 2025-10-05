@@ -24,7 +24,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import { TrendingUp, Clock, Heart, MapPin, Target, LogOut } from "lucide-react";
+import { TrendingUp, Clock, Heart, MapPin, Target, LogOut, Download, Trash2 } from "lucide-react";
 
 // Hooks
 import { useAuth } from "./hooks/useAuth";
@@ -39,6 +39,7 @@ import AppSidebar from "./components/AppSidebar";
 import RiskAssessment from "./components/RiskAssessment";
 import PortfolioChat from "./components/PortfolioChat";
 import NotFound from "@/pages/not-found";
+import ETFCatalog from "./pages/etf-catalog";
 import AuthModal from "./components/AuthModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ResetPassword from "./pages/reset-password";
@@ -674,6 +675,33 @@ function Assessment() {
 
 // Remove Chat function and route
 
+  function ETFCatalogPage() {
+    const [location] = useLocation();
+
+    return (
+      <div className="min-h-screen bg-background">
+        <AppSidebar />
+        <div className="flex flex-col flex-1 min-w-0 max-w-full overflow-x-hidden">
+          <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full max-w-full">
+            <div className="flex items-center gap-2 min-w-0">
+              <SidebarTrigger className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2 flex-shrink-0`} />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-primary-foreground font-bold text-sm">S16</span>
+              </div>
+              <span className="font-semibold text-lg truncate">ETF Catalog</span>
+            </div>
+            <ThemeToggle />
+          </header>
+          <main className="flex-1 overflow-auto w-full max-w-full min-h-0">
+            <ErrorBoundary>
+              <ETFCatalog />
+            </ErrorBoundary>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   function Account() {
     const [location, navigate] = useLocation(); // for path
     const { toast } = useToast();
@@ -713,6 +741,8 @@ function Assessment() {
 
     const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
     const [deletePassword, setDeletePassword] = useState('');
+
+    const [downloadDataLoading, setDownloadDataLoading] = useState(false);
 
     useEffect(() => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -848,6 +878,46 @@ function Assessment() {
       }
     };
 
+    const handleDownloadData = async () => {
+      setDownloadDataLoading(true);
+      try {
+        const response = await fetch('/api/auth/download-data', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to download data');
+        }
+
+        const data = await response.json();
+
+        // Create and download JSON file
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `stack16-data-${data.user.email}-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: 'Data Downloaded',
+          description: 'Your data has been downloaded successfully.',
+        });
+      } catch (error: any) {
+        toast({
+          title: 'Download Failed',
+          description: error?.message || 'Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setDownloadDataLoading(false);
+      }
+    };
+
     const handleLogout = async () => {
       try {
         const res = await fetch('/api/auth/logout', {
@@ -872,7 +942,7 @@ function Assessment() {
       <div className="p-6 w-full min-w-0 max-w-full overflow-x-hidden">
         <h1 className="text-3xl font-bold mb-6 break-words">Account</h1>
         <div className="max-w-6xl w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Account Information</CardTitle>
@@ -1053,6 +1123,82 @@ function Assessment() {
                 </Button>
               </div>
             </CardContent>
+          </Card>
+
+          <Card>
+              <CardHeader>
+                <CardTitle>Privacy & Data</CardTitle>
+                <CardDescription>Your data rights and privacy controls</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div>
+                      <div className="font-medium">Download My Data</div>
+                      <div className="text-sm text-muted-foreground">Export all your personal data in JSON format</div>
+                    </div>
+                    <Button
+                      onClick={handleDownloadData}
+                      disabled={downloadDataLoading}
+                      className="flex items-center gap-2"
+                    >
+                      {downloadDataLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Downloading...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4" />
+                          Download
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <Dialog open={deleteAccountOpen} onOpenChange={setDeleteAccountOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Right to be Forgotten (Delete Account)
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Delete Account (Right to be Forgotten)</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="text-destructive">
+                          <p className="font-medium">Warning: This action cannot be undone.</p>
+                          <p>Deleting your account will permanently remove all your data including portfolios, assessments, and chat history.</p>
+                          <p className="mt-2 text-sm">This action complies with GDPR Article 17 - Right to Erasure.</p>
+                        </div>
+                        <form onSubmit={handleDeleteAccount} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="delete-password">Enter your password to confirm</Label>
+                            <Input
+                              id="delete-password"
+                              type="password"
+                              value={deletePassword}
+                              onChange={(e) => setDeletePassword(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <Button type="submit" variant="destructive" className="w-full">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Permanently Delete My Account
+                          </Button>
+                        </form>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardContent>
             </Card>
           </div>
         </div>
@@ -1160,6 +1306,7 @@ function AuthenticatedRouter() {
               <Switch>
                 <Route path="/dashboard" component={Dashboard} />
                 <Route path="/assessment" component={Assessment} />
+                <Route path="/etf-catalog" component={ETFCatalogPage} />
                 <Route path="/account" component={Account} />
                 <Route path="/" component={Dashboard} />
               </Switch>

@@ -664,6 +664,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/auth/download-data', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user;
+
+      // Collect all user data
+      const userData = {
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profileImageUrl: user.profileImageUrl,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          lastLogin: user.lastLogin,
+        },
+        riskAssessments: await storage.getRiskAssessmentsByUserId(user.id),
+        portfolioRecommendations: await storage.getPortfolioRecommendationsByUserId(user.id),
+        portfolioMessages: await storage.getPortfolioMessagesByUserId(user.id),
+        exportedAt: new Date().toISOString(),
+        version: '1.0',
+      };
+
+      // Create filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `stack16-data-${user.email}-${timestamp}.json`;
+
+      // Set headers for file download
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+      res.json(userData);
+    } catch (error) {
+      console.error('Download data error:', error);
+      res.status(500).json({ message: 'Failed to download data' });
+    }
+  });
+
   app.get('/api/auth/verify-email-change', async (req, res) => {
     try {
       const { token } = req.query;

@@ -65,6 +65,9 @@ export interface IStorage {
   updateUserEmail(userId: string, email: string): Promise<void>;
   // User deletion
   deleteUserData(userId: string): Promise<void>;
+  getRiskAssessmentsByUserId(userId: string): Promise<RiskAssessment[]>;
+  getPortfolioRecommendationsByUserId(userId: string): Promise<PortfolioRecommendation[]>;
+  getPortfolioMessagesByUserId(userId: string): Promise<PortfolioMessage[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -313,6 +316,18 @@ export class DatabaseStorage implements IStorage {
       // Actually hard delete user after
       await db.delete(users).where(eq(users.id, user.id));
     }
+  }
+
+  async getRiskAssessmentsByUserId(userId: string): Promise<RiskAssessment[]> {
+    return await db.select().from(riskAssessments).where(eq(riskAssessments.userId, userId));
+  }
+
+  async getPortfolioRecommendationsByUserId(userId: string): Promise<PortfolioRecommendation[]> {
+    return await db.select().from(portfolioRecommendations).where(eq(portfolioRecommendations.userId, userId));
+  }
+
+  async getPortfolioMessagesByUserId(userId: string): Promise<PortfolioMessage[]> {
+    return await db.select().from(portfolioMessages).where(eq(portfolioMessages.userId, userId));
   }
 }
 
