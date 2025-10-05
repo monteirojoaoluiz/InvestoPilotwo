@@ -28,7 +28,7 @@ export default function Header({ onSignInClick, onGetStartedClick, onMenuClick, 
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <TrendingUp className="h-5 w-5" />
             </div>
-            <span className="text-xl font-semibold">InvestAI</span>
+            <span className="text-xl font-semibold">Stack16</span>
           </div>
         </div>
         

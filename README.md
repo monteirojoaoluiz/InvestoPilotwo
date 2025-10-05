@@ -1,4 +1,4 @@
-# InvestoPilot 🤖
+# Stack16 🤖
 
 A modern AI-powered robo advisor web application that provides personalized investment portfolio recommendations based on user risk assessment and preferences.
 
@@ -31,8 +31,8 @@ This application implements industry-standard security practices:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/monteirojoaoluiz/InvestoPilot.git
-   cd InvestoPilot
+   git clone https://github.com/monteirojoaoluiz/Stack16.git
+   cd Stack16
    ```
 
 2. **Install dependencies**
@@ -123,7 +123,7 @@ npm run check
 ## 📁 Project Structure
 
 ```
-InvestoPilot/
+Stack16/
 ├── client/                 # Frontend React application
 │   ├── src/
 │   │   ├── components/     # Reusable UI components

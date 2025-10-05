@@ -59,7 +59,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
 
       toast({
         title: "Success",
-        description: "Welcome back to InvestoPilot!",
+        description: "Welcome back to Stack16!",
       });
       onSuccess?.();
       handleClose();
@@ -141,7 +141,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
 
       toast({
         title: "Account Created",
-        description: "Welcome to InvestoPilot! You're now signed in.",
+        description: "Welcome to Stack16! You're now signed in.",
       });
       onSuccess?.();
       handleClose();
@@ -186,7 +186,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Welcome to InvestoPilot</DialogTitle>
+          <DialogTitle>Welcome to Stack16</DialogTitle>
           <DialogDescription>
             Sign in to access your personalized investment portfolio
           </DialogDescription>

@@ -380,9 +380,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const msg = {
         to: email,
         from: 'monteirojoaoluiz@gmail.com', // TODO: set verified sender
-        subject: 'Your InvestoPilot Magic Link',
+        subject: 'Your Stack16 Magic Link',
         html: `
-          <h1>Sign in to InvestoPilot</h1>
+          <h1>Sign in to Stack16</h1>
           <p>Click the link below to sign in to your account:</p>
           <a href="${process.env.FRONTEND_URL}/api/auth/verify?token=${token}">Sign In</a>
           <p>This link expires in 15 minutes.</p>
@@ -485,10 +485,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const msg = {
         to: email,
         from: 'monteirojoaoluiz@gmail.com',
-        subject: 'Reset Your InvestoPilot Password',
+        subject: 'Reset Your Stack16 Password',
         html: `
           <h1>Password Reset Request</h1>
-          <p>You requested to reset your password for your InvestoPilot account.</p>
+          <p>You requested to reset your password for your Stack16 account.</p>
           <p>Click the link below to reset your password:</p>
           <a href="${resetUrl}">Reset Password</a>
           <p>This link will expire in 1 hour.</p>
@@ -598,10 +598,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const msg = {
         to: newEmail,
         from: 'monteirojoaoluiz@gmail.com',
-        subject: 'Confirm Your Email Change - InvestoPilot',
+        subject: 'Confirm Your Email Change - Stack16',
         html: `
           <h1>Confirm Email Address Change</h1>
-          <p>You requested to change your email address for InvestoPilot.</p>
+          <p>You requested to change your email address for Stack16.</p>
           <p>Click the link below to confirm your new email address:</p>
           <a href="${verifyUrl}">Confirm Email Change</a>
           <p>This link will expire in 1 hour.</p>
@@ -638,12 +638,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const farewellMsg = {
         to: user.email,
         from: 'monteirojoaoluiz@gmail.com',
-        subject: 'Account Deleted - InvestoPilot',
+        subject: 'Account Deleted - Stack16',
         html: `
-          <h1>Your InvestoPilot Account Has Been Deleted</h1>
+          <h1>Your Stack16 Account Has Been Deleted</h1>
           <p>This is to confirm that your account has been permanently deleted as per your request.</p>
           <p>If this was a mistake, unfortunately we cannot recover deleted accounts.</p>
-          <p>Thank you for using InvestoPilot. We wish you the best in your investment journey!</p>
+          <p>Thank you for using Stack16. We wish you the best in your investment journey!</p>
         `,
       };
 
@@ -1133,7 +1133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // allocations are stored as jsonb; they are already an object
       const allocations = (portfolio as any).allocations;
-      const prompt = `You are a financial advisor for InvestoPilot. The user's portfolio has allocations: ${JSON.stringify(allocations)}. Total value: $${portfolio.totalValue}. User asked: ${validatedData.content}. Provide helpful, professional advice.`;
+      const prompt = `You are a financial advisor for Stack16. The user's portfolio has allocations: ${JSON.stringify(allocations)}. Total value: $${portfolio.totalValue}. User asked: ${validatedData.content}. Provide helpful, professional advice.`;
 
       try {
         const completion = await groqClient.chat.completions.create({
@@ -1142,7 +1142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             {
               role: 'system',
               content:
-                'You are InvestoPilot, a professional AI financial co-pilot. You ONLY answer questions related to the user\'s portfolio, investments, and financial planning. If a question is not related to finance, investing, or the user\'s portfolio, politely decline to answer and redirect back to portfolio-related topics. When answering: 1) ground your advice in the provided allocations and totals, 2) explain reasoning and tradeoffs, 3) be conservative with claims, 4) avoid providing individualized investment advice; include a short disclaimer that you are not a licensed advisor.'
+                'You are Stack16, a professional AI financial co-pilot. You ONLY answer questions related to the user\'s portfolio, investments, and financial planning. If a question is not related to finance, investing, or the user\'s portfolio, politely decline to answer and redirect back to portfolio-related topics. When answering: 1) ground your advice in the provided allocations and totals, 2) explain reasoning and tradeoffs, 3) be conservative with claims, 4) avoid providing individualized investment advice; include a short disclaimer that you are not a licensed advisor.'
             },
             {
               role: 'user',

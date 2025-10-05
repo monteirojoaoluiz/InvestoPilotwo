@@ -106,7 +106,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div>
               <h2 className="text-3xl font-bold mb-6">
-                Why Choose InvestAI?
+                Why Choose Stack16?
               </h2>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -120,7 +120,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
             <Card className="p-8">
               <h3 className="text-2xl font-semibold mb-4">Get Started Today</h3>
               <p className="text-muted-foreground mb-6">
-                Join thousands of investors who trust InvestAI to manage their portfolios.
+                Join thousands of investors who trust Stack16 to manage their portfolios.
                 Start with our quick assessment and get your personalized recommendations.
               </p>
               <Button

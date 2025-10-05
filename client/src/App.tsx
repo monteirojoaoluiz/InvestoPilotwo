@@ -250,7 +250,7 @@ function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6 w-full min-w-0 max-w-full overflow-x-hidden">
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 break-words">InvestoPilot Dashboard</h1>
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 break-words">Stack16 Dashboard</h1>
       {hasAssessmentButNoPortfolio && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-800 mb-2">Your investor profile is complete, but no portfolio has been generated yet.</p>
@@ -1150,7 +1150,7 @@ function AuthenticatedRouter() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-primary-foreground font-bold text-sm">IP</span>
               </div>
-              <span className="font-semibold text-lg truncate">InvestoPilot</span>
+              <span className="font-semibold text-lg truncate">Stack16</span>
             </div>
             <ThemeToggle />
           </header>

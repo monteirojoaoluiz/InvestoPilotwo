@@ -1,4 +1,4 @@
-# InvestoPilot - Future Improvements & Enhancements
+# Stack16 - Future Improvements & Enhancements
 
 ## 🚨 Priority 1: Critical Security & Stability
 
