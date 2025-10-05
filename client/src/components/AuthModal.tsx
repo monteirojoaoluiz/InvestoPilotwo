@@ -158,10 +158,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
   };
 
   const handleClose = () => {
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    // Don't reset activeTab to prevent flashing
+    // Delay state reset to prevent flashing during dialog close animation
+    setTimeout(() => {
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+    }, 200);
     onClose();
   };
 

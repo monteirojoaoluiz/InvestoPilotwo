@@ -239,22 +239,22 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   return (
     <Card className="flex flex-col h-[600px] w-full min-w-0 max-w-full">
       <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold flex items-center gap-2">
-              <Bot className="h-5 w-5 text-primary" />
-              Chat with Your Portfolio AI
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold flex items-center gap-2 text-base sm:text-lg">
+              <Bot className="h-5 w-5 text-primary flex-shrink-0" />
+              <span className="truncate">Chat with Your Portfolio AI</span>
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               Ask questions about your investments, market trends, or portfolio strategy
             </p>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-start sm:items-end gap-2 sm:flex-shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={handleNewChat}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto min-h-[36px] touch-manipulation"
               data-testid="button-new-chat"
             >
               <Plus className="h-4 w-4" />
@@ -335,14 +335,17 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
           </span>
         </div>
         <div
-          className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2 -mx-4 px-4 relative touch-pan-x scrollbar-hide [&::-webkit-scrollbar]:hidden"
+          className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2 -mx-4 px-4 relative scrollbar-hide [&::-webkit-scrollbar]:hidden"
           style={{
             WebkitOverflowScrolling: 'touch',
             scrollBehavior: 'smooth',
             overscrollBehaviorX: 'contain',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
-            touchAction: 'pan-x'
+            touchAction: 'pan-x',
+            scrollSnapType: 'x mandatory',
+            // Ensure proper scrolling on mobile
+            minHeight: '44px', // Ensure touch target size
           }}
         >
           {/* Left gradient fade */}
@@ -360,7 +363,14 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
                 setMessage(q);
                 handleSendMessage(e);
               }}
-              className="text-xs h-auto py-2.5 px-4 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 min-w-fit touch-manipulation transition-all duration-200 active:scale-95"
+              className="text-xs h-auto py-2.5 px-4 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 min-w-fit touch-manipulation transition-all duration-200 active:scale-95 scroll-snap-align-start"
+              style={{
+                // Ensure minimum touch target size on mobile
+                minHeight: '44px',
+                // Prevent text selection during scroll
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+              }}
             >
               {q}
             </Button>

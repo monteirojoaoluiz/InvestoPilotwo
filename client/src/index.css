@@ -421,31 +421,32 @@
       }
     }
 
-    /* Simplify dialog animations on mobile for better performance */
+    /* Simplify dialog animations on mobile for better performance and reduce flashing */
     .mobile-dialog-simple {
-      animation-duration: 150ms !important;
+      animation-duration: 200ms !important;
+      transition: opacity 200ms ease-out, transform 200ms ease-out !important;
     }
 
     /* Disable complex animations on mobile devices for better performance */
     @media (max-width: 768px) {
       /* Apply simple fade animations only on mobile */
       [data-state="open"].mobile-dialog-simple {
-        animation: fadeIn 0.15s ease-out !important;
+        animation: fadeIn 0.2s ease-out !important;
       }
 
       [data-state="closed"].mobile-dialog-simple {
-        animation: fadeOut 0.15s ease-in !important;
+        animation: fadeOut 0.2s ease-in !important;
       }
 
       /* Override any complex transform animations on mobile */
       .mobile-dialog-simple[data-state="open"] {
         transform: translate(-50%, -50%) scale(1) !important;
-        animation: fadeIn 0.15s ease-out !important;
+        animation: fadeIn 0.2s ease-out !important;
       }
 
       .mobile-dialog-simple[data-state="closed"] {
         transform: translate(-50%, -50%) scale(0.95) !important;
-        animation: fadeOut 0.15s ease-in !important;
+        animation: fadeOut 0.2s ease-in !important;
       }
     }
   }

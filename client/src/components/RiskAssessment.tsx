@@ -355,33 +355,33 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
               const shortcut = OPTION_SHORTCUTS[index];
 
               return (
-                <div key={option.value} className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 hover:bg-muted/50 touch-manipulation rounded-lg transition-colors min-h-[60px]">
+                <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[64px] sm:min-h-[60px] border border-transparent hover:border-muted-foreground/20 transition-colors">
                   <RadioGroupItem
                     value={option.value}
                     id={option.value}
                     data-testid={`radio-${option.value}`}
-                    className="flex-shrink-0"
+                    className="flex-shrink-0 mt-1 sm:mt-0.5"
                   />
-                  <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-snug sm:leading-relaxed text-sm sm:text-base">
+                  <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium">
                     {shortcut && (
-                      <span className="mr-1.5 sm:mr-2 text-xs sm:text-sm font-medium text-muted-foreground">
-                        ({shortcut})
+                      <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        {shortcut}
                       </span>
                     )}
-                    {option.label}
+                    <span className="text-foreground">{option.label}</span>
                   </Label>
                 </div>
               );
             })}
           </RadioGroup>
 
-          <div className="flex flex-col sm:flex-row justify-between pt-4 sm:pt-6 gap-3">
+          <div className="flex flex-col sm:flex-row justify-between pt-6 sm:pt-8 gap-4">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 0}
               size="lg"
-              className="flex-1 min-h-[48px] touch-manipulation order-2 sm:order-1"
+              className="flex-1 min-h-[52px] touch-manipulation order-2 sm:order-1 text-base font-medium"
               data-testid="button-previous"
             >
               <ChevronLeft className="w-5 h-5 mr-2" />
@@ -392,7 +392,7 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
               onClick={handleNext}
               disabled={!isStepComplete || mutation.isPending}
               size="lg"
-              className="flex-1 min-h-[48px] touch-manipulation order-1 sm:order-2"
+              className="flex-1 min-h-[52px] touch-manipulation order-1 sm:order-2 text-base font-medium"
               data-testid="button-next"
             >
                 {mutation.isPending ? "Saving..." : currentStep === totalSteps - 1 ? "Complete Profile" : "Next"}
