@@ -380,7 +380,7 @@ export default function ETFCatalog() {
                       <DollarSign className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <span className="font-medium">Expense Ratio:</span>
-                        <p className="text-muted-foreground">{(etf.expenseRatio * 100).toFixed(2)}%</p>
+                        <p className="text-muted-foreground">{etf.expenseRatio.toFixed(2)}%</p>
                       </div>
                     </div>
                     {etf.dividendYield && (
