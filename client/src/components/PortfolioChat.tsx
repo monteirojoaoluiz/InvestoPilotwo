@@ -327,23 +327,25 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       </ScrollArea>
 
       <div className="p-4 border-t">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Suggested questions</span>
-          <span className="text-xs text-muted-foreground">Swipe →</span>
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground">Suggested questions</span>
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <span className="hidden sm:inline">Swipe horizontally</span>
+            <span className="sm:hidden">← Swipe →</span>
+          </span>
         </div>
-        <div 
-          className="flex flex-row gap-2 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent"
+        <div
+          className="flex flex-row gap-2 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x scrollbar-hide"
           style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'hsl(var(--primary) / 0.3) transparent',
             WebkitOverflowScrolling: 'touch',
-            scrollBehavior: 'smooth'
+            scrollBehavior: 'smooth',
+            overscrollBehaviorX: 'contain'
           }}
         >
           {/* Left gradient fade */}
-          <div className="absolute left-0 top-0 bottom-2 w-8 bg-gradient-to-r from-background via-background/90 to-transparent pointer-events-none z-10"></div>
+          <div className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-background via-background/95 to-transparent pointer-events-none z-10"></div>
           {/* Right gradient fade */}
-          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background via-background/90 to-transparent pointer-events-none z-10"></div>
+          <div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-background via-background/95 to-transparent pointer-events-none z-10"></div>
           
           {suggestedQuestions.map((q, i) => (
             <Button
@@ -354,7 +356,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
                 setMessage(q);
                 handleSendMessage({preventDefault: () => {}} as any); // Trigger send
               }}
-              className="text-xs h-9 px-3 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 snap-start min-w-[180px]"
+              className="text-xs h-11 px-4 py-2 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 snap-start min-w-[180px] touch-manipulation transition-all duration-200 active:scale-95"
             >
               {q}
             </Button>

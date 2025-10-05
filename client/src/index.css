@@ -487,6 +487,22 @@
     .snap-start {
       scroll-snap-align: start;
     }
+
+    /* Enhanced mobile swipe for suggested questions */
+    .overflow-x-auto.snap-x {
+      scroll-snap-type: x mandatory;
+    }
+
+    /* Better touch momentum for horizontal scroll containers */
+    .overflow-x-auto {
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    /* Prevent vertical scroll interference when swiping horizontally */
+    .overflow-x-auto:active {
+      overscroll-behavior-y: none;
+    }
   }
 
   /* Placeholder styling for contentEditable div */
