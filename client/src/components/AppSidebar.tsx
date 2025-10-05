@@ -45,7 +45,7 @@ const accountItems = [
 // Remove onItemClick and activeItem props
 export default function AppSidebar() {
   const [location] = useLocation();
-  const { setOpen, toggleSidebar } = useSidebar();
+  const { setOpen, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
 
   const { data: assessment } = useQuery({
     queryKey: ['assessment'],
@@ -66,7 +66,15 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={toggleSidebar}>
+                <SidebarMenuButton
+                  onClick={() => {
+                    if (isMobile) {
+                      setOpenMobile(false);
+                    } else {
+                      setOpen(false);
+                    }
+                  }}
+                >
                   <PanelLeftIcon className="h-4 w-4" />
                   <span className="group-data-[collapsible=icon]:hidden">Hide Menu</span>
                 </SidebarMenuButton>
@@ -109,7 +117,13 @@ export default function AppSidebar() {
                           className="w-full flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                           data-testid={item.testId}
                           aria-label={item.title}
-                          onClick={() => setOpen(false)}
+                          onClick={() => {
+                            if (isMobile) {
+                              setOpenMobile(false);
+                            } else {
+                              setOpen(false);
+                            }
+                          }}
                         >
                           <item.icon className="h-4 w-4" />
                           <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
@@ -138,7 +152,13 @@ export default function AppSidebar() {
                         className="w-full flex items-center gap-2 group-data-[collapsible=icon]:justify-center"
                         data-testid={item.testId}
                         aria-label={item.title}
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                          if (isMobile) {
+                            setOpenMobile(false);
+                          } else {
+                            setOpen(false);
+                          }
+                        }}
                       >
                         <item.icon className="h-4 w-4" />
                         <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>

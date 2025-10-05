@@ -335,11 +335,21 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
           </span>
         </div>
         <div
-          className="flex flex-row gap-2 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x scrollbar-hide"
+          className="flex flex-row gap-2 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x scrollbar-hide [&::-webkit-scrollbar]:hidden [-webkit-scrollbar]:hidden"
           style={{
             WebkitOverflowScrolling: 'touch',
             scrollBehavior: 'smooth',
-            overscrollBehaviorX: 'contain'
+            overscrollBehaviorX: 'contain',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
+          onTouchStart={(e) => {
+            // Improve touch handling by preventing default on touch start
+            e.currentTarget.style.scrollBehavior = 'auto';
+          }}
+          onTouchEnd={(e) => {
+            // Restore smooth scrolling after touch ends
+            e.currentTarget.style.scrollBehavior = 'smooth';
           }}
         >
           {/* Left gradient fade */}
@@ -352,9 +362,14 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
               key={i}
               variant="outline"
               size="sm"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 setMessage(q);
-                handleSendMessage({preventDefault: () => {}} as any); // Trigger send
+                handleSendMessage(e); // Trigger send with the actual event
+              }}
+              onTouchStart={(e) => {
+                // Prevent touch events from interfering with parent scroll
+                e.stopPropagation();
               }}
               className="text-xs h-11 px-4 py-2 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 snap-start min-w-[180px] touch-manipulation transition-all duration-200 active:scale-95"
             >
