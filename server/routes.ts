@@ -1,5 +1,5 @@
 // Reference: javascript_log_in_with_replit integration
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertRiskAssessmentSchema, insertPortfolioMessageSchema } from "@shared/schema";
@@ -80,13 +80,13 @@ passport.use(new LocalStrategy(
       }
 
       // Check if user has a password (new users) or is legacy user without password
-      if (!user.password) {
+      if (!(user as any).password) {
         return done(null, false, { message: 'This account was created with magic link. Please use the magic link to sign in or reset your password.' });
       }
 
       // Check password with pepper
       const pepperedPassword = password + PEPPER;
-      const isValidPassword = await bcrypt.compare(pepperedPassword, user.password);
+      const isValidPassword = await bcrypt.compare(pepperedPassword, (user as any).password);
       if (!isValidPassword) {
         return done(null, false, { message: 'Invalid email or password' });
       }
@@ -99,7 +99,7 @@ passport.use(new LocalStrategy(
 ));
 
 passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+  done(null, (user as any).id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
@@ -277,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(passport.session());
 
   // Password-based auth routes
-  app.post('/api/auth/register', registrationLimiter, registerValidation, async (req, res) => {
+  app.post('/api/auth/register', registrationLimiter, registerValidation, async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
 
@@ -301,17 +301,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Auto-login after registration
-      req.login(user, async (err) => {
+      req.login(user, async (err: any) => {
         if (err) {
           console.error('Auto-login error:', err);
           return res.status(500).json({ message: 'Registration successful, but login failed' });
         }
         try {
-          await storage.updateUserLastLogin(user.id);
+          await storage.updateUserLastLogin((user as any).id);
         } catch (updateErr) {
           console.error('Failed to update last login on register:', updateErr);
         }
-        res.json({ message: 'Registration successful', user: { id: user.id, email: user.email } });
+        res.json({ message: 'Registration successful', user: { id: (user as any).id, email: (user as any).email } });
       });
     } catch (error) {
       console.error('Registration error:', error);
@@ -319,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/login', loginLimiter, loginValidation, (req, res, next) => {
+  app.post('/api/auth/login', loginLimiter, loginValidation, (req: Request, res: Response, next: NextFunction) => {
     console.log('Login attempt for:', req.body.email);
     passport.authenticate('local', async (err: any, user: any, info: any) => {
       if (err) {
@@ -332,26 +332,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: info?.message || 'Invalid credentials' });
       }
 
-      console.log('Login successful for user:', user.email);
-      req.login(user, async (err) => {
+      console.log('Login successful for user:', (user as any).email);
+      req.login(user, async (err: any) => {
         if (err) {
           console.error('Session login error:', err);
           return res.status(500).json({ message: 'Login failed' });
         }
 
-        console.log('Session created for user:', user.email);
+        console.log('Session created for user:', (user as any).email);
         try {
-          await storage.updateUserLastLogin(user.id);
+          await storage.updateUserLastLogin((user as any).id);
         } catch (updateErr) {
           console.error('Failed to update last login on login:', updateErr);
         }
-        res.json({ message: 'Login successful', user: { id: user.id, email: user.email } });
+        res.json({ message: 'Login successful', user: { id: (user as any).id, email: (user as any).email } });
       });
     })(req, res, next);
   });
 
   // Auth routes
-  app.post('/api/auth/send', magicLinkLimiter, emailValidation, async (req, res) => {
+  app.post('/api/auth/send', magicLinkLimiter, emailValidation, async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
       if (!email) {
@@ -398,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/verify', async (req, res) => {
+  app.get('/api/auth/verify', async (req: Request, res: Response) => {
     try {
       const { token } = req.query;
       if (!token) {
@@ -420,12 +420,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.markTokenAsUsed(authToken.id);
 
       // Login user
-      req.login(user, async (err) => {
+      req.login(user, async (err: any) => {
         if (err) {
           return res.status(500).redirect('/?error=login_failed');
         }
         try {
-          await storage.updateUserLastLogin(user.id);
+          await storage.updateUserLastLogin((user as any).id);
         } catch (updateErr) {
           console.error('Failed to update last login on magic link:', updateErr);
         }
@@ -437,9 +437,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      console.log('User auth check - user:', req.user?.email);
+      console.log('User auth check - user:', (req.user as any)?.email);
       res.json(req.user);
     } catch (error) {
       console.error('User fetch error:', error);
@@ -457,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Password reset routes
-  app.post('/api/auth/forgot-password', passwordResetLimiter, emailValidation, async (req, res) => {
+  app.post('/api/auth/forgot-password', passwordResetLimiter, emailValidation, async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
 
@@ -474,7 +474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store reset token
       await storage.createPasswordResetToken({
-        userId: user.id,
+        userId: (user as any).id,
         token,
         expiresAt,
         used: false,
@@ -505,7 +505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/reset-password', resetPasswordValidation, async (req, res) => {
+  app.post('/api/auth/reset-password', resetPasswordValidation, async (req: Request, res: Response) => {
     try {
       const { token, password } = req.body;
 
@@ -533,18 +533,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add change password route after password reset routes
-  app.post('/api/auth/change-password', isAuthenticated, changePasswordValidation, async (req: any, res) => {
+  app.post('/api/auth/change-password', isAuthenticated, changePasswordValidation, async (req: Request, res: Response) => {
     try {
       const { currentPassword, newPassword } = req.body;
       const user = req.user;
 
-      if (!user.password) {
+      if (!(user as any).password) {
         return res.status(400).json({ message: 'This account does not have a password set. Use password reset to set one.' });
       }
 
       // Verify current password
       const pepperedCurrent = currentPassword + PEPPER;
-      const isValidCurrent = await bcrypt.compare(pepperedCurrent, user.password);
+      const isValidCurrent = await bcrypt.compare(pepperedCurrent, (user as any).password);
       if (!isValidCurrent) {
         return res.status(400).json({ message: 'Current password is incorrect' });
       }
@@ -554,7 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hashedNew = await bcrypt.hash(pepperedNew, saltRounds);
 
       // Update password
-      await storage.updateUserPassword(user.id, hashedNew);
+      await storage.updateUserPassword((user as any).id, hashedNew);
 
       res.json({ message: 'Password changed successfully' });
     } catch (error) {
@@ -563,12 +563,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/change-email', isAuthenticated, emailChangeLimiter, changeEmailValidation, async (req: any, res) => {
+  app.post('/api/auth/change-email', isAuthenticated, emailChangeLimiter, changeEmailValidation, async (req: Request, res: Response) => {
     try {
       const { newEmail } = req.body;
       const user = req.user;
 
-      if (newEmail === user.email) {
+      if (newEmail === (user as any).email) {
         return res.status(400).json({ message: 'New email cannot be the same as current email' });
       }
 
@@ -584,7 +584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store token
       const tokenData = {
-        userId: user.id,
+        userId: (user as any).id,
         pendingEmail: newEmail,
         token,
         expiresAt,
@@ -618,25 +618,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/delete-account', isAuthenticated, deleteAccountValidation, async (req: any, res) => {
+  app.post('/api/auth/delete-account', isAuthenticated, deleteAccountValidation, async (req: Request, res: Response) => {
     try {
       const { currentPassword } = req.body;
       const user = req.user;
 
-      if (!user.password) {
+      if (!(user as any).password) {
         return res.status(400).json({ message: 'Cannot delete account without password verification. Please set a password first.' });
       }
 
       // Verify current password
       const pepperedCurrent = currentPassword + PEPPER;
-      const isValidCurrent = await bcrypt.compare(pepperedCurrent, user.password);
+      const isValidCurrent = await bcrypt.compare(pepperedCurrent, (user as any).password);
       if (!isValidCurrent) {
         return res.status(400).json({ message: 'Password incorrect' });
       }
 
       // Send farewell email
       const farewellMsg = {
-        to: user.email,
+        to: (user as any).email,
         from: 'monteirojoaoluiz@gmail.com',
         subject: 'Account Deleted - Stack16',
         html: `
@@ -650,7 +650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await sgMail.send(farewellMsg).catch(console.error); // non-blocking
 
       // Delete user data
-      await storage.deleteUserData(user.id);
+      await storage.deleteUserData((user as any).id);
 
       // Logout
       req.logout((err) => {
@@ -664,32 +664,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/download-data', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/download-data', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const user = req.user;
 
       // Collect all user data
       const userData = {
         user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          profileImageUrl: user.profileImageUrl,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-          lastLogin: user.lastLogin,
+          id: (user as any).id,
+          email: (user as any).email,
+          firstName: (user as any).firstName,
+          lastName: (user as any).lastName,
+          profileImageUrl: (user as any).profileImageUrl,
+          createdAt: (user as any).createdAt,
+          updatedAt: (user as any).updatedAt,
+          lastLogin: (user as any).lastLogin,
         },
-        riskAssessments: await storage.getRiskAssessmentsByUserId(user.id),
-        portfolioRecommendations: await storage.getPortfolioRecommendationsByUserId(user.id),
-        portfolioMessages: await storage.getPortfolioMessagesByUserId(user.id),
+        riskAssessments: await storage.getRiskAssessmentsByUserId((user as any).id),
+        portfolioRecommendations: await storage.getPortfolioRecommendationsByUserId((user as any).id),
+        portfolioMessages: await storage.getPortfolioMessagesByUserId((user as any).id),
         exportedAt: new Date().toISOString(),
         version: '1.0',
       };
 
       // Create filename with timestamp
       const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `stack16-data-${user.email}-${timestamp}.json`;
+      const filename = `stack16-data-${(user as any).email}-${timestamp}.json`;
 
       // Set headers for file download
       res.setHeader('Content-Type', 'application/json');
@@ -702,7 +702,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/verify-email-change', async (req, res) => {
+  app.get('/api/auth/verify-email-change', async (req: Request, res: Response) => {
     try {
       const { token } = req.query;
       if (!token) {
@@ -736,7 +736,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       hasPasswordPepper: !!process.env.PASSWORD_PEPPER,
       sessionId: req.sessionID,
       isAuthenticated: req.isAuthenticated(),
-      user: req.user ? { id: req.user.id, email: req.user.email } : null,
+      user: req.user ? { id: (req.user as any).id, email: (req.user as any).email } : null,
     });
   });
 
@@ -763,9 +763,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Risk assessment routes
-  app.post('/api/risk-assessment', isAuthenticated, async (req: any, res) => {
+  app.post('/api/risk-assessment', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
       const validatedData = insertRiskAssessmentSchema.parse(req.body);
       
       const assessment = await storage.createRiskAssessment({
@@ -783,9 +783,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/risk-assessment', isAuthenticated, async (req: any, res) => {
+  app.get('/api/risk-assessment', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
       const assessment = await storage.getRiskAssessmentByUserId(userId);
       res.json(assessment);
     } catch (error) {
@@ -795,9 +795,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Portfolio routes
-  app.post('/api/portfolio/generate', isAuthenticated, async (req: any, res) => {
+  app.post('/api/portfolio/generate', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
       const assessment = await storage.getRiskAssessmentByUserId(userId);
       
       if (!assessment) {
@@ -821,9 +821,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/portfolio', isAuthenticated, async (req: any, res) => {
+  app.get('/api/portfolio', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
       console.log('Fetching portfolio for userId:', userId);
       const portfolio = await storage.getPortfolioByUserId(userId);
 
@@ -853,13 +853,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(response);
     } catch (error) {
-      console.error("Error fetching portfolio for user:", req.user?.id || 'unknown', "Full error:", error);
+      console.error("Error fetching portfolio for user:", (req.user as any)?.id || 'unknown', "Full error:", error);
       res.status(500).json({ message: "Failed to fetch portfolio" });
     }
   });
 
   // ETF market data routes
-  app.get('/api/etf/:ticker/history', isAuthenticated, async (req: any, res) => {
+  app.get('/api/etf/:ticker/history', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { ticker } = req.params as { ticker: string };
       const { range = '1y', interval = '1wk' } = req.query as { range?: string; interval?: string };
@@ -879,7 +879,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         interval: interval as any,
       } as any);
 
-      const points = (result.quotes || []).map((q: any) => ({
+      const points = ((result as any).quotes || []).map((q: any) => ({
         date: q.date instanceof Date ? q.date.toISOString().slice(0, 10) : q.date,
         close: q.close,
       })).filter((p: any) => typeof p.close === 'number');
@@ -891,7 +891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/etf/:ticker/info', isAuthenticated, async (req: any, res) => {
+  app.get('/api/etf/:ticker/info', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { ticker } = req.params;
       const quote = await yahooFinance.quote(ticker);
@@ -903,9 +903,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Combined portfolio performance (3y daily, normalized to 100)
-  app.get('/api/portfolio/performance', isAuthenticated, async (req: any, res) => {
+  app.get('/api/portfolio/performance', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
       const portfolio = await storage.getPortfolioByUserId(userId);
 
       // Default conservative portfolio if no user portfolio exists
@@ -919,13 +919,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allocations = portfolio ? (portfolio as any).allocations || [] : defaultAllocations;
 
       let tickers = allocations
-        .filter((a) => a && typeof a.percentage === 'number' && a.percentage! > 0 && typeof a.ticker === 'string')
-        .map((a) => ({ ticker: (a.ticker as string).toUpperCase(), weight: (a.percentage as number) / 100 }));
+        .filter((a: any) => a && typeof a.percentage === 'number' && (a.percentage as number) > 0 && typeof a.ticker === 'string')
+        .map((a: any) => ({ ticker: (a.ticker as string).toUpperCase(), weight: (a.percentage as number) / 100 }));
 
       // Normalize weights to sum to 1
-      const totalWeight = tickers.reduce((sum, t) => sum + t.weight, 0);
+      const totalWeight = tickers.reduce((sum: number, t: any) => sum + t.weight, 0);
       if (totalWeight > 0) {
-        tickers = tickers.map((t) => ({ ...t, weight: t.weight / totalWeight }));
+        tickers = tickers.map((t: any) => ({ ...t, weight: t.weight / totalWeight }));
       }
 
       if (tickers.length === 0) {
@@ -933,17 +933,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Sort by weight (highest first) to prioritize most important tickers
-      tickers.sort((a, b) => b.weight - a.weight);
+      tickers.sort((a: any, b: any) => b.weight - a.weight);
       
       // Limit to top 3 tickers to reduce rate limiting issues
       if (tickers.length > 3) {
-        console.log(`Limiting to top 3 tickers by weight to avoid rate limiting: ${tickers.slice(0, 3).map(t => t.ticker).join(', ')}`);
+        console.log(`Limiting to top 3 tickers by weight to avoid rate limiting: ${tickers.slice(0, 3).map((t: any) => t.ticker).join(', ')}`);
         tickers = tickers.slice(0, 3);
         
         // Renormalize weights
-        const newTotalWeight = tickers.reduce((sum, t) => sum + t.weight, 0);
+        const newTotalWeight = tickers.reduce((sum: number, t: any) => sum + t.weight, 0);
         if (newTotalWeight > 0) {
-          tickers = tickers.map((t) => ({ ...t, weight: t.weight / newTotalWeight }));
+          tickers = tickers.map((t: any) => ({ ...t, weight: t.weight / newTotalWeight }));
         }
       }
 
@@ -1115,13 +1115,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error computing portfolio performance:', error);
       res.status(500).json({
         message: 'Failed to compute portfolio performance. This may be due to temporary market data service limitations. Please try again later.',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
 
   // Portfolio chat routes
-  app.get('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: any, res) => {
+  app.get('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { portfolioId } = req.params;
       const messages = await storage.getPortfolioMessages(portfolioId);
@@ -1132,10 +1132,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { portfolioId } = req.params;
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
 
       // Verify the portfolio belongs to the user
       const portfolio = await storage.getPortfolioByUserId(userId);
@@ -1151,9 +1151,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: any, res) => {
+  app.post('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
       const { portfolioId } = req.params;
       const validatedData = insertPortfolioMessageSchema.parse(req.body);
       

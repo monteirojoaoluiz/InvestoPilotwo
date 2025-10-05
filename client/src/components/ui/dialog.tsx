@@ -75,7 +75,7 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
   // Use body class to prevent layout shifts during dialog interactions - only when dialog is open
-  useBodyClass(props['data-state'] === 'open');
+  useBodyClass((props as any)['data-state'] === 'open');
 
   // Use the mobile detection hook
   const isMobile = useIsMobile();

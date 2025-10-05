@@ -287,7 +287,7 @@ function Dashboard() {
                   <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <div className="flex-1">
                     <div className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">Investment Timeline</div>
-                    <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{assessmentData.timeHorizon?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || '—'}</div>
+                    <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{assessmentData.timeHorizon?.replace(/-/g, ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || '—'}</div>
                   </div>
                 </div>
 
@@ -295,7 +295,7 @@ function Dashboard() {
                   <Heart className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
                   <div className="flex-1">
                     <div className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">Career Stage</div>
-                    <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">{assessmentData.lifeStage?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || '—'}</div>
+                    <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">{assessmentData.lifeStage?.replace(/-/g, ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || '—'}</div>
                   </div>
                 </div>
 
@@ -315,7 +315,7 @@ function Dashboard() {
                                    .replace(/developed ex us europe/g, 'Developed ex-US & ex-Europe')
                             )
                             .join(', ')
-                        : assessmentData.geographicFocus?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || '—'}
+                        : assessmentData.geographicFocus?.replace(/-/g, ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || '—'}
                     </div>
                   </div>
                 </div>
@@ -332,7 +332,7 @@ function Dashboard() {
                   <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
                   <div className="flex-1">
                     <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">Investment Objective</div>
-                    <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{assessmentData.dividendVsGrowth?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || '—'}</div>
+                    <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{assessmentData.dividendVsGrowth?.replace(/-/g, ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || '—'}</div>
                   </div>
                 </div>
               </div>
