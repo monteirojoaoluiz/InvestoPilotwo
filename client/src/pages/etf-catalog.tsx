@@ -20,6 +20,7 @@ interface ETF {
   expenseRatio: number;
   riskLevel: 'Low' | 'Moderate' | 'High';
   dividendYield?: number;
+  yearlyGain?: number; // Annualized return since inception
   color: string;
 }
 
@@ -34,6 +35,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.03,
     riskLevel: 'Moderate',
     dividendYield: 1.32,
+    yearlyGain: 12.5,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -45,6 +47,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.07,
     riskLevel: 'Moderate',
     dividendYield: 2.85,
+    yearlyGain: 8.2,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -56,6 +59,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.03,
     riskLevel: 'Low',
     dividendYield: 3.12,
+    yearlyGain: 4.1,
     color: 'hsl(var(--chart-3))'
   },
   {
@@ -67,6 +71,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.12,
     riskLevel: 'Moderate',
     dividendYield: 3.87,
+    yearlyGain: 9.8,
     color: 'hsl(var(--chart-4))'
   },
   {
@@ -78,6 +83,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.20,
     riskLevel: 'High',
     dividendYield: 0.48,
+    yearlyGain: 15.2,
     color: 'hsl(var(--chart-5))'
   },
   {
@@ -89,6 +95,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.06,
     riskLevel: 'Low',
     dividendYield: 1.78,
+    yearlyGain: 11.8,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -100,6 +107,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.22,
     riskLevel: 'Moderate',
     dividendYield: 4.35,
+    yearlyGain: 7.5,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -111,6 +119,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.08,
     riskLevel: 'High',
     dividendYield: 3.12,
+    yearlyGain: 6.8,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -122,6 +131,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.09,
     riskLevel: 'Moderate',
     dividendYield: 1.18,
+    yearlyGain: 12.2,
     color: 'hsl(var(--chart-1))'
   },
   {
@@ -133,6 +143,7 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.20,
     riskLevel: 'Moderate',
     dividendYield: 2.45,
+    yearlyGain: 8.1,
     color: 'hsl(var(--chart-2))'
   },
   {
@@ -144,6 +155,236 @@ const ETF_DATA: ETF[] = [
     expenseRatio: 0.12,
     riskLevel: 'Low',
     dividendYield: 2.89,
+    yearlyGain: 3.8,
+    color: 'hsl(var(--chart-3))'
+  },
+  // Additional ETFs from the comprehensive list
+  {
+    ticker: 'ITOT',
+    name: 'iShares Core S&P Total U.S. Stock Mkt ETF',
+    description: 'Provides broad exposure to the entire U.S. stock market, including small-, mid-, and large-cap stocks.',
+    assetType: 'US Equity',
+    category: 'Large Blend',
+    expenseRatio: 0.03,
+    riskLevel: 'Moderate',
+    dividendYield: 1.25,
+    yearlyGain: 12.3,
+    color: 'hsl(var(--chart-1))'
+  },
+  {
+    ticker: 'VTV',
+    name: 'Vanguard Value ETF',
+    description: 'Provides exposure to large-cap U.S. companies with value characteristics, focusing on undervalued stocks.',
+    assetType: 'US Equity',
+    category: 'Large Value',
+    expenseRatio: 0.04,
+    riskLevel: 'Moderate',
+    dividendYield: 2.15,
+    yearlyGain: 10.8,
+    color: 'hsl(var(--chart-1))'
+  },
+  {
+    ticker: 'SPYV',
+    name: 'SPDR® Portfolio S&P 500 Value ETF',
+    description: 'Tracks the S&P 500 Value Index, providing exposure to large-cap U.S. value stocks.',
+    assetType: 'US Equity',
+    category: 'Large Value',
+    expenseRatio: 0.04,
+    riskLevel: 'Moderate',
+    dividendYield: 1.95,
+    yearlyGain: 10.5,
+    color: 'hsl(var(--chart-1))'
+  },
+  {
+    ticker: 'VOE',
+    name: 'Vanguard Mid-Cap Value ETF',
+    description: 'Provides exposure to mid-cap U.S. companies with value characteristics.',
+    assetType: 'US Equity',
+    category: 'Mid-Cap Value',
+    expenseRatio: 0.07,
+    riskLevel: 'Moderate',
+    dividendYield: 2.05,
+    yearlyGain: 11.2,
+    color: 'hsl(var(--chart-1))'
+  },
+  {
+    ticker: 'IWS',
+    name: 'iShares Russell Mid-Cap Value ETF',
+    description: 'Tracks the Russell Midcap Value Index, focusing on mid-cap value stocks.',
+    assetType: 'US Equity',
+    category: 'Mid-Cap Value',
+    expenseRatio: 0.24,
+    riskLevel: 'Moderate',
+    dividendYield: 1.85,
+    yearlyGain: 10.9,
+    color: 'hsl(var(--chart-1))'
+  },
+  {
+    ticker: 'VBR',
+    name: 'Vanguard Small-Cap Value ETF',
+    description: 'Provides exposure to small-cap U.S. companies with value characteristics.',
+    assetType: 'US Equity',
+    category: 'Small Value',
+    expenseRatio: 0.07,
+    riskLevel: 'Moderate',
+    dividendYield: 1.95,
+    yearlyGain: 11.8,
+    color: 'hsl(var(--chart-1))'
+  },
+  {
+    ticker: 'IWN',
+    name: 'iShares Russell 2000 Value ETF',
+    description: 'Tracks the Russell 2000 Value Index, focusing on small-cap value stocks.',
+    assetType: 'US Equity',
+    category: 'Small Value',
+    expenseRatio: 0.24,
+    riskLevel: 'High',
+    dividendYield: 1.75,
+    yearlyGain: 10.2,
+    color: 'hsl(var(--chart-1))'
+  },
+  {
+    ticker: 'VEA',
+    name: 'Vanguard FTSE Developed Markets ETF',
+    description: 'Provides exposure to developed market stocks outside the U.S. and Canada.',
+    assetType: 'International Equity',
+    category: 'Foreign Large Blend',
+    expenseRatio: 0.05,
+    riskLevel: 'Moderate',
+    dividendYield: 2.85,
+    yearlyGain: 7.8,
+    color: 'hsl(var(--chart-2))'
+  },
+  {
+    ticker: 'IEFA',
+    name: 'iShares Core MSCI EAFE ETF',
+    description: 'Tracks the MSCI EAFE Index, providing broad exposure to developed markets outside North America.',
+    assetType: 'International Equity',
+    category: 'Foreign Large Blend',
+    expenseRatio: 0.07,
+    riskLevel: 'Moderate',
+    dividendYield: 2.65,
+    yearlyGain: 8.1,
+    color: 'hsl(var(--chart-2))'
+  },
+  {
+    ticker: 'IEMG',
+    name: 'iShares Core MSCI Emerging Markets ETF',
+    description: 'Tracks the MSCI Emerging Markets Index, providing broad exposure to emerging market stocks.',
+    assetType: 'Emerging Markets Equity',
+    category: 'Diversified Emerging Markets',
+    expenseRatio: 0.11,
+    riskLevel: 'High',
+    dividendYield: 2.45,
+    yearlyGain: 6.5,
+    color: 'hsl(var(--chart-2))'
+  },
+  {
+    ticker: 'GBIL',
+    name: 'Goldman Sachs Access Treasury 0-1 Year ETF',
+    description: 'Provides exposure to U.S. Treasury securities with maturities between 0-1 year.',
+    assetType: 'Bonds',
+    category: 'Ultrashort Bond',
+    expenseRatio: 0.12,
+    riskLevel: 'Low',
+    dividendYield: 4.85,
+    yearlyGain: 2.1,
+    color: 'hsl(var(--chart-3))'
+  },
+  {
+    ticker: 'JPST',
+    name: 'JPMorgan Ultra-Short Income ETF',
+    description: 'Provides exposure to ultra-short-term investment-grade debt securities.',
+    assetType: 'Bonds',
+    category: 'Ultrashort Bond',
+    expenseRatio: 0.18,
+    riskLevel: 'Low',
+    dividendYield: 4.95,
+    yearlyGain: 2.3,
+    color: 'hsl(var(--chart-3))'
+  },
+  {
+    ticker: 'VTIP',
+    name: 'Vanguard Short-Term Infl-Prot Secs ETF',
+    description: 'Provides exposure to short-term Treasury Inflation-Protected Securities (TIPS).',
+    assetType: 'Bonds',
+    category: 'Inflation-Protected Bond',
+    expenseRatio: 0.05,
+    riskLevel: 'Low',
+    dividendYield: 3.25,
+    yearlyGain: 2.8,
+    color: 'hsl(var(--chart-3))'
+  },
+  {
+    ticker: 'MUB',
+    name: 'iShares National Muni Bond ETF',
+    description: 'Provides exposure to investment-grade municipal bonds from across the United States.',
+    assetType: 'Bonds',
+    category: 'Muni National Intermediate',
+    expenseRatio: 0.07,
+    riskLevel: 'Low',
+    dividendYield: 2.85,
+    yearlyGain: 3.9,
+    color: 'hsl(var(--chart-3))'
+  },
+  {
+    ticker: 'TFI',
+    name: 'SPDR® Nuveen Blmbg Mncpl Bd ETF',
+    description: 'Tracks the Bloomberg Barclays Municipal Managed Money 1-25 Years Index.',
+    assetType: 'Bonds',
+    category: 'Muni National Long',
+    expenseRatio: 0.23,
+    riskLevel: 'Low',
+    dividendYield: 2.75,
+    yearlyGain: 4.2,
+    color: 'hsl(var(--chart-3))'
+  },
+  {
+    ticker: 'AGG',
+    name: 'iShares Core U.S. Aggregate Bond ETF',
+    description: 'Tracks the Bloomberg Barclays U.S. Aggregate Bond Index, providing broad bond market exposure.',
+    assetType: 'Bonds',
+    category: 'Intermediate Core Bond',
+    expenseRatio: 0.04,
+    riskLevel: 'Low',
+    dividendYield: 3.15,
+    yearlyGain: 4.0,
+    color: 'hsl(var(--chart-3))'
+  },
+  {
+    ticker: 'BNDX',
+    name: 'Vanguard Total International Bond ETF',
+    description: 'Provides exposure to investment-grade bonds from developed and emerging markets outside the U.S.',
+    assetType: 'Bonds',
+    category: 'Global Bond-USD Hedged',
+    expenseRatio: 0.08,
+    riskLevel: 'Low',
+    dividendYield: 2.95,
+    yearlyGain: 3.2,
+    color: 'hsl(var(--chart-3))'
+  },
+  {
+    ticker: 'EMB',
+    name: 'iShares JP Morgan USD Em Mkts Bd ETF',
+    description: 'Provides exposure to U.S. dollar-denominated emerging market sovereign and corporate bonds.',
+    assetType: 'Bonds',
+    category: 'Emerging Markets Bond',
+    expenseRatio: 0.39,
+    riskLevel: 'Moderate',
+    dividendYield: 4.85,
+    yearlyGain: 5.8,
+    color: 'hsl(var(--chart-3))'
+  },
+  {
+    ticker: 'VWOB',
+    name: 'Vanguard Emerging Mkts Govt Bd ETF',
+    description: 'Provides exposure to emerging market government bonds denominated in local currencies.',
+    assetType: 'Bonds',
+    category: 'Emerging Markets Bond',
+    expenseRatio: 0.25,
+    riskLevel: 'Moderate',
+    dividendYield: 5.15,
+    yearlyGain: 4.9,
     color: 'hsl(var(--chart-3))'
   }
 ];
@@ -177,6 +418,8 @@ export default function ETFCatalog() {
           return a.expenseRatio - b.expenseRatio;
         case 'dividendYield':
           return (b.dividendYield || 0) - (a.dividendYield || 0);
+        case 'yearlyGain':
+          return (b.yearlyGain || 0) - (a.yearlyGain || 0);
         default:
           return 0;
       }
@@ -296,12 +539,13 @@ export default function ETFCatalog() {
                 <SelectTrigger className="bg-muted/30">
                   <SelectValue placeholder="Sort By" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="ticker">Ticker</SelectItem>
-                  <SelectItem value="expenseRatio">Expense Ratio (Low to High)</SelectItem>
-                  <SelectItem value="dividendYield">Dividend Yield (High to Low)</SelectItem>
-                </SelectContent>
+              <SelectContent>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="ticker">Ticker</SelectItem>
+                <SelectItem value="expenseRatio">Expense Ratio (Low to High)</SelectItem>
+                <SelectItem value="dividendYield">Dividend Yield (High to Low)</SelectItem>
+                <SelectItem value="yearlyGain">Annual Return (High to Low)</SelectItem>
+              </SelectContent>
               </Select>
             </div>
           </div>
@@ -375,7 +619,7 @@ export default function ETFCatalog() {
                 </TabsContent>
 
                 <TabsContent value="metrics" className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-muted-foreground" />
                       <div>
@@ -389,6 +633,15 @@ export default function ETFCatalog() {
                         <div>
                           <span className="font-medium">Dividend Yield:</span>
                           <p className="text-muted-foreground">{etf.dividendYield}%</p>
+                        </div>
+                      </div>
+                    )}
+                    {etf.yearlyGain && (
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <span className="font-medium">Annual Return:</span>
+                          <p className="text-muted-foreground">{etf.yearlyGain}%</p>
                         </div>
                       </div>
                     )}
