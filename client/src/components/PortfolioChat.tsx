@@ -335,7 +335,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
           </span>
         </div>
         <div
-          className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2 -mx-4 px-4 relative scrollbar-hide [&::-webkit-scrollbar]:hidden"
+          className="suggested-questions-container flex gap-2 overflow-x-auto overflow-y-hidden pb-2 -mx-4 px-4 relative scrollbar-hide [&::-webkit-scrollbar]:hidden"
           style={{
             WebkitOverflowScrolling: 'touch',
             scrollBehavior: 'smooth',

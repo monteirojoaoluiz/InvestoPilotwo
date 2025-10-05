@@ -315,16 +315,24 @@
       overflow-y: visible !important;
     }
 
-    /* General containers should allow vertical scrolling, but exclude layout containers */
-    div:not(.container):not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
-    section:not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
-    article:not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
-    aside:not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
-    nav:not([class*="container"]):not(.mx-auto):not([class*="max-w"]),
-    header:not([class*="container"]):not(.mx-auto):not([class*="max-w"]) {
+    /* General containers should allow vertical scrolling, but be more specific about what gets horizontal scroll prevention */
+    /* Exclude elements that specifically need horizontal scrolling */
+    div:not(.container):not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
+    section:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
+    article:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
+    aside:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
+    nav:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
+    header:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]) {
       max-width: 100vw !important;
       overflow-x: hidden !important;
       overflow-y: visible !important;
+    }
+
+    /* Specifically allow horizontal scrolling for elements that need it */
+    [class*="overflow-x-auto"],
+    [class*="overflow-x"] {
+      overflow-x: auto !important;
+      max-width: none !important;
     }
 
     /* Ensure images don't overflow */
@@ -516,17 +524,32 @@
     /* Enhanced mobile swipe for suggested questions */
     .overflow-x-auto.snap-x {
       scroll-snap-type: x mandatory;
+      scroll-snap-stop: always;
     }
 
     /* Better touch momentum for horizontal scroll containers */
     .overflow-x-auto {
       -webkit-overflow-scrolling: touch;
       scroll-behavior: smooth;
+      overscroll-behavior-x: contain;
+      overscroll-behavior-y: none;
     }
 
     /* Prevent vertical scroll interference when swiping horizontally */
     .overflow-x-auto:active {
       overscroll-behavior-y: none;
+      touch-action: pan-x;
+    }
+
+    /* Ensure suggested questions specifically work on mobile */
+    .suggested-questions-container,
+    [class*="suggested-questions"],
+    [class*="overflow-x-auto"][class*="pb-2"] {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      scroll-behavior: smooth !important;
+      overscroll-behavior-x: contain !important;
+      max-width: none !important;
     }
   }
 
