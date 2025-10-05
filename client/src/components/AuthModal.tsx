@@ -158,11 +158,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
   };
 
   const handleClose = () => {
-    // Reset state immediately when modal starts closing to prevent flashing
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
+    // Don't reset state immediately - wait for animation to complete
     onClose();
+
+    // Reset state after animation completes (200ms for mobile dialogs)
+    setTimeout(() => {
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+    }, 250);
   };
 
   // Reset initialization flag when modal closes

@@ -49,8 +49,8 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
-  // Use body class to prevent layout shifts during dialog interactions
-  useBodyClass(true);
+  // Use body class to prevent layout shifts during dialog interactions - only when dialog is open
+  useBodyClass(props['data-state'] === 'open');
 
   return (
     <DialogPortal>
