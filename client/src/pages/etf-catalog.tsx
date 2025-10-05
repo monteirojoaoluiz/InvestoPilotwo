@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface ETF {
   ticker: string;
@@ -183,8 +185,8 @@ export default function ETFCatalog() {
     return filtered;
   }, [searchTerm, assetTypeFilter, riskFilter, sortBy]);
 
-  const assetTypes = [...new Set(ETF_DATA.map(etf => etf.assetType))];
-  const riskLevels = [...new Set(ETF_DATA.map(etf => etf.riskLevel))];
+  const assetTypes = Array.from(new Set(ETF_DATA.map(etf => etf.assetType)));
+  const riskLevels = Array.from(new Set(ETF_DATA.map(etf => etf.riskLevel)));
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -194,13 +196,26 @@ export default function ETFCatalog() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">ETF Catalog</h1>
-        <p className="text-muted-foreground">
-          Explore our comprehensive collection of ETFs with detailed information and filtering options
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="flex flex-col flex-1 min-w-0 max-w-full overflow-x-hidden">
+        <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full max-w-full">
+          <div className="flex items-center gap-2 min-w-0">
+            <SidebarTrigger className="mr-2 flex-shrink-0" />
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">S16</span>
+            </div>
+            <span className="font-semibold text-lg truncate">ETF Catalog</span>
+          </div>
+          <ThemeToggle />
+        </header>
+        <main className="flex-1 overflow-auto w-full max-w-full min-h-0">
+          <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-2">ETF Catalog</h1>
+              <p className="text-muted-foreground">
+                Explore our comprehensive collection of ETFs with detailed information and filtering options
+              </p>
+            </div>
 
       {/* Filters Section */}
       <Card className="mb-8">
@@ -364,8 +379,11 @@ export default function ETFCatalog() {
           <p className="text-muted-foreground">
             Try adjusting your search terms or filters to find ETFs that match your criteria.
           </p>
-        </div>
-      )}
+          </div>
+          )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -702,16 +702,6 @@ function ETFCatalogPage() {
     <div className="min-h-screen bg-background">
       <AppSidebar />
       <div className="flex flex-col flex-1 min-w-0 max-w-full overflow-x-hidden">
-        <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full max-w-full">
-          <div className="flex items-center gap-2 min-w-0">
-            <SidebarTrigger className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2 flex-shrink-0`} />
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-primary-foreground font-bold text-sm">S16</span>
-            </div>
-            <span className="font-semibold text-lg truncate">ETF Catalog</span>
-          </div>
-          <ThemeToggle />
-        </header>
         <main className="flex-1 overflow-auto w-full max-w-full min-h-0">
           <ErrorBoundary>
             <ETFCatalog />

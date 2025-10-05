@@ -381,7 +381,7 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
         </CardHeader>
         <CardContent className="space-y-3 sm:space-y-4 pt-2">
           {currentQuestion.id === "geographicFocus" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-4">
               {currentQuestion.options.map((option, index) => {
                 const shortcut = OPTION_SHORTCUTS[index];
                 const isChecked = (answers[currentQuestion.id] as string[]).includes(option.value);
@@ -411,7 +411,7 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
             </div>
           ) : (
             <RadioGroup value={answers[currentQuestion.id]} onValueChange={handleRadioChange}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-4">
                 {currentQuestion.options.map((option, index) => {
                   const shortcut = OPTION_SHORTCUTS[index];
 
