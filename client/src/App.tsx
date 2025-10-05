@@ -1189,7 +1189,7 @@ function Router() {
 
   return (
     <div className="min-h-screen">
-      <Header onAuthClick={openLoginModal} showMenuButton={false} />
+      <Header onSignInClick={openLoginModal} onGetStartedClick={openRegisterModal} showMenuButton={false} />
       <Switch>
         <Route path="/">
           <LandingPage onGetStarted={openRegisterModal} />

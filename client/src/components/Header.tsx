@@ -2,12 +2,13 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, Menu } from "lucide-react";
 
 interface HeaderProps {
-  onAuthClick?: () => void;
+  onSignInClick?: () => void;
+  onGetStartedClick?: () => void;
   onMenuClick?: () => void;
   showMenuButton?: boolean;
 }
 
-export default function Header({ onAuthClick, onMenuClick, showMenuButton = false }: HeaderProps) {
+export default function Header({ onSignInClick, onGetStartedClick, onMenuClick, showMenuButton = false }: HeaderProps) {
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
@@ -32,15 +33,15 @@ export default function Header({ onAuthClick, onMenuClick, showMenuButton = fals
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
-          <Button 
-            variant="ghost" 
-            onClick={onAuthClick}
+          <Button
+            variant="ghost"
+            onClick={onSignInClick}
             data-testid="button-auth"
           >
             Sign In
           </Button>
-          <Button 
-            onClick={onAuthClick}
+          <Button
+            onClick={onGetStartedClick}
             data-testid="button-get-started"
           >
             Get Started

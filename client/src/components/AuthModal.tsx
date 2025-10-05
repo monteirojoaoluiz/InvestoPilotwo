@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const hasInitializedTab = useRef(false);
   const { toast } = useToast();
+
+  // Set initial tab when modal opens, but don't reset it on subsequent opens
+  React.useEffect(() => {
+    if (isOpen && !hasInitializedTab.current) {
+      setActiveTab(defaultTab);
+      hasInitializedTab.current = true;
+    }
+  }, [isOpen, defaultTab]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,9 +161,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
     setEmail("");
     setPassword("");
     setConfirmPassword("");
-    setActiveTab(defaultTab);
+    // Don't reset activeTab to prevent flashing
     onClose();
   };
+
+  // Reset initialization flag when modal closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      hasInitializedTab.current = false;
+    }
+  }, [isOpen]);
 
   const handleTabChange = (value: string) => {
     if (value === 'login' || value === 'register') {
