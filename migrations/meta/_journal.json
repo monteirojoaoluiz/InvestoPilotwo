@@ -22,6 +22,13 @@
       "when": 1735993000000,
       "tag": "0003_add_dividend_vs_growth",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759667370855,
+      "tag": "0003_mysterious_spectrum",
+      "breakpoints": true
     }
   ]
 }
