@@ -1188,15 +1188,17 @@ function Router() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header onSignInClick={openLoginModal} onGetStartedClick={openRegisterModal} showMenuButton={false} />
-      <Switch>
-        <Route path="/">
-          <LandingPage onGetStarted={openRegisterModal} />
-        </Route>
-        <Route path="/reset-password" component={ResetPassword} />
-        <Route component={NotFound} />
-      </Switch>
+      <main className="flex-1">
+        <Switch>
+          <Route path="/">
+            <LandingPage onGetStarted={openRegisterModal} />
+          </Route>
+          <Route path="/reset-password" component={ResetPassword} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}

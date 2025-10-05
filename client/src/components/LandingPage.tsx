@@ -40,7 +40,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
   ];
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+    <div className="w-full max-w-full overflow-x-hidden">
       {/* Hero Section */}
       <section
         className="relative min-h-[600px] flex items-center justify-center bg-cover bg-center bg-no-repeat"
