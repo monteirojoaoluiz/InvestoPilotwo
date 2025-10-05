@@ -394,6 +394,33 @@
       aspect-ratio: 1 !important;
     }
 
+    /* Enhanced radio button styling for mobile */
+    [data-radix-radio-group-item] {
+      border-radius: 50% !important;
+      aspect-ratio: 1 !important;
+      transition: all 0.2s ease-in-out;
+    }
+
+    /* Ensure radio button containers have proper touch targets */
+    [data-radix-radio-group-item] {
+      position: relative;
+    }
+
+    /* Improve radio button visibility and touch interaction */
+    @media (max-width: 768px) {
+      [data-radix-radio-group-item] {
+        min-height: 44px !important;
+        min-width: 44px !important;
+        border-width: 2px !important;
+      }
+
+      /* Ensure the indicator circle scales properly */
+      [data-radix-radio-group-item] svg {
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+
     /* Simplify dialog animations on mobile for better performance */
     .mobile-dialog-simple {
       animation-duration: 150ms !important;
