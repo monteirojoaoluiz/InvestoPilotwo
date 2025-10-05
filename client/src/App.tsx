@@ -1124,7 +1124,7 @@ function AuthenticatedRouter() {
       open={isSidebarOpen}
       onOpenChange={handleSidebarOpenChange}
     >
-      <div className="flex h-screen w-full max-w-full overflow-x-hidden">
+      <div className="flex min-h-screen w-full max-w-full overflow-x-hidden">
         {/* Force sidebar to be hidden on mobile/tablet */}
         <div className={`${isCompactSidebar ? 'hidden' : ''}`}>
           <AppSidebar />
@@ -1140,7 +1140,7 @@ function AuthenticatedRouter() {
             </div>
             <ThemeToggle />
           </header>
-          <main className="flex-1 overflow-auto w-full max-w-full">
+          <main className="flex-1 overflow-auto w-full max-w-full min-h-0">
             <ErrorBoundary>
               <Switch>
                 <Route path="/dashboard" component={Dashboard} />

@@ -302,10 +302,24 @@
       word-wrap: break-word;
     }
 
-    /* Prevent any element from causing horizontal scroll */
-    body, html, #root, main, div, section, article, aside, nav {
+    /* Prevent any element from causing horizontal scroll - but allow vertical scrolling */
+    body, html, #root {
       max-width: 100vw !important;
       overflow-x: hidden !important;
+    }
+
+    /* Be more specific with main and content containers */
+    main {
+      max-width: 100vw !important;
+      overflow-x: hidden !important;
+      overflow-y: visible !important;
+    }
+
+    /* General containers should allow vertical scrolling */
+    div, section, article, aside, nav {
+      max-width: 100vw !important;
+      overflow-x: hidden !important;
+      overflow-y: visible !important;
     }
 
     /* Ensure images don't overflow */
@@ -330,13 +344,9 @@
       z-index: 50 !important;
     }
 
-    /* Prevent any transform issues on body/html during dialog interactions */
-    body.dialog-open,
-    body.dialog-open html {
+    /* Only hide overflow on body when dialogs are open, but don't fix position */
+    body.dialog-open {
       overflow: hidden !important;
-      position: fixed !important;
-      width: 100% !important;
-      height: 100% !important;
     }
 
     /* Improve touch targets */
