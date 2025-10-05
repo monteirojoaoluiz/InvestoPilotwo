@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, X } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, X, ArrowUpDown, SlidersHorizontal } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -225,67 +225,95 @@ export default function ETFCatalog() {
             Filters & Search
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            {/* Search */}
+        <CardContent className="space-y-6">
+          {/* Search Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Search className="h-4 w-4" />
+              Search
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search ETFs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-muted/30"
               />
             </div>
-
-            {/* Asset Type Filter */}
-            <Select value={assetTypeFilter} onValueChange={setAssetTypeFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Asset Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Asset Types</SelectItem>
-                {assetTypes.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Risk Level Filter */}
-            <Select value={riskFilter} onValueChange={setRiskFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Risk Level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Risk Levels</SelectItem>
-                {riskLevels.map(level => (
-                  <SelectItem key={level} value={level}>{level}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Sort By */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="ticker">Ticker</SelectItem>
-                <SelectItem value="expenseRatio">Expense Ratio (Low to High)</SelectItem>
-                <SelectItem value="dividendYield">Dividend Yield (High to Low)</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
-          {/* Clear Filters */}
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
-              <X className="h-4 w-4" />
-              Clear Filters
-            </Button>
+          {/* Filter Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filter by
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Asset Type Filter */}
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground uppercase tracking-wide">Asset Type</label>
+                <Select value={assetTypeFilter} onValueChange={setAssetTypeFilter}>
+                  <SelectTrigger className="bg-muted/30">
+                    <SelectValue placeholder="All Asset Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Asset Types</SelectItem>
+                    {assetTypes.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Risk Level Filter */}
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground uppercase tracking-wide">Risk Level</label>
+                <Select value={riskFilter} onValueChange={setRiskFilter}>
+                  <SelectTrigger className="bg-muted/30">
+                    <SelectValue placeholder="All Risk Levels" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Risk Levels</SelectItem>
+                    {riskLevels.map(level => (
+                      <SelectItem key={level} value={level}>{level}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Sort Section */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <ArrowUpDown className="h-4 w-4" />
+              Sort by
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground uppercase tracking-wide">Order</label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="bg-muted/30">
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="ticker">Ticker</SelectItem>
+                  <SelectItem value="expenseRatio">Expense Ratio (Low to High)</SelectItem>
+                  <SelectItem value="dividendYield">Dividend Yield (High to Low)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
+
+        {/* Clear Filters */}
+        <div className="flex justify-end pt-4 border-t">
+          <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
+            <X className="h-4 w-4" />
+            Clear Filters
+          </Button>
+        </div>
       </Card>
 
       {/* Results Summary */}
