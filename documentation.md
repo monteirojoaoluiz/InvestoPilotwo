@@ -119,8 +119,9 @@ Stores user investment preferences and risk tolerance.
 - `riskTolerance` (Text: 'conservative' | 'moderate' | 'aggressive')
 - `timeHorizon` (Text: 'short-term' | 'medium-term' | 'long-term')
 - `lifeStage` (Text: 'early-career' | 'mid-career' | 'pre-retirement' | 'retirement')
-- `usOnly` (Boolean: geographic preference)
+- `geographicFocus` (JSONB: array of geographic investment focuses - ['netherlands', 'europe-ex-nl', 'united-states', 'developed-ex-us-europe', 'emerging-markets'])
 - `esgOnly` (Boolean: ESG investment preference)
+- `dividendVsGrowth` (Text: investment style preference - 'dividend-focus' | 'balanced' | 'growth-focus')
 - `createdAt` (Timestamp)
 - `updatedAt` (Timestamp)
 

@@ -1204,7 +1204,10 @@ function normalizeAllocationsTo100<T extends { percentage: number }>(allocs: T[]
 }
 
 function generateEtfAllocationsFromAssessment(assessment: any) {
-  const { riskTolerance, usOnly, esgOnly } = assessment;
+  const { riskTolerance, geographicFocus, esgOnly, dividendVsGrowth } = assessment;
+
+  // Handle geographicFocus as array or string for backward compatibility
+  const geographicFocusArray = Array.isArray(geographicFocus) ? geographicFocus : [geographicFocus];
 
   // Baseline ETF sets by risk
   const ETF_SETS: Record<string, { ticker: string; name: string; percentage: number; color: string; assetType: string }[]> = {
@@ -1229,25 +1232,51 @@ function generateEtfAllocationsFromAssessment(assessment: any) {
 
   let allocations = ETF_SETS[riskTolerance] || ETF_SETS['moderate'];
 
-  // Apply ESG transformations first
+  // Apply dividend vs growth adjustments
+  if (dividendVsGrowth === 'dividend-focus') {
+    // Replace some growth-oriented ETFs with dividend-focused ones
+    allocations = allocations.map((a) => {
+      if (a.ticker === 'VTI') return { ...a, ticker: 'VIG', name: 'Vanguard Dividend Appreciation ETF', assetType: 'US Dividend Equity' };
+      if (a.ticker === 'VXUS') return { ...a, ticker: 'VYMI', name: 'Vanguard International High Dividend Yield ETF', assetType: 'International Dividend Equity' };
+      if (a.ticker === 'QQQ') return { ...a, ticker: 'VIG', name: 'Vanguard Dividend Appreciation ETF', assetType: 'US Dividend Equity' };
+      return a;
+    });
+  } else if (dividendVsGrowth === 'growth-focus') {
+    // Emphasize growth-oriented ETFs
+    allocations = allocations.map((a) => {
+      if (a.ticker === 'VTI' && allocations.some(alloc => alloc.ticker === 'QQQ')) {
+        // If QQQ is already present, keep the balance but ensure growth focus
+        return a;
+      }
+      if (a.ticker === 'VXUS') return { ...a, ticker: 'VWO', name: 'Vanguard FTSE Emerging Markets ETF', assetType: 'Emerging Markets Equity' };
+      return a;
+    });
+  }
+  // For 'balanced', keep the original allocations
+
+  // Apply ESG transformations
   if (esgOnly) {
     allocations = allocations.map((a) => {
       if (a.ticker === 'VTI') return { ...a, ticker: 'ESGV', name: 'Vanguard ESG U.S. Stock ETF', assetType: 'US Equity' };
+      if (a.ticker === 'VIG') return { ...a, ticker: 'ESGD', name: 'iShares ESG Aware MSCI EAFE ETF', assetType: 'International Equity' };
       if (a.ticker === 'VXUS') return { ...a, ticker: 'ESGD', name: 'iShares ESG Aware MSCI EAFE ETF', assetType: 'International Equity' };
       if (a.ticker === 'BND') return { ...a, ticker: 'SUSB', name: 'iShares ESG Aware USD Corporate Bond ETF', assetType: 'Bonds' };
       return a;
     });
   }
 
-  // Then apply US-only filtering
-  if (usOnly) {
+  // Apply geographic focus filtering
+  // If only US is selected, remove international exposure
+  if (geographicFocusArray.length === 1 && geographicFocusArray.includes('united-states')) {
     const removedWeight = allocations
-      .filter((a) => a.ticker === 'VXUS' || a.ticker === 'ESGD') // Handle both regular and ESG versions
+      .filter((a) => a.ticker === 'VXUS' || a.ticker === 'ESGD' || a.ticker === 'VYMI' || a.ticker === 'VWO')
       .reduce((sum, a) => sum + a.percentage, 0);
-    allocations = allocations.filter((a) => a.ticker !== 'VXUS' && a.ticker !== 'ESGD').map((a) => ({ ...a }));
-    const usPosition = allocations.find((a) => a.ticker === 'VTI' || a.ticker === 'ESGV') || allocations.find((a) => a.ticker === 'QQQ');
+    allocations = allocations.filter((a) => a.ticker !== 'VXUS' && a.ticker !== 'ESGD' && a.ticker !== 'VYMI' && a.ticker !== 'VWO').map((a) => ({ ...a }));
+    const usPosition = allocations.find((a) => a.ticker === 'VTI' || a.ticker === 'ESGV' || a.ticker === 'VIG') || allocations.find((a) => a.ticker === 'QQQ');
     if (usPosition) usPosition.percentage += removedWeight;
   }
+  // For now, if multiple regions or non-US regions are selected, keep the global allocation
+  // Future enhancement: adjust allocations based on specific regional preferences
 
   // Ensure total equals 100%
   return normalizeAllocationsTo100(allocations);

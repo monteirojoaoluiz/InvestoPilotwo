@@ -5,15 +5,22 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1758979825371,
-      "tag": "0000_tired_alex_power",
+      "when": 1759666028581,
+      "tag": "0000_bouncy_talisman",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1727696749000,
-      "tag": "0001_add_password_reset",
+      "when": 1735992000000,
+      "tag": "0002_change_us_only_to_geographic_focus",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1735993000000,
+      "tag": "0003_add_dividend_vs_growth",
       "breakpoints": true
     }
   ]

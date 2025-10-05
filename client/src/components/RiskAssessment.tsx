@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -13,13 +14,14 @@ type AssessmentAnswers = {
   lifeStage: string;
   riskTolerance: string;
   timeHorizon: string;
-  usOnly: string;
+  geographicFocus: string[];
   esgOnly: string;
   incomeStability: string;
   emergencyFund: string;
   debtLevel: string;
   investmentExperience: string;
   investmentKnowledge: string;
+  dividendVsGrowth: string;
   behavioralReaction: string;
   incomeRange: string;
   netWorthRange: string;
@@ -76,12 +78,15 @@ const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "usOnly",
-    title: "Should we focus only on US-based investments?",
-    description: "Let us know if you'd prefer to avoid international exposure.",
+    id: "geographicFocus",
+    title: "Which geographic regions interest you most for investments?",
+    description: "Select your preferred geographic focus for your investment portfolio.",
     options: [
-      { value: "yes", label: "Yes, keep my portfolio US-focused" },
-      { value: "no", label: "No, include international opportunities" },
+      { value: "netherlands", label: "Netherlands (NL)" },
+      { value: "europe-ex-nl", label: "Europe ex-NL" },
+      { value: "united-states", label: "United States" },
+      { value: "developed-ex-us-europe", label: "Developed ex-US & ex-Europe (Canada, Japan, AU/NZ, SG/HK, Israel)" },
+      { value: "emerging-markets", label: "Emerging Markets (China, India, LatAm, EMEA, SE Asia EM)" },
     ],
   },
   {
@@ -145,6 +150,16 @@ const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "dividendVsGrowth",
+    title: "Do you prefer dividend income or capital growth?",
+    description: "This helps us align your portfolio with your income needs and growth objectives.",
+    options: [
+      { value: "dividend-focus", label: "Dividend-focused (regular income payments)" },
+      { value: "balanced", label: "Balanced (some income and some growth)" },
+      { value: "growth-focus", label: "Growth-focused (capital appreciation)" },
+    ],
+  },
+  {
     id: "behavioralReaction",
     title: "If your portfolio dropped 20% in a year, what would you do?",
     description: "Your likely reaction helps assess behavioral risk tolerance.",
@@ -185,13 +200,14 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
     lifeStage: "",
     riskTolerance: "",
     timeHorizon: "",
-    usOnly: "",
+    geographicFocus: ["netherlands", "europe-ex-nl", "united-states", "developed-ex-us-europe", "emerging-markets"],
     esgOnly: "",
     incomeStability: "",
     emergencyFund: "",
     debtLevel: "",
     investmentExperience: "",
     investmentKnowledge: "",
+    dividendVsGrowth: "",
     behavioralReaction: "",
     incomeRange: "",
     netWorthRange: "",
@@ -245,13 +261,14 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
           lifeStage: answers.lifeStage,
           riskTolerance: answers.riskTolerance,
           timeHorizon: answers.timeHorizon,
-          usOnly: answers.usOnly === "yes",
+          geographicFocus: answers.geographicFocus,
           esgOnly: answers.esgOnly === "yes",
           incomeStability: answers.incomeStability,
           emergencyFund: answers.emergencyFund,
           debtLevel: answers.debtLevel,
           investmentExperience: answers.investmentExperience,
           investmentKnowledge: answers.investmentKnowledge,
+          dividendVsGrowth: answers.dividendVsGrowth,
           behavioralReaction: answers.behavioralReaction,
           incomeRange: answers.incomeRange,
           netWorthRange: answers.netWorthRange,
@@ -281,8 +298,21 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
     setAnswers((prev) => ({ ...prev, [question.id]: value }));
   }, [currentStep]);
 
+  const handleCheckboxChange = useCallback((value: string, checked: boolean | "indeterminate") => {
+    const question = QUESTIONS[currentStep];
+    const isChecked = checked === true;
+    setAnswers((prev) => ({
+      ...prev,
+      [question.id]: isChecked
+        ? [...(prev[question.id] as string[]), value]
+        : (prev[question.id] as string[]).filter((v) => v !== value)
+    }));
+  }, [currentStep]);
+
   const currentQuestion = QUESTIONS[currentStep];
-  const isStepComplete = answers[currentQuestion.id] !== "";
+  const isStepComplete = currentQuestion.id === "geographicFocus"
+    ? (answers[currentQuestion.id] as string[]).length > 0
+    : answers[currentQuestion.id] !== "";
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -350,30 +380,59 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
           <CardDescription className="text-sm sm:text-base">{currentQuestion.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6">
-          <RadioGroup value={answers[currentQuestion.id]} onValueChange={handleRadioChange}>
-            {currentQuestion.options.map((option, index) => {
-              const shortcut = OPTION_SHORTCUTS[index];
+          {currentQuestion.id === "geographicFocus" ? (
+            <div className="space-y-3">
+              {currentQuestion.options.map((option, index) => {
+                const shortcut = OPTION_SHORTCUTS[index];
+                const isChecked = (answers[currentQuestion.id] as string[]).includes(option.value);
 
-              return (
-                <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[64px] sm:min-h-[60px] border border-transparent hover:border-muted-foreground/20 transition-colors">
-                  <RadioGroupItem
-                    value={option.value}
-                    id={option.value}
-                    data-testid={`radio-${option.value}`}
-                    className="flex-shrink-0 mt-1 sm:mt-0.5"
-                  />
-                  <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium">
-                    {shortcut && (
-                      <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                        {shortcut}
-                      </span>
-                    )}
-                    <span className="text-foreground">{option.label}</span>
-                  </Label>
-                </div>
-              );
-            })}
-          </RadioGroup>
+                return (
+                  <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[64px] sm:min-h-[60px] border border-transparent hover:border-muted-foreground/20 transition-colors">
+                    <Checkbox
+                      id={option.value}
+                      checked={isChecked}
+                      onCheckedChange={(checked: boolean | "indeterminate") => handleCheckboxChange(option.value, checked)}
+                      data-testid={`checkbox-${option.value}`}
+                      className="flex-shrink-0 mt-1 sm:mt-0.5"
+                    />
+                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium">
+                      {shortcut && (
+                        <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                          {shortcut}
+                        </span>
+                      )}
+                      <span className="text-foreground">{option.label}</span>
+                    </Label>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <RadioGroup value={answers[currentQuestion.id]} onValueChange={handleRadioChange}>
+              {currentQuestion.options.map((option, index) => {
+                const shortcut = OPTION_SHORTCUTS[index];
+
+                return (
+                  <div key={option.value} className="flex items-start space-x-3 sm:space-x-4 p-4 sm:p-5 hover:bg-muted/50 touch-manipulation rounded-lg min-h-[64px] sm:min-h-[60px] border border-transparent hover:border-muted-foreground/20 transition-colors">
+                    <RadioGroupItem
+                      value={option.value}
+                      id={option.value}
+                      data-testid={`radio-${option.value}`}
+                      className="flex-shrink-0 mt-1 sm:mt-0.5"
+                    />
+                    <Label htmlFor={option.value} className="flex-1 cursor-pointer leading-relaxed text-sm sm:text-base font-medium">
+                      {shortcut && (
+                        <span className="mr-2 text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                          {shortcut}
+                        </span>
+                      )}
+                      <span className="text-foreground">{option.label}</span>
+                    </Label>
+                  </div>
+                );
+              })}
+            </RadioGroup>
+          )}
 
           <div className="flex flex-col sm:flex-row justify-between pt-6 sm:pt-8 gap-4">
             <Button

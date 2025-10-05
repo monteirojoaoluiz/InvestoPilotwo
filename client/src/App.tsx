@@ -302,7 +302,11 @@ function Dashboard() {
                   <MapPin className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                   <div className="flex-1">
                     <div className="text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wide">Geographic Focus</div>
-                    <div className="text-sm font-semibold text-green-900 dark:text-green-100">{assessmentData.usOnly ? 'US Only' : 'Global'}</div>
+                    <div className="text-sm font-semibold text-green-900 dark:text-green-100">
+                      {Array.isArray(assessmentData.geographicFocus)
+                        ? assessmentData.geographicFocus.map((focus: string) => focus.replace(/-/g, ' ')).join(', ')
+                        : assessmentData.geographicFocus?.replace(/-/g, ' ') || '—'}
+                    </div>
                   </div>
                 </div>
 
@@ -311,6 +315,14 @@ function Dashboard() {
                   <div className="flex-1">
                     <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">ESG Preference</div>
                     <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{assessmentData.esgOnly ? 'ESG Focused' : 'Standard'}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                  <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                  <div className="flex-1">
+                    <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">Investment Style</div>
+                    <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{assessmentData.dividendVsGrowth?.replace(/-/g, ' ') || '—'}</div>
                   </div>
                 </div>
               </div>
