@@ -25,6 +25,7 @@ import {
   Tooltip,
 } from "recharts";
 import { TrendingUp, Clock, Heart, MapPin, Target, LogOut, Download, Trash2 } from "lucide-react";
+import stack16Logo from "@assets/generated_images/Dark Logo.png";
 
 // Hooks
 import { useAuth } from "./hooks/useAuth";
@@ -1313,9 +1314,11 @@ function AuthenticatedRouter() {
           <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full max-w-full">
             <div className="flex items-center gap-2 min-w-0">
               <SidebarTrigger className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2 flex-shrink-0`} />
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-foreground font-bold text-sm">S16</span>
-              </div>
+              <img
+                src={stack16Logo}
+                alt="Stack16 Logo"
+                className="w-8 h-8 rounded-lg flex-shrink-0"
+              />
               <span className="font-semibold text-lg truncate">Stack16</span>
             </div>
             <ThemeToggle />

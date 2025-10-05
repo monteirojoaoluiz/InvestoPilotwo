@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
+import stack16Logo from "@assets/generated_images/Dark Logo.png";
 
 interface HeaderProps {
   onSignInClick?: () => void;
@@ -25,9 +26,11 @@ export default function Header({ onSignInClick, onGetStartedClick, onMenuClick, 
             </Button>
           )}
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <TrendingUp className="h-5 w-5" />
-            </div>
+            <img
+              src={stack16Logo}
+              alt="Stack16 Logo"
+              className="h-8 w-8 rounded-lg"
+            />
             <span className="text-xl font-semibold">Stack16</span>
           </div>
         </div>
