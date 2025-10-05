@@ -326,7 +326,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t">
+      <div className="p-4 border-t overflow-hidden">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-medium text-foreground">Suggested questions</span>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -335,27 +335,20 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
           </span>
         </div>
         <div
-          className="flex flex-row gap-2 overflow-x-auto pb-2 relative snap-x snap-mandatory touch-pan-x scrollbar-hide [&::-webkit-scrollbar]:hidden [-webkit-scrollbar]:hidden"
+          className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2 -mx-4 px-4 relative touch-pan-x scrollbar-hide [&::-webkit-scrollbar]:hidden"
           style={{
             WebkitOverflowScrolling: 'touch',
             scrollBehavior: 'smooth',
             overscrollBehaviorX: 'contain',
             scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
-          }}
-          onTouchStart={(e) => {
-            // Improve touch handling by preventing default on touch start
-            e.currentTarget.style.scrollBehavior = 'auto';
-          }}
-          onTouchEnd={(e) => {
-            // Restore smooth scrolling after touch ends
-            e.currentTarget.style.scrollBehavior = 'smooth';
+            msOverflowStyle: 'none',
+            touchAction: 'pan-x'
           }}
         >
           {/* Left gradient fade */}
-          <div className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-background via-background/95 to-transparent pointer-events-none z-10"></div>
+          <div className="absolute left-0 top-0 bottom-2 w-8 sm:w-12 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"></div>
           {/* Right gradient fade */}
-          <div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-background via-background/95 to-transparent pointer-events-none z-10"></div>
+          <div className="absolute right-0 top-0 bottom-2 w-8 sm:w-12 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"></div>
           
           {suggestedQuestions.map((q, i) => (
             <Button
@@ -365,20 +358,16 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
               onClick={(e) => {
                 e.preventDefault();
                 setMessage(q);
-                handleSendMessage(e); // Trigger send with the actual event
+                handleSendMessage(e);
               }}
-              onTouchStart={(e) => {
-                // Prevent touch events from interfering with parent scroll
-                e.stopPropagation();
-              }}
-              className="text-xs h-11 px-4 py-2 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 snap-start min-w-[180px] touch-manipulation transition-all duration-200 active:scale-95"
+              className="text-xs h-auto py-2.5 px-4 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 min-w-fit touch-manipulation transition-all duration-200 active:scale-95"
             >
               {q}
             </Button>
           ))}
           
-          {/* Add some extra spacing at the end to ensure smooth scrolling */}
-          <div className="w-4 flex-shrink-0"></div>
+          {/* Add padding at the end for better scrolling experience */}
+          <div className="w-1 flex-shrink-0"></div>
         </div>
       </div>
 
