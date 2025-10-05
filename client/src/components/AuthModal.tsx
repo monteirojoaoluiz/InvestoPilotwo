@@ -156,6 +156,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
     onClose();
   };
 
+  const handleTabChange = (value: string) => {
+    if (value === 'login' || value === 'register') {
+      setActiveTab(value);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] p-4 sm:p-6">
@@ -166,7 +172,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Sign In</TabsTrigger>
             <TabsTrigger value="register">Sign Up</TabsTrigger>

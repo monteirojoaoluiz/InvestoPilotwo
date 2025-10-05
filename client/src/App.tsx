@@ -1167,6 +1167,7 @@ function Router() {
   };
 
   const openRegisterModal = () => {
+    console.log('Opening register modal');
     setAuthModalTab('register');
     setIsAuthModalOpen(true);
   };

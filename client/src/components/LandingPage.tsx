@@ -8,6 +8,11 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ onGetStarted }: LandingPageProps) {
+  const handleGetStarted = () => {
+    console.log('Get Started button clicked');
+    onGetStarted?.();
+  };
+
   const features = [
     {
       icon: Brain,
@@ -60,10 +65,10 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
             Get personalized investment recommendations powered by advanced AI. 
             Build your wealth with data-driven insights and professional-grade portfolio management.
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="text-lg px-8 py-6"
-            onClick={onGetStarted}
+            onClick={handleGetStarted}
             data-testid="button-hero-get-started"
           >
             Start Building Your Portfolio
@@ -114,10 +119,10 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
                 Join thousands of investors who trust InvestAI to manage their portfolios. 
                 Start with our quick assessment and get your personalized recommendations.
               </p>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="w-full"
-                onClick={onGetStarted}
+                onClick={handleGetStarted}
                 data-testid="button-card-get-started"
               >
                 Create Your Portfolio
