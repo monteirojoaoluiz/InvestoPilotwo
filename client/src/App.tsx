@@ -325,7 +325,11 @@ function Dashboard() {
                   <Target className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                   <div className="flex-1">
                     <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">Sustainability Focus</div>
-                    <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{assessmentData.esgOnly ? 'ESG Focused' : 'Standard Investments'}</div>
+                    <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
+                      {Array.isArray(assessmentData.esgExclusions) && assessmentData.esgExclusions.includes('non-esg-funds') ? 'ESG Focused' : 
+                       Array.isArray(assessmentData.esgExclusions) && assessmentData.esgExclusions.length > 0 ? `${assessmentData.esgExclusions.length} Exclusions` : 
+                       'No Exclusions'}
+                    </div>
                   </div>
                 </div>
 

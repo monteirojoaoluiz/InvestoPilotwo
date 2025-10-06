@@ -15,7 +15,7 @@ type AssessmentAnswers = {
   riskTolerance: string;
   timeHorizon: string;
   geographicFocus: string[];
-  esgOnly: string;
+  esgExclusions: string[];
   incomeStability: string;
   emergencyFund: string;
   debtLevel: string;
@@ -90,12 +90,16 @@ const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "esgOnly",
-    title: "How important are environmental or social impact considerations?",
-    description: "We can favour ESG-focused funds if this matters to you.",
+    id: "esgExclusions",
+    title: "Is it okay for your portfolio to include the following?",
+    description: "Uncheck any you want to exclude. Leaving all checked means no exclusions. Exclusions may reduce diversification and affect returns.",
     options: [
-      { value: "yes", label: "Prioritise ESG-friendly investments" },
-      { value: "no", label: "Standard investment options are fine" },
+      { value: "tobacco", label: "Tobacco" },
+      { value: "fossil-fuels", label: "Fossil fuels" },
+      { value: "defense-industry", label: "Defense industry" },
+      { value: "gambling", label: "Gambling" },
+      { value: "adult-entertainment", label: "Adult entertainment" },
+      { value: "non-esg-funds", label: "Funds without a sustainability focus (no ESG screening)" },
     ],
   },
   {
@@ -201,7 +205,7 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
     riskTolerance: "",
     timeHorizon: "",
     geographicFocus: ["netherlands", "europe-ex-nl", "united-states", "developed-ex-us-europe", "emerging-markets"],
-    esgOnly: "",
+    esgExclusions: [],
     incomeStability: "",
     emergencyFund: "",
     debtLevel: "",
@@ -262,7 +266,7 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
           riskTolerance: answers.riskTolerance,
           timeHorizon: answers.timeHorizon,
           geographicFocus: answers.geographicFocus,
-          esgOnly: answers.esgOnly === "yes",
+          esgExclusions: answers.esgExclusions,
           incomeStability: answers.incomeStability,
           emergencyFund: answers.emergencyFund,
           debtLevel: answers.debtLevel,
@@ -310,8 +314,8 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
   }, [currentStep]);
 
   const currentQuestion = QUESTIONS[currentStep];
-  const isStepComplete = currentQuestion.id === "geographicFocus"
-    ? (answers[currentQuestion.id] as string[]).length > 0
+  const isStepComplete = currentQuestion.id === "geographicFocus" || currentQuestion.id === "esgExclusions"
+    ? true // Checkboxes are always valid (can be empty)
     : answers[currentQuestion.id] !== "";
 
   useEffect(() => {
@@ -380,18 +384,35 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
           <CardDescription className="text-base sm:text-lg leading-relaxed text-muted-foreground mt-2">{currentQuestion.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6 pt-0 px-4 sm:px-6">
-          {currentQuestion.id === "geographicFocus" ? (
+          {currentQuestion.id === "geographicFocus" || currentQuestion.id === "esgExclusions" ? (
             <div className="grid grid-cols-1 gap-4 sm:gap-5">
               {currentQuestion.options.map((option, index) => {
                 const shortcut = OPTION_SHORTCUTS[index];
-                const isChecked = (answers[currentQuestion.id] as string[]).includes(option.value);
+                // For esgExclusions, checked means NOT excluded (inverted logic)
+                // For geographicFocus, checked means included
+                const isChecked = currentQuestion.id === "esgExclusions"
+                  ? !(answers[currentQuestion.id] as string[]).includes(option.value)
+                  : (answers[currentQuestion.id] as string[]).includes(option.value);
 
                 return (
                   <div key={option.value} className="flex items-center space-x-4 p-4 sm:p-5 hover:bg-muted/30 touch-manipulation rounded-xl min-h-[64px] border border-border hover:border-primary/20 transition-all duration-200 bg-card">
                     <Checkbox
                       id={option.value}
                       checked={isChecked}
-                      onCheckedChange={(checked: boolean | "indeterminate") => handleCheckboxChange(option.value, checked)}
+                      onCheckedChange={(checked: boolean | "indeterminate") => {
+                        // For esgExclusions, unchecking means add to exclusions list
+                        if (currentQuestion.id === "esgExclusions") {
+                          const isNowChecked = checked === true;
+                          setAnswers((prev) => ({
+                            ...prev,
+                            [currentQuestion.id]: isNowChecked
+                              ? (prev[currentQuestion.id] as string[]).filter((v) => v !== option.value)
+                              : [...(prev[currentQuestion.id] as string[]), option.value]
+                          }));
+                        } else {
+                          handleCheckboxChange(option.value, checked);
+                        }
+                      }}
                       data-testid={`checkbox-${option.value}`}
                       className="flex-shrink-0 min-h-[24px] min-w-[24px] mt-0.5"
                     />

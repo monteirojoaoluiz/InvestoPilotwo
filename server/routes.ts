@@ -1242,7 +1242,7 @@ function normalizeAllocationsTo100<T extends { percentage: number }>(allocs: T[]
 }
 
 function generateEtfAllocationsFromAssessment(assessment: any) {
-  const { riskTolerance, geographicFocus, esgOnly, dividendVsGrowth } = assessment;
+  const { riskTolerance, geographicFocus, esgExclusions, dividendVsGrowth } = assessment;
 
   // Handle geographicFocus as array or string for backward compatibility
   const geographicFocusArray = Array.isArray(geographicFocus) ? geographicFocus : [geographicFocus];
@@ -1292,8 +1292,12 @@ function generateEtfAllocationsFromAssessment(assessment: any) {
   }
   // For 'balanced', keep the original allocations
 
-  // Apply ESG transformations
-  if (esgOnly) {
+  // Apply ESG transformations based on exclusions
+  // If user excludes non-ESG funds, use ESG-focused alternatives
+  const esgExclusionsArray = Array.isArray(esgExclusions) ? esgExclusions : [];
+  const excludeNonEsgFunds = esgExclusionsArray.includes('non-esg-funds');
+  
+  if (excludeNonEsgFunds) {
     allocations = allocations.map((a) => {
       if (a.ticker === 'VTI') return { ...a, ticker: 'ESGV', name: 'Vanguard ESG U.S. Stock ETF', assetType: 'US Equity' };
       if (a.ticker === 'VIG') return { ...a, ticker: 'ESGD', name: 'iShares ESG Aware MSCI EAFE ETF', assetType: 'International Equity' };

@@ -35,7 +35,7 @@ export const riskAssessments = pgTable("risk_assessments", {
   riskTolerance: varchar("risk_tolerance").notNull(),
   timeHorizon: varchar("time_horizon").notNull(),
   geographicFocus: jsonb("geographic_focus").notNull(),
-  esgOnly: boolean("esg_only").notNull().default(false),
+  esgExclusions: jsonb("esg_exclusions").notNull().default('[]'),
   lifeStage: varchar("life_stage").notNull(),
   incomeStability: varchar("income_stability"),
   emergencyFund: varchar("emergency_fund"),
