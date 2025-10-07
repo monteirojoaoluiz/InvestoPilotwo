@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,8 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   const [isLoading, setIsLoading] = useState(false);
   const [isNewChat, setIsNewChat] = useState(false);
   const [showNewChatSuccess, setShowNewChatSuccess] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState<string>('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const { toast } = useToast();
 
   const queryClient = useQueryClient();
@@ -74,34 +76,95 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
     enabled: !!portfolioId,
   });
 
+  const sendMessageWithStreaming = async (content: string) => {
+    try {
+      const response = await fetch(`/api/portfolio/${portfolioId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ content }),
+      });
 
-  const sendMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const res = await apiRequest('POST', `/api/portfolio/${portfolioId}/messages`, { content });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      if (!isNewChat) {
-        // Normal case: invalidate to refetch all messages
-        queryClient.invalidateQueries({ queryKey: ['messages', portfolioId] });
-      } else {
-        // New chat mode: manually update the cache with the new messages
-        const currentMessages = (queryClient.getQueryData(['messages', portfolioId]) as Message[] | undefined) || [];
-        // Transform the messages to match the expected format (same as query function)
-        const transformedMessages = [data.userMessage, data.aiMessage].map((msg: any) => ({
-          id: msg.id,
-          content: msg.content,
-          sender: msg.sender,
-          timestamp: new Date(msg.createdAt),
-        }));
-        queryClient.setQueryData(['messages', portfolioId], [...currentMessages, ...transformedMessages]);
-        setIsNewChat(false); // Exit new chat mode after first message
+      if (!response.ok) {
+        throw new Error('Failed to send message');
       }
-    },
-    onError: (error) => {
-      console.error('Send error:', error);
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      
+      if (!reader) {
+        throw new Error('No reader available');
+      }
+
+      let userMessageData: any = null;
+      let accumulatedContent = '';
+      setIsStreaming(true);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.type === 'userMessage') {
+                userMessageData = data.data;
+              } else if (data.type === 'chunk') {
+                accumulatedContent += data.data;
+                setStreamingMessage(accumulatedContent);
+              } else if (data.type === 'complete') {
+                // Message complete, refresh the list
+                setIsStreaming(false);
+                setStreamingMessage('');
+                if (!isNewChat) {
+                  queryClient.invalidateQueries({ queryKey: ['messages', portfolioId] });
+                } else {
+                  const currentMessages = (queryClient.getQueryData(['messages', portfolioId]) as Message[] | undefined) || [];
+                  const transformedMessages = [
+                    {
+                      id: userMessageData.id,
+                      content: userMessageData.content,
+                      sender: userMessageData.sender,
+                      timestamp: new Date(userMessageData.createdAt),
+                    },
+                    {
+                      id: data.data.id,
+                      content: data.data.content,
+                      sender: data.data.sender,
+                      timestamp: new Date(data.data.createdAt),
+                    }
+                  ] as Message[];
+                  queryClient.setQueryData(['messages', portfolioId], [...currentMessages, ...transformedMessages]);
+                  setIsNewChat(false);
+                }
+              } else if (data.type === 'error') {
+                throw new Error(data.data.message);
+              }
+            } catch (e) {
+              console.error('Error parsing SSE data:', e);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Streaming error:', error);
+      setIsStreaming(false);
+      setStreamingMessage('');
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
     }
-  });
+  };
 
   // Compute suggested questions early to keep hook order stable
   const suggestedQuestions = useMemo(() => {
@@ -219,17 +282,18 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
     setOptimisticMessages((prev) => [...prev, optimistic]);
     setIsLoading(true);
 
-    sendMutation.mutate(message, {
-      onSuccess: () => {
-        setMessage("");
-        setIsLoading(false);
-        setOptimisticMessages([]);
-      },
-      onError: () => {
-        setIsLoading(false);
-        setOptimisticMessages((prev) => prev.filter((m) => m.id !== tempId));
-      },
-    });
+    const currentMessage = message;
+    setMessage("");
+
+    try {
+      await sendMessageWithStreaming(currentMessage);
+      setIsLoading(false);
+      setOptimisticMessages([]);
+    } catch (error) {
+      setIsLoading(false);
+      setOptimisticMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setMessage(currentMessage); // Restore message on error
+    }
   };
 
   const formatTime = (date: Date) => {
@@ -309,7 +373,26 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
             </div>
           ))}
           
-          {isLoading && (
+          {/* Streaming AI message */}
+          {isStreaming && streamingMessage && (
+            <div className="flex gap-3 justify-start animate-in fade-in duration-200">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
+                <Bot className="h-4 w-4" />
+              </div>
+              <div className="max-w-[85%] sm:max-w-[80%] rounded-lg p-3 bg-muted">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingMessage}</ReactMarkdown>
+                </div>
+                <div className="flex items-center gap-1 mt-2">
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isLoading && !isStreaming && (
             <div className="flex gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Bot className="h-4 w-4" />

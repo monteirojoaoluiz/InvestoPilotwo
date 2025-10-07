@@ -1175,6 +1175,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Portfolio not found' });
       }
 
+      // Set up SSE headers for streaming
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      // Send user message immediately
+      res.write(`data: ${JSON.stringify({ type: 'userMessage', data: userMessage })}\n\n`);
+
       // allocations are stored as jsonb; they are already an object
       const allocations = (portfolio as any).allocations;
       const prompt = `You are a financial advisor for Stack16. The user's portfolio has allocations: ${JSON.stringify(allocations)}. Total value: $${portfolio.totalValue}. User asked: ${validatedData.content}. Provide helpful, professional advice.`;
@@ -1194,10 +1202,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ],
           temperature: 0.5,
+          stream: true, // Enable streaming
         });
 
-        const aiResponse = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+        let aiResponse = '';
         
+        // Stream the response chunks
+        for await (const chunk of completion) {
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) {
+            aiResponse += content;
+            res.write(`data: ${JSON.stringify({ type: 'chunk', data: content })}\n\n`);
+          }
+        }
+        
+        // Save the complete AI response to database
         const aiMessage = await storage.createPortfolioMessage({
           content: aiResponse,
           sender: 'ai',
@@ -1205,10 +1224,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           portfolioId,
         });
         
-        res.json({ userMessage, aiMessage });
+        // Send completion event with full message
+        res.write(`data: ${JSON.stringify({ type: 'complete', data: aiMessage })}\n\n`);
+        res.end();
       } catch (error) {
         console.error('Groq API error:', error);
-        res.status(500).json({ message: 'Failed to generate AI response' });
+        res.write(`data: ${JSON.stringify({ type: 'error', data: { message: 'Failed to generate AI response' } })}\n\n`);
+        res.end();
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
