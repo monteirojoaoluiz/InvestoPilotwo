@@ -259,13 +259,13 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 **Step-by-step computation:**
 
 ### Risk Tolerance
-- **Start:** base = 50 (default)
+- **Start:** base = 0
 - Q2_drawdowns (B): +0
 - Q3_horizon_need (C): +30
 - Q9_investing_experience (C): +10
 - Q11_investor_profile (C, growth-focused): +20
 - Q11_loss_reaction (C, hold and wait): +10
-- **Total:** 50 + 0 + 30 + 10 + 20 + 10 = **120 → clamped to 100**
+- **Total:** 0 + 0 + 30 + 10 + 20 + 10 = **70**
 
 ### Risk Capacity
 - **Base:** Q1_journey (B, mid-career) = 70
@@ -279,11 +279,10 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 - **Result:** **100**
 
 ### Investment Horizon
-- **Q1_journey (B):** horizon candidate = 80
-- **Q3_horizon_need (C, >15 years):** maps to horizon candidate ≈ 100 (longest time frame)
-- **Weighted average:** 0.30 × 80 + 0.70 × 100 = 24 + 70 = 94
-- **Q11_investor_profile (C, growth-focused):** +10
-- **Total:** 94 + 10 = 104 → clamped to 100
+- **Base:** Q1_journey (B, mid-career) = 80
+- Q3_horizon_need (C, >15 years): +20
+- Q11_investor_profile (C, growth-focused): +10
+- **Total:** 80 + 20 + 10 = 110 → clamped to 100
 - **Result:** **100**
 
 ### Investor Experience
@@ -303,7 +302,7 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 
 ```json
 {
-  "risk_tolerance": 100,
+  "risk_tolerance": 70,
   "risk_capacity": 100,
   "investment_horizon": 100,
   "investor_experience": 80,

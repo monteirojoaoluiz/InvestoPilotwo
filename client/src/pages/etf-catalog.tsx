@@ -1,15 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, X, ArrowUpDown, SlidersHorizontal } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { 
+  Search, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, X, 
+  ArrowUpDown, SlidersHorizontal, Heart, ChevronDown, ChevronUp, Eye 
+} from "lucide-react";
+import { DetailedETFView } from "@/components/DetailedETFView";
+import { ETFComparison } from "@/components/ETFComparison";
+import { useToast } from "@/hooks/use-toast";
 
 interface ETF {
   ticker: string;
@@ -20,8 +24,8 @@ interface ETF {
   expenseRatio: number;
   riskLevel: 'Low' | 'Moderate' | 'High';
   dividendYield?: number;
-  yearlyGain?: number; // Annualized return since inception
-  lastPrice?: number; // Current/last price
+  yearlyGain?: number;
+  lastPrice?: number;
   color: string;
 }
 
@@ -170,7 +174,6 @@ const ETF_DATA: ETF[] = [
     lastPrice: 24.75,
     color: 'hsl(var(--chart-3))'
   },
-  // Additional ETFs from the comprehensive list
   {
     ticker: 'ITOT',
     name: 'iShares Core S&P Total U.S. Stock Mkt ETF',
@@ -421,10 +424,47 @@ const ETF_DATA: ETF[] = [
 ];
 
 export default function ETFCatalog() {
+  const { toast } = useToast();
+  
+  // Filter and search state
   const [searchTerm, setSearchTerm] = useState('');
   const [assetTypeFilter, setAssetTypeFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('name');
+  
+  // UI state - with localStorage persistence
+  const [filtersCollapsed, setFiltersCollapsed] = useState(() => {
+    const saved = localStorage.getItem('etf-catalog-filters-collapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
+  
+  // Favorites state - with localStorage persistence
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('etf-catalog-favorites');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  
+  // Comparison state
+  const [selectedForComparison, setSelectedForComparison] = useState<Set<string>>(new Set());
+  const [showComparison, setShowComparison] = useState(false);
+  
+  // Detailed view state
+  const [detailedViewETF, setDetailedViewETF] = useState<ETF | null>(null);
+  
+  // Mobile filter sheet state
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  
+  // Persist filters collapsed state
+  useEffect(() => {
+    localStorage.setItem('etf-catalog-filters-collapsed', JSON.stringify(filtersCollapsed));
+  }, [filtersCollapsed]);
+  
+  // Persist favorites
+  useEffect(() => {
+    localStorage.setItem('etf-catalog-favorites', JSON.stringify([...favorites]));
+  }, [favorites]);
 
   const filteredETFs = useMemo(() => {
     let filtered = ETF_DATA.filter(etf => {
@@ -434,8 +474,9 @@ export default function ETFCatalog() {
 
       const matchesAssetType = assetTypeFilter === 'all' || etf.assetType === assetTypeFilter;
       const matchesRisk = riskFilter === 'all' || etf.riskLevel === riskFilter;
+      const matchesFavorites = !showFavoritesOnly || favorites.has(etf.ticker);
 
-      return matchesSearch && matchesAssetType && matchesRisk;
+      return matchesSearch && matchesAssetType && matchesRisk && matchesFavorites;
     });
 
     // Sort ETFs
@@ -459,7 +500,7 @@ export default function ETFCatalog() {
     });
 
     return filtered;
-  }, [searchTerm, assetTypeFilter, riskFilter, sortBy]);
+  }, [searchTerm, assetTypeFilter, riskFilter, sortBy, showFavoritesOnly, favorites]);
 
   const assetTypes = Array.from(new Set(ETF_DATA.map(etf => etf.assetType)));
   const riskLevels = Array.from(new Set(ETF_DATA.map(etf => etf.riskLevel)));
@@ -469,216 +510,389 @@ export default function ETFCatalog() {
     setAssetTypeFilter('all');
     setRiskFilter('all');
     setSortBy('name');
+    setShowFavoritesOnly(false);
   };
+  
+  const toggleFavorite = (ticker: string) => {
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(ticker)) {
+        newFavorites.delete(ticker);
+        toast({
+          title: "Removed from favorites",
+          description: `${ticker} has been removed from your watchlist.`,
+        });
+      } else {
+        newFavorites.add(ticker);
+        toast({
+          title: "Added to favorites",
+          description: `${ticker} has been added to your watchlist.`,
+        });
+      }
+      return newFavorites;
+    });
+  };
+  
+  const toggleComparison = (ticker: string) => {
+    setSelectedForComparison(prev => {
+      const newSelection = new Set(prev);
+      if (newSelection.has(ticker)) {
+        newSelection.delete(ticker);
+      } else {
+        if (newSelection.size >= 4) {
+          toast({
+            title: "Maximum reached",
+            description: "You can compare up to 4 ETFs at a time.",
+            variant: "destructive",
+          });
+          return prev;
+        }
+        newSelection.add(ticker);
+      }
+      return newSelection;
+    });
+  };
+  
+  const activeFiltersCount = [
+    searchTerm !== '',
+    assetTypeFilter !== 'all',
+    riskFilter !== 'all',
+    sortBy !== 'name',
+    showFavoritesOnly
+  ].filter(Boolean).length;
 
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">ETF Catalog</h1>
-        <p className="text-muted-foreground">
-          Explore our comprehensive collection of ETFs with detailed information and filtering options
-        </p>
+  const FilterContent = () => (
+    <div className="space-y-6">
+      {/* Search Section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Search className="h-4 w-4" />
+          Search
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search ETFs..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-muted/30"
+          />
+        </div>
       </div>
 
-      {/* Filters Section */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters & Search
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Search Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Search className="h-4 w-4" />
-              Search
-            </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search ETFs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-muted/30"
-              />
-            </div>
-          </div>
-
-          {/* Filter Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <SlidersHorizontal className="h-4 w-4" />
-              Filter by
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Asset Type Filter */}
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground uppercase tracking-wide">Asset Type</label>
-                <Select value={assetTypeFilter} onValueChange={setAssetTypeFilter}>
-                  <SelectTrigger className="bg-muted/30">
-                    <SelectValue placeholder="All Asset Types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Asset Types</SelectItem>
-                    {assetTypes.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Risk Level Filter */}
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground uppercase tracking-wide">Risk Level</label>
-                <Select value={riskFilter} onValueChange={setRiskFilter}>
-                  <SelectTrigger className="bg-muted/30">
-                    <SelectValue placeholder="All Risk Levels" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Risk Levels</SelectItem>
-                    {riskLevels.map(level => (
-                      <SelectItem key={level} value={level}>{level}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {/* Sort Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <ArrowUpDown className="h-4 w-4" />
-              Sort by
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground uppercase tracking-wide">Order</label>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="bg-muted/30">
-                  <SelectValue placeholder="Sort By" />
-                </SelectTrigger>
+      {/* Filter Section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <SlidersHorizontal className="h-4 w-4" />
+          Filter by
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Asset Type Filter */}
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide">Asset Type</label>
+            <Select value={assetTypeFilter} onValueChange={setAssetTypeFilter}>
+              <SelectTrigger className="bg-muted/30">
+                <SelectValue placeholder="All Asset Types" />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="ticker">Ticker</SelectItem>
-                <SelectItem value="expenseRatio">Expense Ratio (Low to High)</SelectItem>
-                <SelectItem value="dividendYield">Dividend Yield (High to Low)</SelectItem>
-                <SelectItem value="yearlyGain">Annual Return (High to Low)</SelectItem>
-                <SelectItem value="lastPrice">Price (Low to High)</SelectItem>
+                <SelectItem value="all">All Asset Types</SelectItem>
+                {assetTypes.map(type => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
               </SelectContent>
-              </Select>
-            </div>
+            </Select>
           </div>
-        </CardContent>
 
-        {/* Clear Filters */}
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
-            <X className="h-4 w-4" />
-            Clear Filters
-          </Button>
+          {/* Risk Level Filter */}
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide">Risk Level</label>
+            <Select value={riskFilter} onValueChange={setRiskFilter}>
+              <SelectTrigger className="bg-muted/30">
+                <SelectValue placeholder="All Risk Levels" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Risk Levels</SelectItem>
+                {riskLevels.map(level => (
+                  <SelectItem key={level} value={level}>{level}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Sort Section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <ArrowUpDown className="h-4 w-4" />
+          Sort by
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground uppercase tracking-wide">Order</label>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="bg-muted/30">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="ticker">Ticker</SelectItem>
+              <SelectItem value="expenseRatio">Expense Ratio (Low to High)</SelectItem>
+              <SelectItem value="dividendYield">Dividend Yield (High to Low)</SelectItem>
+              <SelectItem value="yearlyGain">Annual Return (High to Low)</SelectItem>
+              <SelectItem value="lastPrice">Price (Low to High)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      {/* Clear Filters Button */}
+      <div className="flex justify-end pt-2">
+        <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
+          <X className="h-4 w-4" />
+          Clear Filters
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl pb-24">
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">ETF Catalog</h1>
+            <p className="text-muted-foreground">
+              Explore our comprehensive collection of ETFs with detailed information and filtering options
+            </p>
+          </div>
+          {favorites.size > 0 && (
+            <Button
+              variant={showFavoritesOnly ? "default" : "outline"}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className="flex items-center gap-2"
+            >
+              <Heart className={showFavoritesOnly ? "fill-current" : ""} />
+              Favorites
+              <Badge variant="secondary" className="ml-1">{favorites.size}</Badge>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop Filters */}
+      <Card className="mb-6 hidden md:block transition-all duration-300">
+        <CardHeader 
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => setFiltersCollapsed(!filtersCollapsed)}
+        >
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filters & Search
+              {activeFiltersCount > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {activeFiltersCount} active
+                </Badge>
+              )}
+            </CardTitle>
+            <Button variant="ghost" size="sm">
+              {filtersCollapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+            </Button>
+          </div>
+        </CardHeader>
+        
+        <div 
+          className="overflow-hidden transition-all duration-300 ease-in-out"
+          style={{
+            maxHeight: filtersCollapsed ? '0px' : '1000px',
+            opacity: filtersCollapsed ? 0 : 1,
+          }}
+        >
+          <CardContent className="pt-6">
+            <FilterContent />
+          </CardContent>
         </div>
       </Card>
 
+      {/* Mobile Filters Button */}
+      <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+        <SheetTrigger asChild>
+          <Button className="md:hidden mb-6 w-full flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            Filters & Search
+            {activeFiltersCount > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {activeFiltersCount}
+              </Badge>
+            )}
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="h-[85vh]">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filters & Search
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 overflow-y-auto max-h-[calc(85vh-100px)]">
+            <FilterContent />
+          </div>
+        </SheetContent>
+      </Sheet>
+
       {/* Results Summary */}
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Showing {filteredETFs.length} of {ETF_DATA.length} ETFs
+          {showFavoritesOnly && " (Favorites)"}
         </p>
+        {filtersCollapsed && activeFiltersCount > 0 && (
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setFiltersCollapsed(false)}
+            className="text-xs"
+          >
+            View Filters
+          </Button>
+        )}
       </div>
 
       {/* ETF Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredETFs.map((etf) => (
-          <Card key={etf.ticker} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: etf.color }}
-                  />
-                  <div>
-                    <CardTitle className="text-lg">{etf.ticker}</CardTitle>
-                    <CardDescription className="text-sm font-medium">
-                      {etf.name}
-                    </CardDescription>
+          <Card 
+            key={etf.ticker} 
+            className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer relative"
+          >
+            {/* Comparison Checkbox */}
+            <div className="absolute top-4 left-4 z-10">
+              <Checkbox
+                checked={selectedForComparison.has(etf.ticker)}
+                onCheckedChange={() => toggleComparison(etf.ticker)}
+                className="bg-background"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            
+            {/* Favorite Heart */}
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(etf.ticker);
+                }}
+              >
+                <Heart 
+                  className={`h-5 w-5 transition-all ${
+                    favorites.has(etf.ticker) 
+                      ? 'fill-red-500 text-red-500' 
+                      : 'text-muted-foreground hover:text-red-500'
+                  }`}
+                />
+              </Button>
+            </div>
+            
+            <div onClick={() => setDetailedViewETF(etf)}>
+              <CardHeader className="pb-3 pt-12">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-4 h-4 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: etf.color }}
+                    />
+                    <div>
+                      <CardTitle className="text-lg">{etf.ticker}</CardTitle>
+                      <CardDescription className="text-sm font-medium">
+                        {etf.name}
+                      </CardDescription>
+                    </div>
                   </div>
                 </div>
-                <Badge variant={
-                  etf.riskLevel === 'Low' ? 'secondary' :
-                  etf.riskLevel === 'Moderate' ? 'default' : 'destructive'
-                }>
+                <Badge 
+                  variant={
+                    etf.riskLevel === 'Low' ? 'secondary' :
+                    etf.riskLevel === 'Moderate' ? 'default' : 'destructive'
+                  }
+                  className="mt-2 w-fit"
+                >
                   {etf.riskLevel}
                 </Badge>
-              </div>
-            </CardHeader>
+              </CardHeader>
 
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {etf.description}
-              </p>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                  {etf.description}
+                </p>
 
-              <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="details">Details</TabsTrigger>
-                  <TabsTrigger value="metrics">Metrics</TabsTrigger>
-                </TabsList>
+                <Tabs defaultValue="details" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="details">Details</TabsTrigger>
+                    <TabsTrigger value="metrics">Metrics</TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="details" className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="font-medium">Asset Type:</span>
-                      <p className="text-muted-foreground">{etf.assetType}</p>
-                    </div>
-                    <div>
-                      <span className="font-medium">Category:</span>
-                      <p className="text-muted-foreground">{etf.category}</p>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="metrics" className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <TabsContent value="details" className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <span className="font-medium">Expense Ratio:</span>
-                        <p className="text-muted-foreground">{etf.expenseRatio.toFixed(2)}%</p>
+                        <span className="font-medium">Asset Type:</span>
+                        <p className="text-muted-foreground">{etf.assetType}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium">Category:</span>
+                        <p className="text-muted-foreground">{etf.category}</p>
                       </div>
                     </div>
-                    {etf.dividendYield && (
+                  </TabsContent>
+
+                  <TabsContent value="metrics" className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <span className="font-medium">Dividend Yield:</span>
-                          <p className="text-muted-foreground">{etf.dividendYield}%</p>
+                          <span className="font-medium">Expense:</span>
+                          <p className="text-muted-foreground">{etf.expenseRatio.toFixed(2)}%</p>
                         </div>
                       </div>
-                    )}
-                    {etf.yearlyGain && (
-                      <div className="flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <span className="font-medium">Annual Return:</span>
-                          <p className="text-muted-foreground">{etf.yearlyGain}%</p>
+                      {etf.dividendYield && (
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <span className="font-medium">Dividend:</span>
+                            <p className="text-muted-foreground">{etf.dividendYield}%</p>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {etf.lastPrice && (
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <span className="font-medium">Last Price:</span>
-                          <p className="text-muted-foreground">${etf.lastPrice.toFixed(2)}</p>
+                      )}
+                      {etf.yearlyGain && (
+                        <div className="flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <span className="font-medium">Return:</span>
+                            <p className="text-muted-foreground">{etf.yearlyGain}%</p>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
+                      )}
+                      {etf.lastPrice && (
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <span className="font-medium">Price:</span>
+                            <p className="text-muted-foreground">${etf.lastPrice.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+                
+                <Button variant="outline" size="sm" className="w-full mt-4 flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  View Details
+                </Button>
+              </CardContent>
+            </div>
           </Card>
         ))}
       </div>
@@ -687,11 +901,74 @@ export default function ETFCatalog() {
         <div className="text-center py-12">
           <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">No ETFs Found</h3>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-4">
             Try adjusting your search terms or filters to find ETFs that match your criteria.
           </p>
+          <Button variant="outline" onClick={clearFilters}>
+            Clear All Filters
+          </Button>
+        </div>
+      )}
+      
+      {/* Comparison Floating Bar */}
+      {selectedForComparison.size > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg p-4 z-50 animate-in slide-in-from-bottom duration-300">
+          <div className="container mx-auto max-w-7xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <p className="text-sm font-medium">
+                {selectedForComparison.size} ETF{selectedForComparison.size > 1 ? 's' : ''} selected for comparison
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {Array.from(selectedForComparison).map(ticker => (
+                  <Badge key={ticker} variant="secondary" className="flex items-center gap-1">
+                    {ticker}
+                    <X 
+                      className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                      onClick={() => toggleComparison(ticker)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedForComparison(new Set())}
+              >
+                Clear
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setShowComparison(true)}
+                disabled={selectedForComparison.size < 2}
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Compare
+              </Button>
+            </div>
           </div>
-          )}
+        </div>
+      )}
+      
+      {/* Detailed ETF View Modal */}
+      <DetailedETFView
+        etf={detailedViewETF}
+        isOpen={!!detailedViewETF}
+        onClose={() => setDetailedViewETF(null)}
+        isFavorite={detailedViewETF ? favorites.has(detailedViewETF.ticker) : false}
+        onToggleFavorite={toggleFavorite}
+        onAddToComparison={toggleComparison}
+        isInComparison={detailedViewETF ? selectedForComparison.has(detailedViewETF.ticker) : false}
+      />
+      
+      {/* Comparison Modal */}
+      <ETFComparison
+        etfs={ETF_DATA.filter(etf => selectedForComparison.has(etf.ticker))}
+        isOpen={showComparison}
+        onClose={() => setShowComparison(false)}
+        onRemoveETF={toggleComparison}
+      />
     </div>
   );
 }

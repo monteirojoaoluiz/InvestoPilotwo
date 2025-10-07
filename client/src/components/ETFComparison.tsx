@@ -1,0 +1,206 @@
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { X, TrendingUp, TrendingDown, DollarSign, BarChart3 } from "lucide-react";
+
+interface ETF {
+  ticker: string;
+  name: string;
+  description: string;
+  assetType: string;
+  category: string;
+  expenseRatio: number;
+  riskLevel: 'Low' | 'Moderate' | 'High';
+  dividendYield?: number;
+  yearlyGain?: number;
+  lastPrice?: number;
+  color: string;
+}
+
+interface ETFComparisonProps {
+  etfs: ETF[];
+  isOpen: boolean;
+  onClose: () => void;
+  onRemoveETF: (ticker: string) => void;
+}
+
+export function ETFComparison({
+  etfs,
+  isOpen,
+  onClose,
+  onRemoveETF,
+}: ETFComparisonProps) {
+  if (etfs.length === 0) return null;
+
+  const ComparisonRow = ({ label, values, icon: Icon, formatter = (v: any) => v }: {
+    label: string;
+    values: any[];
+    icon?: any;
+    formatter?: (v: any) => string;
+  }) => (
+    <div className="grid gap-4" style={{ gridTemplateColumns: `200px repeat(${etfs.length}, 1fr)` }}>
+      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground py-3">
+        {Icon && <Icon className="h-4 w-4" />}
+        {label}
+      </div>
+      {values.map((value, idx) => (
+        <div key={idx} className="py-3 px-4 bg-muted/30 rounded-lg text-center">
+          <span className="font-medium">{formatter(value)}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[90vh]">
+        <DialogHeader>
+          <DialogTitle>Compare ETFs</DialogTitle>
+        </DialogHeader>
+
+        <ScrollArea className="h-[calc(90vh-120px)] pr-4">
+          <div className="space-y-6">
+            {/* ETF Headers */}
+            <div className="grid gap-4" style={{ gridTemplateColumns: `200px repeat(${etfs.length}, 1fr)` }}>
+              <div className="py-3"></div>
+              {etfs.map((etf) => (
+                <div key={etf.ticker} className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div
+                        className="w-4 h-4 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: etf.color }}
+                      />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-lg truncate">{etf.ticker}</p>
+                        <p className="text-xs text-muted-foreground truncate">{etf.name}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRemoveETF(etf.ticker)}
+                      className="flex-shrink-0 h-6 w-6 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Badge
+                    variant={
+                      etf.riskLevel === 'Low' ? 'secondary' :
+                      etf.riskLevel === 'Moderate' ? 'default' : 'destructive'
+                    }
+                    className="w-full justify-center"
+                  >
+                    {etf.riskLevel}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+
+            <Separator />
+
+            {/* Basic Information */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+              <div className="space-y-2">
+                <ComparisonRow
+                  label="Asset Type"
+                  values={etfs.map(e => e.assetType)}
+                />
+                <ComparisonRow
+                  label="Category"
+                  values={etfs.map(e => e.category)}
+                />
+                <ComparisonRow
+                  label="Risk Level"
+                  values={etfs.map(e => e.riskLevel)}
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Performance Metrics */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Performance Metrics</h3>
+              <div className="space-y-2">
+                <ComparisonRow
+                  label="Expense Ratio"
+                  icon={DollarSign}
+                  values={etfs.map(e => e.expenseRatio)}
+                  formatter={(v) => `${v.toFixed(2)}%`}
+                />
+                <ComparisonRow
+                  label="Dividend Yield"
+                  icon={TrendingDown}
+                  values={etfs.map(e => e.dividendYield)}
+                  formatter={(v) => v ? `${v.toFixed(2)}%` : 'N/A'}
+                />
+                <ComparisonRow
+                  label="Annual Return"
+                  icon={BarChart3}
+                  values={etfs.map(e => e.yearlyGain)}
+                  formatter={(v) => v ? `${v > 0 ? '+' : ''}${v.toFixed(1)}%` : 'N/A'}
+                />
+                <ComparisonRow
+                  label="Last Price"
+                  icon={DollarSign}
+                  values={etfs.map(e => e.lastPrice)}
+                  formatter={(v) => v ? `$${v.toFixed(2)}` : 'N/A'}
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Best/Worst Indicators */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Comparison Highlights</h3>
+              <div className="grid gap-4" style={{ gridTemplateColumns: `200px repeat(${etfs.length}, 1fr)` }}>
+                <div className="text-sm font-medium text-muted-foreground py-3">
+                  Expense Ratio
+                </div>
+                {etfs.map((etf) => {
+                  const lowestExpense = Math.min(...etfs.map(e => e.expenseRatio));
+                  const isLowest = etf.expenseRatio === lowestExpense;
+                  return (
+                    <div key={etf.ticker} className="py-3 px-4 bg-muted/30 rounded-lg text-center">
+                      {isLowest && (
+                        <Badge variant="secondary" className="text-xs">
+                          Lowest
+                        </Badge>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="grid gap-4 mt-2" style={{ gridTemplateColumns: `200px repeat(${etfs.length}, 1fr)` }}>
+                <div className="text-sm font-medium text-muted-foreground py-3">
+                  Annual Return
+                </div>
+                {etfs.map((etf) => {
+                  const highestReturn = Math.max(...etfs.map(e => e.yearlyGain || 0));
+                  const isHighest = etf.yearlyGain === highestReturn && etf.yearlyGain;
+                  return (
+                    <div key={etf.ticker} className="py-3 px-4 bg-muted/30 rounded-lg text-center">
+                      {isHighest && (
+                        <Badge variant="default" className="text-xs">
+                          Highest
+                        </Badge>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
