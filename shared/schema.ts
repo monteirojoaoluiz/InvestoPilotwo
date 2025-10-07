@@ -143,12 +143,16 @@ export type InsertPortfolioMessage = typeof portfolioMessages.$inferInsert;
 export type PortfolioMessage = typeof portfolioMessages.$inferSelect;
 
 // Zod schemas
-export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments).omit({
-  id: true,
-  userId: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments)
+  .omit({
+    id: true,
+    userId: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    esgExclusions: z.array(z.string()).default([]),
+  });
 
 export const insertPortfolioMessageSchema = createInsertSchema(portfolioMessages)
   .omit({

@@ -768,14 +768,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as any).id;
       const validatedData = insertRiskAssessmentSchema.parse(req.body);
       
-      const assessment = await storage.createRiskAssessment({
+      // Ensure esgExclusions is an array (default to empty array if undefined)
+      const assessmentData = {
         ...validatedData,
         userId,
-      });
+        esgExclusions: validatedData.esgExclusions || [],
+      };
+      
+      console.log('Creating risk assessment with data:', assessmentData);
+      const assessment = await storage.createRiskAssessment(assessmentData);
       
       res.json(assessment);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation error:", error.errors);
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
       console.error("Error creating risk assessment:", error);
