@@ -332,3 +332,8 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+
+// Provide a getter for DI container compatibility
+export function getDefaultStorage(): DatabaseStorage {
+  return storage;
+}

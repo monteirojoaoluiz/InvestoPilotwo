@@ -35,6 +35,11 @@ import { pool } from "./db";
 import { Groq } from 'groq-sdk';
 import yahooFinance from 'yahoo-finance2';
 import { config } from "./config";
+import { registerDefaultBindings } from './di/container';
+import * as portfolioController from './controllers/portfolioController';
+import * as authController from './controllers/authController';
+import * as etfController from './controllers/etfController';
+import * as chatController from './controllers/chatController';
 
 const groqClient = new Groq({
   apiKey: config.GROQ_API_KEY!,
@@ -142,9 +147,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Env validation occurs in server/config.ts on import
   console.log('Environment configuration validated');
 
+  // Register DI bindings
+  try {
+    registerDefaultBindings();
+  } catch (err) {
+    console.warn('DI bindings registration failed (this is non-fatal):', err);
+  }
+
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // Use portfolio controller for portfolio endpoints (incremental migration)
+  app.post('/api/portfolio/generate', isAuthenticated, portfolioController.generatePortfolio);
+  app.get('/api/portfolio', isAuthenticated, portfolioController.getPortfolio);
+
+  // Keep remaining routes in this file for now (will be migrated to controllers)
 
   // Password-based auth routes
   app.post('/api/auth/register', registrationLimiter, registerValidation, async (req: Request, res: Response) => {
@@ -220,195 +238,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })(req, res, next);
   });
 
-  // Auth routes
-  app.post('/api/auth/send', magicLinkLimiter, emailValidation, async (req: Request, res: Response) => {
-    try {
-      const { email } = req.body;
-      if (!email) {
-        return res.status(400).json({ message: 'Email required' });
-      }
+  // Auth routes (migrated handlers)
+  app.post('/api/auth/send', magicLinkLimiter, emailValidation, authController.sendMagicLink);
+  app.get('/api/auth/verify', authController.verifyMagicLink);
+  app.get('/api/auth/user', isAuthenticated, authController.getUser);
+  app.post('/api/auth/logout', authController.logout);
+  app.post('/api/auth/forgot-password', passwordResetLimiter, emailValidation, authController.forgotPassword);
+  app.post('/api/auth/reset-password', resetPasswordValidation, authController.resetPassword);
 
-      // Check or create user
-      let user = await storage.getUserByEmail(email); // Assume add this method
-      if (!user) {
-        user = await storage.createUser({ email, firstName: '', lastName: '', profileImageUrl: '' });
-      }
+  // ETF routes
+  app.get('/api/etf/:ticker/history', isAuthenticated, etfController.getHistory);
+  app.get('/api/etf/:ticker/info', isAuthenticated, etfController.getInfo);
 
-      // Generate token
-      const token = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
-
-      const tokenData: InsertAuthTokenInput = {
-        email,
-        token,
-        expiresAt,
-      };
-
-      await storage.createAuthToken(tokenData);
-
-      // Send email
-      const msg = {
-        to: email,
-        from: 'monteirojoaoluiz@gmail.com', // TODO: set verified sender
-        subject: 'Your Stack16 Magic Link',
-        html: `
-          <h1>Sign in to Stack16</h1>
-          <p>Click the link below to sign in to your account:</p>
-          <a href="${process.env.FRONTEND_URL}/api/auth/verify?token=${token}">Sign In</a>
-          <p>This link expires in 15 minutes.</p>
-        `,
-      };
-
-      if (config.SENDGRID_API_KEY) {
-        await sgMail.send(msg);
-      } else {
-        console.warn('SENDGRID_API_KEY not set - skipping email send');
-      }
-
-      res.json({ message: 'Magic link sent to your email' });
-    } catch (error) {
-      console.error('Error sending magic link:', error);
-      res.status(500).json({ message: 'Failed to send email' });
-    }
-  });
-
-  app.get('/api/auth/verify', async (req: Request, res: Response) => {
-    try {
-      const { token } = req.query;
-      if (!token) {
-        return res.status(400).redirect('/?error=no_token');
-      }
-
-      const authToken = await storage.getAuthTokenByToken(token as string);
-      if (!authToken || authToken.used || new Date() > authToken.expiresAt) {
-        return res.status(400).redirect('/?error=invalid_token');
-      }
-
-      // Get user
-      let user = await storage.getUserByEmail(authToken.email);
-      if (!user) {
-        user = await storage.createUser({ email: authToken.email, firstName: '', lastName: '', profileImageUrl: '' });
-      }
-
-      // Mark token used
-      await storage.markTokenAsUsed(authToken.id);
-
-      // Login user
-      req.login(user, async (err: any) => {
-        if (err) {
-          return res.status(500).redirect('/?error=login_failed');
-        }
-        try {
-          await storage.updateUserLastLogin((user as any).id);
-        } catch (updateErr) {
-          console.error('Failed to update last login on magic link:', updateErr);
-        }
-        res.redirect('/dashboard');
-      });
-    } catch (error) {
-      console.error('Error verifying token:', error);
-      res.status(500).redirect('/?error=server_error');
-    }
-  });
-
-  app.get('/api/auth/user', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      console.log('User auth check - user:', (req.user as any)?.email);
-      res.json(req.user);
-    } catch (error) {
-      console.error('User fetch error:', error);
-      res.status(500).json({ message: 'Failed to fetch user' });
-    }
-  });
-
-  app.post('/api/auth/logout', (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Logout failed' });
-      }
-      res.json({ message: 'Logged out successfully' });
-    });
-  });
-
-  // Password reset routes
-  app.post('/api/auth/forgot-password', passwordResetLimiter, emailValidation, async (req: Request, res: Response) => {
-    try {
-      const { email } = req.body;
-
-      // Check if user exists
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        // Don't reveal if user exists or not for security
-        return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
-      }
-
-      // Generate secure reset token
-      const token = crypto.randomBytes(32).toString('hex');
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiration
-
-      // Store reset token
-      await storage.createPasswordResetToken({
-        userId: (user as any).id,
-        token,
-        expiresAt,
-        used: false,
-      });
-
-      // Send reset email
-      const resetUrl = `${config.FRONTEND_URL || 'http://localhost:5000'}/reset-password?token=${token}`;
-      const msg = {
-        to: email,
-        from: 'monteirojoaoluiz@gmail.com',
-        subject: 'Reset Your Stack16 Password',
-        html: `
-          <h1>Password Reset Request</h1>
-          <p>You requested to reset your password for your Stack16 account.</p>
-          <p>Click the link below to reset your password:</p>
-          <a href="${resetUrl}">Reset Password</a>
-          <p>This link will expire in 1 hour.</p>
-          <p>If you didn't request this, please ignore this email.</p>
-        `,
-      };
-
-      if (config.SENDGRID_API_KEY) {
-        await sgMail.send(msg);
-      } else {
-        console.warn('SENDGRID_API_KEY not set - skipping email send');
-      }
-
-      res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
-    } catch (error) {
-      console.error('Password reset request error:', error);
-      res.status(500).json({ message: 'Failed to process password reset request' });
-    }
-  });
-
-  app.post('/api/auth/reset-password', resetPasswordValidation, async (req: Request, res: Response) => {
-    try {
-      const { token, password } = req.body;
-
-      // Get and validate reset token
-      const resetToken = await storage.getPasswordResetToken(token);
-      if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
-        return res.status(400).json({ message: 'Invalid or expired reset token' });
-      }
-
-      // Hash new password with pepper
-      const pepperedPassword = password + PEPPER;
-      const hashedPassword = await bcrypt.hash(pepperedPassword, saltRounds);
-
-      // Update user password
-      await storage.updateUserPassword(resetToken.userId, hashedPassword);
-
-      // Mark token as used
-      await storage.markPasswordResetTokenAsUsed(resetToken.id);
-
-      res.json({ message: 'Password has been reset successfully. You can now log in with your new password.' });
-    } catch (error) {
-      console.error('Password reset error:', error);
-      res.status(500).json({ message: 'Failed to reset password' });
-    }
-  });
+  // Portfolio chat routes
+  app.get('/api/portfolio/:portfolioId/messages', isAuthenticated, chatController.getMessages);
+  app.delete('/api/portfolio/:portfolioId/messages', isAuthenticated, chatController.deleteMessages);
+  app.post('/api/portfolio/:portfolioId/messages', isAuthenticated, chatController.postMessage);
 
   // Add change password route after password reset routes
   app.post('/api/auth/change-password', isAuthenticated, changePasswordValidation, async (req: Request, res: Response) => {
@@ -744,50 +589,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ETF market data routes
-  app.get('/api/etf/:ticker/history', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const { ticker } = req.params as { ticker: string };
-      const { range = '1y', interval = '1wk' } = req.query as { range?: string; interval?: string };
-
-      const now = new Date();
-      const period2 = now;
-      const period1 = new Date(now);
-      const r = (range || '1y').toLowerCase();
-      if (r.includes('3y')) period1.setFullYear(period1.getFullYear() - 3);
-      else if (r.includes('5y')) period1.setFullYear(period1.getFullYear() - 5);
-      else if (r.includes('6m') || r.includes('6mo')) period1.setMonth(period1.getMonth() - 6);
-      else period1.setFullYear(period1.getFullYear() - 1);
-
-      const result = await yahooFinance.chart(ticker, {
-        period1,
-        period2,
-        interval: interval as any,
-      } as any);
-
-      const points = ((result as any).quotes || []).map((q: any) => ({
-        date: q.date instanceof Date ? q.date.toISOString().slice(0, 10) : q.date,
-        close: q.close,
-      })).filter((p: any) => typeof p.close === 'number');
-
-      res.json({ ticker, range, interval, points });
-    } catch (error) {
-      console.error('Error fetching ETF history:', error);
-      res.status(500).json({ message: 'Failed to fetch ETF history' });
-    }
-  });
-
-  app.get('/api/etf/:ticker/info', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const { ticker } = req.params;
-      const quote = await yahooFinance.quote(ticker);
-      res.json(quote);
-    } catch (error) {
-      console.error('Error fetching ETF info:', error);
-      res.status(500).json({ message: 'Failed to fetch ETF information' });
-    }
-  });
-
   // Combined portfolio performance (3y daily, normalized to 100)
   app.get('/api/portfolio/performance', isAuthenticated, async (req: Request, res: Response) => {
     try {
@@ -1003,121 +804,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Failed to compute portfolio performance. This may be due to temporary market data service limitations. Please try again later.',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
-    }
-  });
-
-  // Portfolio chat routes
-  app.get('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const { portfolioId } = req.params;
-      const messages = await storage.getPortfolioMessages(portfolioId);
-      res.json(messages);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      res.status(500).json({ message: "Failed to fetch messages" });
-    }
-  });
-
-  app.delete('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const { portfolioId } = req.params;
-      const userId = (req.user as any).id;
-
-      // Verify the portfolio belongs to the user
-      const portfolio = await storage.getPortfolioByUserId(userId);
-      if (!portfolio || portfolio.id !== portfolioId) {
-        return res.status(403).json({ message: "Unauthorized to delete messages for this portfolio" });
-      }
-
-      await storage.deletePortfolioMessages(portfolioId);
-      res.json({ message: "All messages deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting messages:", error);
-      res.status(500).json({ message: "Failed to delete messages" });
-    }
-  });
-
-  app.post('/api/portfolio/:portfolioId/messages', isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const userId = (req.user as any).id;
-      const { portfolioId } = req.params;
-      const validatedData = insertPortfolioMessageSchema.parse(req.body);
-      
-      const userMessage = await storage.createPortfolioMessage({
-        ...validatedData,
-        sender: 'user',
-        userId,
-        portfolioId,
-      });
-
-      const portfolio = await storage.getPortfolioByUserId(userId);
-      if (!portfolio) {
-        return res.status(400).json({ message: 'Portfolio not found' });
-      }
-
-      // Set up SSE headers for streaming
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-
-      // Send user message immediately
-      res.write(`data: ${JSON.stringify({ type: 'userMessage', data: userMessage })}\n\n`);
-
-      // allocations are stored as jsonb; they are already an object
-      const allocations = (portfolio as any).allocations;
-      const prompt = `You are a financial advisor for Stack16. The user's portfolio has allocations: ${JSON.stringify(allocations)}. Total value: $${portfolio.totalValue}. User asked: ${validatedData.content}. Provide helpful, professional advice.`;
-
-      try {
-        const completion = await groqClient.chat.completions.create({
-          model: 'openai/gpt-oss-120b',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You are Stack16, a professional AI financial co-pilot. You ONLY answer questions related to the user\'s portfolio, investments, and financial planning. If a question is not related to finance, investing, or the user\'s portfolio, politely decline to answer and redirect back to portfolio-related topics. When answering: 1) ground your advice in the provided allocations and totals, 2) explain reasoning and tradeoffs, 3) be conservative with claims, 4) avoid providing individualized investment advice; include a short disclaimer that you are not a licensed advisor.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.5,
-          stream: true, // Enable streaming
-        });
-
-        let aiResponse = '';
-        
-        // Stream the response chunks
-        for await (const chunk of completion) {
-          const content = chunk.choices[0]?.delta?.content || '';
-          if (content) {
-            aiResponse += content;
-            res.write(`data: ${JSON.stringify({ type: 'chunk', data: content })}\n\n`);
-          }
-        }
-        
-        // Save the complete AI response to database
-        const aiMessage = await storage.createPortfolioMessage({
-          content: aiResponse,
-          sender: 'ai',
-          userId,
-          portfolioId,
-        });
-        
-        // Send completion event with full message
-        res.write(`data: ${JSON.stringify({ type: 'complete', data: aiMessage })}\n\n`);
-        res.end();
-      } catch (error) {
-        console.error('Groq API error:', error);
-        res.write(`data: ${JSON.stringify({ type: 'error', data: { message: 'Failed to generate AI response' } })}\n\n`);
-        res.end();
-      }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid data", errors: error.errors });
-      }
-      console.error("Error creating message:", error);
-      res.status(500).json({ message: "Failed to create message" });
     }
   });
 
