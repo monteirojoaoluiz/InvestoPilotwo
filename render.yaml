@@ -8,7 +8,14 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false  # Set this manually in Render dashboard for security
+        sync: false  # Required: PostgreSQL connection string - Set in Render dashboard
+      # Additional required env vars to set in Render dashboard:
+      # - SESSION_SECRET: Random secret for session encryption
+      # - PASSWORD_PEPPER: Random string for password security
+      # - SENDGRID_API_KEY: For sending emails (optional)
+      # - FRONTEND_URL: Your deployed app URL (e.g., https://yourdomain.onrender.com)
+      # - GROQ_API_KEY: For AI chat features (optional)
+      # - LOG_LEVEL: Logging verbosity (default: info)
     plan: free
     autoDeploy: true
     headers:
@@ -18,3 +25,6 @@ services:
       - path: /*
         name: X-Content-Type-Options
         value: nosniff
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains

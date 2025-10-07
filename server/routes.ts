@@ -4,8 +4,23 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertRiskAssessmentSchema, insertPortfolioMessageSchema } from "@shared/schema";
 import { z } from "zod";
-import rateLimit from 'express-rate-limit';
-import { body, validationResult } from 'express-validator';
+import { isAuthenticated } from "./middleware/auth";
+import {
+  loginLimiter,
+  registrationLimiter,
+  magicLinkLimiter,
+  passwordResetLimiter,
+  emailChangeLimiter,
+} from "./middleware/rateLimits";
+import {
+  registerValidation,
+  loginValidation,
+  emailValidation,
+  changeEmailValidation,
+  resetPasswordValidation,
+  changePasswordValidation,
+  deleteAccountValidation,
+} from "./middleware/authValidation";
 
 import crypto from 'crypto';
 import sgMail from '@sendgrid/mail';
@@ -112,147 +127,7 @@ passport.deserializeUser(async (id: string, done) => {
   }
 });
 
-const isAuthenticated = (req: any, res: any, next: any) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ message: 'Unauthorized' });
-};
-
-// Validation middleware
-const handleValidationErrors = (req: any, res: any, next: any) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
-  }
-  next();
-};
-
-// Validation rules for auth endpoints
-const registerValidation = [
-  body('email')
-    .trim()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Valid email is required'),
-  body('password')
-    .isLength({ min: 8, max: 128 })
-    .withMessage('Password must be between 8 and 128 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
-  handleValidationErrors,
-];
-
-const loginValidation = [
-  body('email')
-    .trim()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Valid email is required'),
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required'),
-  handleValidationErrors,
-];
-
-const emailValidation = [
-  body('email')
-    .trim()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Valid email is required'),
-  handleValidationErrors,
-];
-
-const changeEmailValidation = [
-  body('newEmail')
-    .trim()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Valid email is required'),
-  handleValidationErrors,
-];
-
-const resetPasswordValidation = [
-  body('token')
-    .notEmpty()
-    .withMessage('Reset token is required'),
-  body('password')
-    .isLength({ min: 8, max: 128 })
-    .withMessage('Password must be between 8 and 128 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
-  handleValidationErrors,
-];
-
-// Add change password validation after resetPasswordValidation
-const changePasswordValidation = [
-  body('currentPassword')
-    .notEmpty()
-    .withMessage('Current password is required'),
-  body('newPassword')
-    .isLength({ min: 8, max: 128 })
-    .withMessage('New password must be between 8 and 128 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
-    .withMessage('New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
-  body('confirmPassword')
-    .custom((value, { req }) => {
-      if (value !== req.body.newPassword) {
-        throw new Error('Passwords do not match');
-      }
-      return true;
-    }),
-  handleValidationErrors,
-];
-
-const deleteAccountValidation = [
-  body('currentPassword')
-    .notEmpty()
-    .withMessage('Current password is required'),
-  handleValidationErrors,
-];
-
-// Rate limiters for authentication endpoints
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per window
-  message: { message: 'Too many login attempts. Please try again after 15 minutes.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-  // Remove custom keyGenerator to use default (which handles IPv6 properly)
-});
-
-const registrationLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 registration attempts per hour
-  message: { message: 'Too many registration attempts. Please try again after an hour.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const magicLinkLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // 5 magic link requests per hour
-  message: { message: 'Too many magic link requests. Please try again after an hour.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const passwordResetLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 password reset requests per hour
-  message: { message: 'Too many password reset requests. Please try again after an hour.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const emailChangeLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 email change requests per hour
-  message: { message: 'Too many email change requests. Please try again after an hour.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Middleware and validation rules imported from separate files above
 
 // Setup SendGrid if available
 if (config.SENDGRID_API_KEY) {
