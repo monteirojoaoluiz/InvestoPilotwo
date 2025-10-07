@@ -24,26 +24,58 @@ const groqClient = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
 });
 
-// Simple in-memory cache for Yahoo Finance data
+// Enhanced in-memory cache for Yahoo Finance data
 const yahooCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const HISTORY_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes for historical data
+const INFO_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes for quote/info data
 
-async function getCachedYahooData(ticker: string, period1: Date, period2: Date, interval: string) {
-  const cacheKey = `${ticker}-${period1.getTime()}-${period2.getTime()}-${interval}`;
+async function getCachedYahooData(ticker: string, period1?: Date, period2?: Date, interval?: string) {
+  const cacheKey = period1 && period2 && interval 
+    ? `hist-${ticker}-${period1.getTime()}-${period2.getTime()}-${interval}`
+    : `info-${ticker}`;
   const cached = yahooCache.get(cacheKey);
   
-  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-    console.log(`Using cached data for ${ticker}`);
+  const cacheDuration = period1 ? HISTORY_CACHE_DURATION : INFO_CACHE_DURATION;
+  
+  if (cached && (Date.now() - cached.timestamp) < cacheDuration) {
+    console.log(`Cache hit for ${ticker} (${period1 ? 'history' : 'info'})`);
     return cached.data;
   }
   
   return null;
 }
 
-function setCachedYahooData(ticker: string, period1: Date, period2: Date, interval: string, data: any) {
-  const cacheKey = `${ticker}-${period1.getTime()}-${period2.getTime()}-${interval}`;
+function setCachedYahooData(ticker: string, data: any, period1?: Date, period2?: Date, interval?: string) {
+  const cacheKey = period1 && period2 && interval 
+    ? `hist-${ticker}-${period1.getTime()}-${period2.getTime()}-${interval}`
+    : `info-${ticker}`;
   yahooCache.set(cacheKey, { data, timestamp: Date.now() });
+  
+  // Log cache size periodically for monitoring
+  if (yahooCache.size % 50 === 0) {
+    console.log(`Yahoo Finance cache size: ${yahooCache.size} entries`);
+  }
 }
+
+// Clean up old cache entries periodically
+setInterval(() => {
+  const now = Date.now();
+  let deletedCount = 0;
+  
+  for (const [key, value] of Array.from(yahooCache.entries())) {
+    const isHistory = key.startsWith('hist-');
+    const duration = isHistory ? HISTORY_CACHE_DURATION : INFO_CACHE_DURATION;
+    
+    if (now - value.timestamp > duration * 2) { // Keep for 2x cache duration before cleanup
+      yahooCache.delete(key);
+      deletedCount++;
+    }
+  }
+  
+  if (deletedCount > 0) {
+    console.log(`Cleaned up ${deletedCount} expired cache entries. Current size: ${yahooCache.size}`);
+  }
+}, 15 * 60 * 1000); // Run cleanup every 15 minutes
 
 // Setup session (moved from replitAuth)
 const getSession = () => {
@@ -912,6 +944,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       else if (r.includes('6m') || r.includes('6mo')) period1.setMonth(period1.getMonth() - 6);
       else period1.setFullYear(period1.getFullYear() - 1);
 
+      // Check cache first
+      const cachedData = await getCachedYahooData(ticker, period1, period2, interval as string);
+      if (cachedData) {
+        // Set cache headers for browser caching
+        res.setHeader('Cache-Control', `private, max-age=${Math.floor(HISTORY_CACHE_DURATION / 1000)}`);
+        return res.json(cachedData);
+      }
+
       const result = await yahooFinance.chart(ticker, {
         period1,
         period2,
@@ -923,18 +963,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
         close: q.close,
       })).filter((p: any) => typeof p.close === 'number');
 
-      res.json({ ticker, range, interval, points });
+      const responseData = { ticker, range, interval, points };
+      
+      // Cache the result
+      setCachedYahooData(ticker, responseData, period1, period2, interval as string);
+      
+      // Set cache headers for browser caching
+      res.setHeader('Cache-Control', `private, max-age=${Math.floor(HISTORY_CACHE_DURATION / 1000)}`);
+      res.json(responseData);
     } catch (error) {
       console.error('Error fetching ETF history:', error);
       res.status(500).json({ message: 'Failed to fetch ETF history' });
     }
   });
 
+  // Admin endpoint to clear Yahoo Finance cache
+  app.post('/api/admin/clear-cache', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const cacheSize = yahooCache.size;
+      yahooCache.clear();
+      console.log(`Cache cleared. Removed ${cacheSize} entries.`);
+      res.json({ message: 'Cache cleared successfully', entriesCleared: cacheSize });
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      res.status(500).json({ message: 'Failed to clear cache' });
+    }
+  });
+
   app.get('/api/etf/:ticker/info', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { ticker } = req.params;
-      const quote = await yahooFinance.quote(ticker);
-      res.json(quote);
+      
+      // Check cache first (unless cache-bypass header is set)
+      const bypassCache = req.headers['x-bypass-cache'] === 'true';
+      if (!bypassCache) {
+        const cachedData = await getCachedYahooData(ticker);
+        if (cachedData) {
+          // Set cache headers for browser caching
+          res.setHeader('Cache-Control', `private, max-age=${Math.floor(INFO_CACHE_DURATION / 1000)}`);
+          return res.json(cachedData);
+        }
+      }
+      
+      // Fetch quote, summary, and historical data for accurate annual return
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      
+      const [quote, summary, historicalData] = await Promise.all([
+        yahooFinance.quote(ticker),
+        yahooFinance.quoteSummary(ticker, { 
+          modules: ['summaryDetail', 'fundProfile', 'defaultKeyStatistics'] 
+        }).catch(() => null), // Don't fail if quoteSummary is unavailable
+        yahooFinance.historical(ticker, {
+          period1: oneYearAgo,
+          period2: new Date(),
+          interval: '1d'
+        }).catch(() => null) // Don't fail if historical data is unavailable
+      ]);
+      
+      // Calculate actual year-over-year return from historical data
+      let yearlyReturn = undefined;
+      if (historicalData && historicalData.length > 0 && quote.regularMarketPrice) {
+        // Sort by date to ensure we have oldest first (in case data is reversed)
+        const sortedData = [...historicalData].sort((a, b) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        
+        const oldestPrice = sortedData[0].close;
+        const currentPrice = quote.regularMarketPrice;
+        yearlyReturn = ((currentPrice - oldestPrice) / oldestPrice);
+        
+        // Debug logging for troubleshooting
+        if (ticker === 'XLC' || Math.abs(yearlyReturn) > 1) {
+          console.log(`[${ticker}] Year-over-year calculation:`, {
+            oldestDate: sortedData[0].date,
+            oldestPrice,
+            currentPrice,
+            yearlyReturn: (yearlyReturn * 100).toFixed(2) + '%',
+            dataPoints: sortedData.length
+          });
+        }
+      }
+      
+      // Combine data from both sources
+      const combinedData: any = {
+        // Basic quote data
+        regularMarketPrice: quote.regularMarketPrice,
+        trailingAnnualDividendYield: quote.trailingAnnualDividendYield,
+        fiftyTwoWeekLow: quote.fiftyTwoWeekLow,
+        fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
+        
+        // Use calculated yearly return from actual historical data
+        fiftyTwoWeekChange: yearlyReturn,
+          
+        // Add expense ratio from summary if available
+        expenseRatio: summary?.fundProfile?.feesExpensesInvestment?.annualReportExpenseRatio
+          || undefined,
+      };
+      
+      // Log what we found
+      console.log(`Yahoo Finance data for ${ticker}:`, {
+        regularMarketPrice: combinedData.regularMarketPrice,
+        expenseRatio: combinedData.expenseRatio,
+        trailingAnnualDividendYield: combinedData.trailingAnnualDividendYield,
+        fiftyTwoWeekChange: combinedData.fiftyTwoWeekChange,
+        historicalDataPoints: historicalData?.length || 0,
+      });
+      
+      // Cache the result
+      setCachedYahooData(ticker, combinedData);
+      
+      // Set cache headers for browser caching
+      res.setHeader('Cache-Control', `private, max-age=${Math.floor(INFO_CACHE_DURATION / 1000)}`);
+      res.json(combinedData);
     } catch (error) {
       console.error('Error fetching ETF info:', error);
       res.status(500).json({ message: 'Failed to fetch ETF information' });
@@ -1015,7 +1156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             chart = await yahooFinance.chart(t.ticker, { period1, period2, interval: '1d' } as any);
             
             // Cache the successful result
-            setCachedYahooData(t.ticker, period1, period2, '1d', chart);
+            setCachedYahooData(t.ticker, chart, period1, period2, '1d');
           }
 
           let points: Array<{ date: string; price: number }> = [];

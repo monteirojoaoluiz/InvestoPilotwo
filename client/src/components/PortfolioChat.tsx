@@ -37,12 +37,8 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
 
   // Fetch portfolio on mount
-  const { data: portfolioData } = useQuery({
-    queryKey: ['portfolio'],
-    queryFn: async () => {
-      const res = await apiRequest('GET', '/api/portfolio');
-      return res.json();
-    },
+  const { data: portfolioData } = useQuery<{ id: string; allocations: any[]; totalValue: number; totalReturn: number }>({
+    queryKey: ['/api/portfolio'],
   });
 
   useEffect(() => {
@@ -62,7 +58,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   }, [showNewChatSuccess]);
 
   const { data: messagesData = [] } = useQuery({
-    queryKey: ['messages', portfolioId],
+    queryKey: ['/api/portfolio', portfolioId, 'messages'],
     queryFn: async () => {
       const res = await apiRequest('GET', `/api/portfolio/${portfolioId}/messages`);
       const data = await res.json();
@@ -74,6 +70,8 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       })) as Message[];
     },
     enabled: !!portfolioId,
+    staleTime: 2 * 60 * 1000, // 2 minutes - messages can change but don't need to refetch constantly
+    gcTime: 15 * 60 * 1000, // 15 minutes
   });
 
   const sendMessageWithStreaming = async (content: string) => {
@@ -464,10 +462,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
           <div className="w-1 flex-shrink-0"></div>
           </div>
 
-          {/* Left gradient fade - positioned relative to parent */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"></div>
-          {/* Right gradient fade - positioned relative to parent */}
-          <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"></div>
+          {/* Gradient fades removed to simplify appearance */}
         </div>
       </div>
 

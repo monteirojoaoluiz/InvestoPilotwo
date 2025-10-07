@@ -53,13 +53,8 @@ export default function AppSidebar() {
   const [location] = useLocation();
   const { setOpen, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
 
-  const { data: assessment } = useQuery({
-    queryKey: ['assessment'],
-    queryFn: async () => {
-      const res = await apiRequest('GET', '/api/risk-assessment');
-      if (!res.ok) throw new Error('Failed to fetch assessment');
-      return res.json();
-    },
+  const { data: assessment } = useQuery<{ investorProfile: any }>({
+    queryKey: ['/api/risk-assessment'],
   });
 
   const hasAssessment = !!assessment;

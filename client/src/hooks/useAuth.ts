@@ -1,33 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    console.log('Checking authentication status...');
-    fetch('/api/auth/user', {
-      credentials: 'include', // Include cookies for session
-    })
-      .then(res => {
-        console.log('Auth check response status:', res.status);
-        if (res.ok) {
-          return res.json().then(user => {
-            console.log('Authenticated user:', user.email);
-            return true;
-          });
-        } else {
+  const { data: user, isLoading, error } = useQuery({
+    queryKey: ['/api/auth/user'],
+    queryFn: async () => {
+      try {
+        const res = await apiRequest('GET', '/api/auth/user');
+        if (!res.ok) {
           console.log('Not authenticated - status:', res.status);
-          return false;
+          return null;
         }
-      })
-      .then(setIsAuthenticated)
-      .catch(error => {
+        const userData = await res.json();
+        console.log('Authenticated user:', userData.email);
+        return userData;
+      } catch (error) {
         console.error('Auth check failed:', error);
-        setIsAuthenticated(false);
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
+        return null;
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes - user auth state doesn't change often
+    gcTime: 30 * 60 * 1000, // 30 minutes in cache
+    retry: false,
+  });
 
-  return { isAuthenticated, isLoading };
+  const isAuthenticated = !!user;
+
+  return { isAuthenticated, isLoading, user };
 }

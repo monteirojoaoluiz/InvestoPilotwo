@@ -25,7 +25,8 @@ import {
   Tooltip,
 } from "recharts";
 import { TrendingUp, Clock, Heart, MapPin, Target, LogOut, Download, Trash2, Shield, Calendar, BookOpen, Globe, Filter } from "lucide-react";
-import stack16Logo from "@assets/generated_images/White Favicon.png";
+import lightHeaderLogo from "@assets/generated_images/White Favicon.png";
+import darkHeaderLogo from "@assets/generated_images/Dark Favicon.png";
 
 // Hooks
 import { useAuth } from "./hooks/useAuth";
@@ -93,33 +94,39 @@ function Dashboard() {
   }, [location]);
 
   const { data: portfolioData, refetch: refetchPortfolio } = useQuery({
-    queryKey: ['portfolio'],
+    queryKey: ['/api/portfolio'],
     queryFn: async () => {
       const res = await apiRequest('GET', '/api/portfolio');
       if (!res.ok) throw new Error('Failed to fetch portfolio');
       return res.json();
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
   const { data: assessmentData, refetch: refetchAssessment } = useQuery({
-    queryKey: ['assessment'],
+    queryKey: ['/api/risk-assessment'],
     queryFn: async () => {
       const res = await apiRequest('GET', '/api/risk-assessment');
       if (!res.ok) throw new Error('Failed to fetch assessment');
       return res.json();
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
   // Portfolio performance query for 3-year metrics
   const portfolioId = portfolioData?.id;
   const { data: combined } = useQuery<{ points: { date: string; value: number }[]; warning?: string } | null>({
-    queryKey: ['portfolio-performance', portfolioId || 'default'],
+    queryKey: ['/api/portfolio/performance', portfolioId || 'default'],
     queryFn: async () => {
       const res = await apiRequest('GET', `/api/portfolio/performance`);
       if (!res.ok) throw new Error('Failed to fetch portfolio performance');
       return res.json();
     },
     enabled: !!portfolioData, // Only fetch when portfolio exists
+    staleTime: 10 * 60 * 1000, // 10 minutes - performance data doesn't change frequently
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 
   // Compute 3-year metrics from combined performance series
@@ -237,7 +244,7 @@ function Dashboard() {
   const [selectedTicker, setSelectedTicker] = useState('');
 
   const { data: etfInfo } = useQuery({
-    queryKey: ['etf-info', selectedTicker],
+    queryKey: ['/api/etf', selectedTicker, 'info'],
     queryFn: async () => {
       try {
         const res = await apiRequest('GET', `/api/etf/${selectedTicker}/info`);
@@ -249,6 +256,8 @@ function Dashboard() {
       }
     },
     enabled: !!selectedTicker,
+    staleTime: 15 * 60 * 1000, // 15 minutes - ETF info rarely changes
+    gcTime: 60 * 60 * 1000, // 1 hour
   });
 
   return (
@@ -719,22 +728,12 @@ function ETFCatalogPage() {
     const [location, navigate] = useLocation(); // for path
     const { toast } = useToast();
 
-    const { data: user } = useQuery({
-      queryKey: ['user'],
-      queryFn: async () => {
-        const res = await apiRequest('GET', '/api/auth/user');
-        if (!res.ok) throw new Error('Failed to fetch user');
-        return res.json();
-      },
+    const { data: user } = useQuery<{ id: string; email: string; createdAt: string; lastLogin?: string }>({
+      queryKey: ['/api/auth/user'],
     });
 
-    const { data: assessment } = useQuery({
-      queryKey: ['assessment'],
-      queryFn: async () => {
-        const res = await apiRequest('GET', '/api/risk-assessment');
-        if (!res.ok) throw new Error('Failed to fetch assessment');
-        return res.json();
-      },
+    const { data: assessment } = useQuery<{ investorProfile: any }>({
+      queryKey: ['/api/risk-assessment'],
     });
 
     const formattedDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—';
@@ -974,29 +973,6 @@ function ETFCatalogPage() {
                   <div className="text-sm font-semibold text-green-900 dark:text-green-100">{formattedDate}</div>
                 </div>
               </div>
-              {profileDisplay ? (
-                <>
-                  <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-orange-700 dark:text-orange-300">Risk Tolerance</div>
-                      <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{profileDisplay.riskTolerance}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-blue-700 dark:text-blue-300">Risk Capacity</div>
-                      <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{profileDisplay.riskCapacity}</div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Investor Profile</div>
-                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Not set</div>
-                  </div>
-                </div>
-              )}
               <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                 <div className="flex-1">
                   <div className="text-sm font-medium text-purple-700 dark:text-purple-300">Last Login</div>
@@ -1005,8 +981,8 @@ function ETFCatalogPage() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader>
@@ -1103,45 +1079,6 @@ function ETFCatalogPage() {
               </div>
 
               <div className="border-t pt-4">
-                <Dialog open={deleteAccountOpen} onOpenChange={setDeleteAccountOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="destructive" 
-                      className="w-full"
-                    >
-                      Delete Account
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Delete Account</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="text-destructive">
-                        <p className="font-medium">Warning: This action cannot be undone.</p>
-                        <p>Deleting your account will permanently remove all your data including portfolios, assessments, and chat history.</p>
-                      </div>
-                      <form onSubmit={handleDeleteAccount} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="delete-password">Enter your password to confirm</Label>
-                          <Input
-                            id="delete-password"
-                            type="password"
-                            value={deletePassword}
-                            onChange={(e) => setDeletePassword(e.target.value)}
-                            required
-                          />
-                        </div>
-                        <Button type="submit" variant="destructive" className="w-full">
-                          Permanently Delete My Account
-                        </Button>
-                      </form>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              <div className="border-t pt-4">
                 <Button
                   variant="outline"
                   onClick={handleLogout}
@@ -1152,6 +1089,7 @@ function ETFCatalogPage() {
                   Sign Out
                 </Button>
               </div>
+
             </CardContent>
           </Card>
 
@@ -1237,15 +1175,17 @@ function ETFCatalogPage() {
   }
 
 function AuthenticatedRouter() {
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const updateTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
   const [location, navigate] = useLocation(); // Add useLocation
-  const { data: assessment, isLoading: assessmentLoading } = useQuery({ // Add useQuery for assessment
-    queryKey: ['assessment'],
-    queryFn: async () => {
-      const res = await apiRequest('GET', '/api/risk-assessment');
-      if (!res.ok) throw new Error('Failed to fetch assessment');
-      const data = await res.json();
-      return data;
-    },
+  const { data: assessment, isLoading: assessmentLoading } = useQuery<{ investorProfile: any }>({ // Add useQuery for assessment
+    queryKey: ['/api/risk-assessment'],
   });
 
   useEffect(() => { // Add useEffect for redirect
@@ -1324,11 +1264,7 @@ function AuthenticatedRouter() {
           <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full max-w-full">
             <div className="flex items-center gap-2 min-w-0">
               <SidebarTrigger className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2 flex-shrink-0`} />
-              <img
-                src={stack16Logo}
-                alt="Stack16 Logo"
-                className="w-8 h-8 rounded-lg flex-shrink-0"
-              />
+              <img src={isDark ? darkHeaderLogo : lightHeaderLogo} alt="Stack16 Logo" className="w-8 h-8 rounded-lg flex-shrink-0" key={isDark ? 'dark' : 'light'} />
               <span className="font-semibold text-lg truncate">Stack16</span>
             </div>
             <ThemeToggle />

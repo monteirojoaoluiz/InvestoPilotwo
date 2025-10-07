@@ -1,3 +1,48 @@
+### Portfolio Features
+- [ ] **Asset-Level Details**
+  - Add ETF detail modal with expense ratio, holdings, description
+  - Display top 10 holdings for each ETF
+
+
+- [ ] **Risk Analytics**
+  - Value at Risk (VaR) calculation
+  - Display portfolio diversification score
+
+  ### Financial Regulations & Disclaimers
+- [ ] **Investment Disclaimer**
+  - Add prominent disclaimer on all portfolio pages
+  - Include "Not Financial Advice" notice
+  - Link to SEC investor resources
+  - Add risk warnings for volatile assets
+
+
+
+
+[x] remove Risk Tolerance and Risk Capacity from account information under account page
+[x] remove the delete account button from the setting element on the accouunt page, keep it only on privacy and data
+[x] using the wrong logo in the header on dark mode, it's not switching as I switch the theme.
+[x] geo preferences to do some proper label capitalization
+[x] make the comparison selection checkbox on the etf catalog page to have a better UI/UX.
+[x] let's have the top 100 etf tickers on the etf catalog page, and have them be able to be compared.
+[x] top_etf_tickers = [
+    "VOO", "IVV", "SPY", "VTI", "QQQ", "VUG", "VEA", "IEFA", "VTV", "BND",
+    "AGG", "GLD", "IWF", "IEMG", "VGT", "VXUS", "VWO", "IJH", "VIG", "IBIT",
+    "XLK", "VO", "SPLG", "IJR", "ITOT", "RSP", "SCHD", "BNDX", "IWM", "VB",
+    "EFA", "VYM", "IVW", "IWD", "QQQM", "SCHX", "IAU", "SGOV", "VCIT", "VT",
+    "XLF", "QUAL", "SCHF", "VEU", "SCHG", "IXUS", "TLT", "VV", "IWR", "IWB",
+    "SPYG", "BIL", "IVE", "MBB", "DIA", "JEPI", "VTEB", "MUB", "VCSH", "BSV",
+    "DFAC", "IEF", "SCHB", "XLV", "DGRO", "VNQ", "JPST", "VGIT", "SMH", "IUSB",
+    "VONG", "LQD", "VBR", "MGK", "JEPQ", "SPDW", "SPYV", "GOVT", "VGK", "OEF",
+    "TQQQ", "DYNF", "EFV", "XLE", "XLC", "JAAA", "USHY", "BIV", "FBTC", "IUSG",
+    "VXF", "XLY", "XLI", "SHY", "MDY", "SLV", "USMV", "VGSH", "IDEV", "ACWI"
+]
+[x] make sure we're properly caching the data for the etf catalog page.
+[x] on the etf catalog page, let's give the individual catalog elements some love, make sure key metrics are reliable and the performance overview is accurate. I've checked and even the quotes seem reliable.
+[x] on the chat with your portfolio ai element, the shaded area to indicate that there's more to each side is looking a bit cheap, remove it
+
+
+
+
 # Stack16 - Future Improvements & Enhancements
 
 ## 🚨 Priority 1: Critical Security & Stability
@@ -204,7 +249,7 @@
 ## 🔒 Priority 8: Compliance & Legal
 
 ### Data Privacy & GDPR
-- [ ] **GDPR Compliance**
+- [x] **GDPR Compliance**
   - Implement "Download My Data" feature
   - Add "Right to be Forgotten" (account deletion)
 

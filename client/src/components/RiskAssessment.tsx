@@ -83,10 +83,10 @@ const QUESTIONS: Question[] = [
     description: "Select your preferred geographic focus for your investment portfolio.",
     options: [
       { value: "netherlands", label: "Netherlands (NL)" },
-      { value: "europe-ex-nl", label: "Europe ex-NL" },
-      { value: "united-states", label: "United States" },
-      { value: "developed-ex-us-europe", label: "Developed ex-US & ex-Europe (Canada, Japan, AU/NZ, SG/HK, Israel)" },
-      { value: "emerging-markets", label: "Emerging Markets (China, India, LatAm, EMEA, SE Asia EM)" },
+      { value: "europe-ex-nl", label: "Europe (ex-NL)" },
+      { value: "united-states", label: "United States (US)" },
+      { value: "developed-ex-us-europe", label: "Developed Markets ex-US & ex-Europe (Canada, Japan, Australia/New Zealand, Singapore/Hong Kong, Israel)" },
+      { value: "emerging-markets", label: "Emerging Markets (China, India, Latin America, EMEA, Southeast Asia)" },
     ],
   },
   {

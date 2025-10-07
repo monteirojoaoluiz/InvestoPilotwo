@@ -15,11 +15,11 @@ export interface InvestorProfile {
 
 // Region code to display name mapping (backend → display)
 const REGION_DISPLAY_MAP: Record<string, string> = {
-  'NL': 'Netherlands',
+  'NL': 'Netherlands (NL)',
   'EU_EX_NL': 'Europe (ex-NL)',
-  'US': 'United States',
-  'DEV_EX_US_EU': 'Developed Markets (ex-US/EU)',
-  'EM': 'Emerging Markets',
+  'US': 'United States (US)',
+  'DEV_EX_US_EU': 'Developed Markets ex-US & ex-Europe (Canada, Japan, Australia/New Zealand, Singapore/Hong Kong, Israel)',
+  'EM': 'Emerging Markets (China, India, Latin America, EMEA, Southeast Asia)',
 };
 
 // Industry code to display name mapping (backend → display)
