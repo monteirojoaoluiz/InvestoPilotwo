@@ -12,29 +12,50 @@
     {
       "idx": 1,
       "version": "7",
+      "when": 1735991000000,
+      "tag": "0001_add_password_reset",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
       "when": 1735992000000,
       "tag": "0002_change_us_only_to_geographic_focus",
       "breakpoints": true
     },
     {
-      "idx": 2,
+      "idx": 3,
       "version": "7",
       "when": 1735993000000,
       "tag": "0003_add_dividend_vs_growth",
       "breakpoints": true
     },
     {
-      "idx": 3,
+      "idx": 4,
       "version": "7",
       "when": 1759667370855,
       "tag": "0003_mysterious_spectrum",
       "breakpoints": true
     },
     {
-      "idx": 4,
+      "idx": 5,
       "version": "7",
       "when": 1759676400000,
+      "tag": "0004_fix_geographic_focus",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1759677000000,
       "tag": "0005_migrate_esg_to_exclusions",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1759678000000,
+      "tag": "0006_add_investor_profile",
       "breakpoints": true
     }
   ]

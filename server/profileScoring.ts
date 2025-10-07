@@ -163,13 +163,19 @@ export function computeInvestorProfile(answers: QuestionnaireAnswers): InvestorP
   const q14 = NET_WORTH_MAP[answers.netWorthRange] || 'B';
 
   // Q4 - Geographic regions (map to backend codes)
-  const regions_selected = answers.geographicFocus
+  const geographicFocusArray = Array.isArray(answers.geographicFocus) 
+    ? answers.geographicFocus 
+    : [];
+  const regions_selected = geographicFocusArray
     .map(region => REGION_MAP[region])
     .filter(Boolean);
 
   // Q5 - Industry exclusions (inverted logic: what's NOT checked = excluded)
   // Front-end sends esgExclusions as what IS excluded
-  const industry_exclusions = answers.esgExclusions
+  const esgExclusionsArray = Array.isArray(answers.esgExclusions)
+    ? answers.esgExclusions
+    : [];
+  const industry_exclusions = esgExclusionsArray
     .map(industry => INDUSTRY_MAP[industry])
     .filter(Boolean);
 
@@ -294,8 +300,18 @@ export function computeInvestorProfile(answers: QuestionnaireAnswers): InvestorP
  * Validate questionnaire answers
  */
 export function validateQuestionnaireAnswers(answers: QuestionnaireAnswers): { valid: boolean; error?: string } {
+  // Ensure geographicFocus is an array
+  if (!Array.isArray(answers.geographicFocus)) {
+    return { valid: false, error: 'geographicFocus must be an array' };
+  }
+  
+  // Ensure esgExclusions is an array
+  if (!Array.isArray(answers.esgExclusions)) {
+    return { valid: false, error: 'esgExclusions must be an array' };
+  }
+  
   // Q4 validation: must select at least one region
-  if (!answers.geographicFocus || answers.geographicFocus.length === 0) {
+  if (answers.geographicFocus.length === 0) {
     return { valid: false, error: 'Please select at least one geographic region (Q4)' };
   }
 

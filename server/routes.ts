@@ -768,6 +768,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as any).id;
       const answers = req.body;
       
+      console.log('Received risk assessment data:', JSON.stringify(answers, null, 2));
+      console.log('geographicFocus type:', typeof answers.geographicFocus);
+      console.log('geographicFocus value:', answers.geographicFocus);
+      
+      // Ensure arrays are properly formatted
+      if (answers.geographicFocus && !Array.isArray(answers.geographicFocus)) {
+        if (typeof answers.geographicFocus === 'string') {
+          answers.geographicFocus = [answers.geographicFocus];
+        } else {
+          answers.geographicFocus = [];
+        }
+      }
+      
+      if (answers.esgExclusions && !Array.isArray(answers.esgExclusions)) {
+        if (typeof answers.esgExclusions === 'string') {
+          answers.esgExclusions = [answers.esgExclusions];
+        } else {
+          answers.esgExclusions = [];
+        }
+      }
+      
       // Import scoring functions
       const { computeInvestorProfile, validateQuestionnaireAnswers } = await import('./profileScoring');
       
