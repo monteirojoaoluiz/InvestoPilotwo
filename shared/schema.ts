@@ -32,20 +32,10 @@ export const users = pgTable("users", {
 export const riskAssessments = pgTable("risk_assessments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
-  riskTolerance: varchar("risk_tolerance").notNull(),
-  timeHorizon: varchar("time_horizon").notNull(),
-  geographicFocus: jsonb("geographic_focus").notNull(),
-  esgExclusions: jsonb("esg_exclusions").notNull().default('[]'),
-  lifeStage: varchar("life_stage").notNull(),
-  incomeStability: varchar("income_stability"),
-  emergencyFund: varchar("emergency_fund"),
-  debtLevel: varchar("debt_level"),
-  investmentExperience: varchar("investment_experience"),
-  investmentKnowledge: varchar("investment_knowledge"),
-  dividendVsGrowth: varchar("dividend_vs_growth"),
-  behavioralReaction: varchar("behavioral_reaction"),
-  incomeRange: varchar("income_range"),
-  netWorthRange: varchar("net_worth_range"),
+  // Store raw questionnaire answers
+  answers: jsonb("answers").notNull(),
+  // Store computed profile features
+  investorProfile: jsonb("investor_profile").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -149,9 +139,6 @@ export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments)
     userId: true,
     createdAt: true,
     updatedAt: true,
-  })
-  .extend({
-    esgExclusions: z.array(z.string()).default([]),
   });
 
 export const insertPortfolioMessageSchema = createInsertSchema(portfolioMessages)

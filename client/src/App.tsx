@@ -24,12 +24,13 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import { TrendingUp, Clock, Heart, MapPin, Target, LogOut, Download, Trash2 } from "lucide-react";
+import { TrendingUp, Clock, Heart, MapPin, Target, LogOut, Download, Trash2, Shield, Calendar, BookOpen, Globe, Filter } from "lucide-react";
 import stack16Logo from "@assets/generated_images/White Favicon.png";
 
 // Hooks
 import { useAuth } from "./hooks/useAuth";
 import { apiRequest } from "./lib/queryClient";
+import { humanizeProfile } from "./lib/profileHumanizer";
 
 // Components
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -274,73 +275,61 @@ function Dashboard() {
             <CardDescription>Your investment preferences and profile</CardDescription>
           </CardHeader>
           <CardContent>
-            {assessmentData ? (
-              <div className="grid gap-4">
-                <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                  <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">Risk Tolerance</div>
-                    <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{riskScore}</div>
-                  </div>
-                </div>
+            {assessmentData && assessmentData.investorProfile ? (
+              (() => {
+                const humanized = humanizeProfile(assessmentData.investorProfile);
+                return (
+                  <div className="grid gap-4">
+                    <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">Risk Tolerance</div>
+                        <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{humanized.riskTolerance}</div>
+                      </div>
+                    </div>
 
-                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <div className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">Investment Timeline</div>
-                    <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{assessmentData.timeHorizon?.replace(/-/g, ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || '—'}</div>
-                  </div>
-                </div>
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">Risk Capacity</div>
+                        <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{humanized.riskCapacity}</div>
+                      </div>
+                    </div>
 
-                <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                  <Heart className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <div className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">Career Stage</div>
-                    <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">{assessmentData.lifeStage?.replace(/-/g, ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || '—'}</div>
-                  </div>
-                </div>
+                    <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">Investment Horizon</div>
+                        <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">{humanized.investmentHorizon}</div>
+                      </div>
+                    </div>
 
-                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <MapPin className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <div className="text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wide">Investment Regions</div>
-                    <div className="text-sm font-semibold text-green-900 dark:text-green-100">
-                      {Array.isArray(assessmentData.geographicFocus)
-                        ? assessmentData.geographicFocus
-                            .map((focus: string) =>
-                              focus.replace(/-/g, ' ')
-                                   .replace(/\b\w/g, l => l.toUpperCase())
-                                   .replace(/ex us/g, 'ex-US')
-                                   .replace(/ex nl/g, 'ex-NL')
-                                   .replace(/europe ex nl/g, 'Europe ex-NL')
-                                   .replace(/developed ex us europe/g, 'Developed ex-US & ex-Europe')
-                            )
-                            .join(', ')
-                        : assessmentData.geographicFocus?.replace(/-/g, ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || '—'}
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <BookOpen className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wide">Investor Experience</div>
+                        <div className="text-sm font-semibold text-green-900 dark:text-green-100">{humanized.investorExperience}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                      <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">Geographic Focus</div>
+                        <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{humanized.regions}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                      <Filter className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="text-xs font-medium text-amber-700 dark:text-amber-300 uppercase tracking-wide">Industry Exclusions</div>
+                        <div className="text-sm font-semibold text-amber-900 dark:text-amber-100">{humanized.industryExclusions}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                  <Target className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">Sustainability Focus</div>
-                    <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
-                      {Array.isArray(assessmentData.esgExclusions) && assessmentData.esgExclusions.includes('non-esg-funds') ? 'ESG Focused' : 
-                       Array.isArray(assessmentData.esgExclusions) && assessmentData.esgExclusions.length > 0 ? `${assessmentData.esgExclusions.length} Exclusions` : 
-                       'No Exclusions'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                  <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                  <div className="flex-1">
-                    <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">Investment Objective</div>
-                    <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{assessmentData.dividendVsGrowth?.replace(/-/g, ' ')?.replace(/\b\w/g, (l: string) => l.toUpperCase()) || '—'}</div>
-                  </div>
-                </div>
-              </div>
+                );
+              })()
             ) : (
               <div className="text-center py-8">
                 <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -749,9 +738,9 @@ function ETFCatalogPage() {
     });
 
     const formattedDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—';
-    const risk = assessment?.riskTolerance
-      ? assessment.riskTolerance.charAt(0).toUpperCase() + assessment.riskTolerance.slice(1)
-      : 'Not set';
+    const profileDisplay = assessment?.investorProfile 
+      ? humanizeProfile(assessment.investorProfile) 
+      : null;
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
@@ -985,12 +974,29 @@ function ETFCatalogPage() {
                   <div className="text-sm font-semibold text-green-900 dark:text-green-100">{formattedDate}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-orange-700 dark:text-orange-300">Risk Tolerance</div>
-                  <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{risk}</div>
+              {profileDisplay ? (
+                <>
+                  <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-orange-700 dark:text-orange-300">Risk Tolerance</div>
+                      <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">{profileDisplay.riskTolerance}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-blue-700 dark:text-blue-300">Risk Capacity</div>
+                      <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">{profileDisplay.riskCapacity}</div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Investor Profile</div>
+                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Not set</div>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                 <div className="flex-1">
                   <div className="text-sm font-medium text-purple-700 dark:text-purple-300">Last Login</div>

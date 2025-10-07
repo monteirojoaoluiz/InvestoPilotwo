@@ -766,16 +766,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/risk-assessment', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
-      const validatedData = insertRiskAssessmentSchema.parse(req.body);
+      const answers = req.body;
       
-      // Ensure esgExclusions is an array (default to empty array if undefined)
+      // Import scoring functions
+      const { computeInvestorProfile, validateQuestionnaireAnswers } = await import('./profileScoring');
+      
+      // Validate questionnaire answers
+      const validation = validateQuestionnaireAnswers(answers);
+      if (!validation.valid) {
+        return res.status(400).json({ message: validation.error });
+      }
+      
+      // Compute investor profile
+      const investorProfile = computeInvestorProfile(answers);
+      
+      // Store in database
       const assessmentData = {
-        ...validatedData,
         userId,
-        esgExclusions: validatedData.esgExclusions || [],
+        answers: answers as any,
+        investorProfile: investorProfile as any,
       };
       
-      console.log('Creating risk assessment with data:', assessmentData);
+      console.log('Creating risk assessment with computed profile:', investorProfile);
       const assessment = await storage.createRiskAssessment(assessmentData);
       
       res.json(assessment);
