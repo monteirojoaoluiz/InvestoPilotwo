@@ -1,3 +1,5 @@
+[ ] Auto Scroll on chat with your portfolio ai element
+
 ### Portfolio Features
 - [ ] **Asset-Level Details**
   - Add ETF detail modal with expense ratio, holdings, description
@@ -15,8 +17,8 @@
   - Link to SEC investor resources
   - Add risk warnings for volatile assets
 
-
-
+<!-- 
+Ignore all below
 
 [x] remove Risk Tolerance and Risk Capacity from account information under account page
 [x] remove the delete account button from the setting element on the accouunt page, keep it only on privacy and data
@@ -508,4 +510,4 @@
   - Measure and optimize Lighthouse mobile scores
   - Target: 90+ performance score on mobile
   - Check for layout shifts (CLS) on mobile
-  - Measure Time to Interactive (TTI) on 3G networks
+  - Measure Time to Interactive (TTI) on 3G networks -->
