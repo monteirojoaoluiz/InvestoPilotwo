@@ -19,9 +19,10 @@ import bcrypt from 'bcrypt';
 import { pool } from "./db";
 import { Groq } from 'groq-sdk';
 import yahooFinance from 'yahoo-finance2';
+import { config } from "./config";
 
 const groqClient = new Groq({
-  apiKey: process.env.GROQ_API_KEY!,
+  apiKey: config.GROQ_API_KEY!,
 });
 
 // Simple in-memory cache for Yahoo Finance data
@@ -253,24 +254,18 @@ const emailChangeLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Setup SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+// Setup SendGrid if available
+if (config.SENDGRID_API_KEY) {
+  sgMail.setApiKey(config.SENDGRID_API_KEY);
+}
 
 // Password hashing utilities
 const saltRounds = 12;
 const PEPPER = process.env.PASSWORD_PEPPER || 'default-pepper-change-in-production';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Validate required environment variables
-  const requiredEnvVars = ['SESSION_SECRET', 'DATABASE_URL', 'PASSWORD_PEPPER'];
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-
-  if (missingVars.length > 0) {
-    console.error('Missing required environment variables:', missingVars);
-    throw new Error(`Missing environment variables: ${missingVars.join(', ')}`);
-  }
-
-  console.log('All required environment variables are set');
+  // Env validation occurs in server/config.ts on import
+  console.log('Environment configuration validated');
 
   app.use(getSession());
   app.use(passport.initialize());
@@ -389,7 +384,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `,
       };
 
-      await sgMail.send(msg);
+      if (config.SENDGRID_API_KEY) {
+        await sgMail.send(msg);
+      } else {
+        console.warn('SENDGRID_API_KEY not set - skipping email send');
+      }
 
       res.json({ message: 'Magic link sent to your email' });
     } catch (error) {
@@ -481,7 +480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Send reset email
-      const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/reset-password?token=${token}`;
+      const resetUrl = `${config.FRONTEND_URL || 'http://localhost:5000'}/reset-password?token=${token}`;
       const msg = {
         to: email,
         from: 'monteirojoaoluiz@gmail.com',
@@ -496,7 +495,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `,
       };
 
-      await sgMail.send(msg);
+      if (config.SENDGRID_API_KEY) {
+        await sgMail.send(msg);
+      } else {
+        console.warn('SENDGRID_API_KEY not set - skipping email send');
+      }
 
       res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
     } catch (error) {
@@ -594,7 +597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createEmailChangeToken(tokenData);
 
       // Send confirmation email to new address
-      const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/verify-email-change?token=${token}`;
+      const verifyUrl = `${config.FRONTEND_URL || 'http://localhost:5000'}/verify-email-change?token=${token}`;
       const msg = {
         to: newEmail,
         from: 'monteirojoaoluiz@gmail.com',
@@ -647,7 +650,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `,
       };
 
-      await sgMail.send(farewellMsg).catch(console.error); // non-blocking
+      if (config.SENDGRID_API_KEY) {
+        await sgMail.send(farewellMsg).catch(console.error); // non-blocking
+      }
 
       // Delete user data
       await storage.deleteUserData((user as any).id);

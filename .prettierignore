@@ -1,0 +1,8 @@
+node_modules/
+dist/
+build/
+migrations/meta/
+client/public/
+dist/public/
+logs/
+

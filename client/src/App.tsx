@@ -816,16 +816,7 @@ function ETFCatalogPage() {
         return;
       }
       try {
-        const response = await fetch('/api/auth/change-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass, confirmPassword: confirmPass }),
-        });
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Failed to change password');
-        }
+        const response = await apiRequest('POST', '/api/auth/change-password', { currentPassword: currentPass, newPassword: newPass, confirmPassword: confirmPass });
         toast({
           title: "Success",
           description: "Password changed successfully",
@@ -846,16 +837,7 @@ function ETFCatalogPage() {
     const handleChangeEmail = async (e: React.FormEvent) => {
       e.preventDefault();
       try {
-        const response = await fetch('/api/auth/change-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ newEmail }),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to request email change');
-        }
+        const response = await apiRequest('POST', '/api/auth/change-email', { newEmail });
         const data = await response.json();
         toast({
           title: "Email Change Requested",
@@ -875,16 +857,7 @@ function ETFCatalogPage() {
     const handleDeleteAccount = async (e: React.FormEvent) => {
       e.preventDefault();
       try {
-        const response = await fetch('/api/auth/delete-account', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ currentPassword: deletePassword }),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to delete account');
-        }
+        await apiRequest('POST', '/api/auth/delete-account', { currentPassword: deletePassword });
         toast({
           title: "Account Deleted",
           description: "Your account and all data have been permanently deleted.",
@@ -905,15 +878,7 @@ function ETFCatalogPage() {
     const handleDownloadData = async () => {
       setDownloadDataLoading(true);
       try {
-        const response = await fetch('/api/auth/download-data', {
-          method: 'GET',
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to download data');
-        }
-
+        const response = await apiRequest('GET', '/api/auth/download-data');
         const data = await response.json();
 
         // Create and download JSON file
@@ -944,13 +909,7 @@ function ETFCatalogPage() {
 
     const handleLogout = async () => {
       try {
-        const res = await fetch('/api/auth/logout', {
-          method: 'POST',
-          credentials: 'include',
-        });
-        if (!res.ok) {
-          throw new Error('Failed to log out');
-        }
+        await apiRequest('POST', '/api/auth/logout');
         navigate('/');
         window.location.reload();
       } catch (error: any) {
