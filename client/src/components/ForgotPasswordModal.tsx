@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -22,16 +23,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to send reset link');
-      }
+      await apiRequest('POST', '/api/auth/forgot-password', { email });
 
       setIsSuccess(true);
       toast({

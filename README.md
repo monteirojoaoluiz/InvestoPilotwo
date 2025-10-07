@@ -41,9 +41,18 @@ This application implements industry-standard security practices:
    ```
 
 3. **Environment Setup**
+   
+   Create a `.env` file in the root directory with the following variables:
    ```bash
-   cp .env.example .env
-   # Edit .env with your actual values
+   NODE_ENV=development
+   PORT=5000
+   DATABASE_URL=your_postgres_connection_string
+   SESSION_SECRET=your_random_secret_string
+   PASSWORD_PEPPER=your_random_pepper_string
+   SENDGRID_API_KEY=your_sendgrid_api_key
+   FRONTEND_URL=http://localhost:5000
+   GROQ_API_KEY=your_groq_api_key
+   LOG_LEVEL=info
    ```
 
 4. **Database Setup**
@@ -117,13 +126,33 @@ npm run dev
 npm run build
 
 # Type checking
-npm run check
+npm run typecheck
+
+# Linting
+npm run lint
+
+# Format code
+npm run format
 ```
+
+## 🔍 Code Quality
+
+This project uses the following tools to ensure code quality:
+
+- **TypeScript** - Static type checking
+- **ESLint** - Code linting with TypeScript, React, and React Hooks plugins
+- **Prettier** - Code formatting
+- **GitHub Actions CI** - Automated checks on push and PR
+
+The CI pipeline runs:
+1. Linting checks
+2. Type checking
+3. Production build validation
 
 ## 📁 Project Structure
 
 ```
-Stack16/
+InvestoPilotwo/
 ├── client/                 # Frontend React application
 │   ├── src/
 │   │   ├── components/     # Reusable UI components
@@ -131,13 +160,17 @@ Stack16/
 │   │   ├── lib/            # Utilities and API clients
 │   │   └── pages/          # Page components
 ├── server/                 # Backend Node.js application
+│   ├── config.ts          # Environment configuration & validation
 │   ├── db.ts              # Database connection
 │   ├── routes.ts          # API routes and authentication
 │   ├── storage.ts         # Database operations
+│   ├── errorHandler.ts    # Centralized error handling
+│   ├── logger.ts          # Winston logging setup
 │   └── index.ts           # Server entry point
 ├── shared/                 # Shared types and schemas
-├── migrations/            # Database migrations
-└── docs/                  # Documentation
+├── migrations/             # Database migrations
+├── .github/workflows/      # CI/CD workflows
+└── docs/                   # Documentation
 ```
 
 ## 🔐 Security Best Practices

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, XCircle, Key, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
@@ -60,16 +61,7 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to reset password');
-      }
+      await apiRequest('POST', '/api/auth/reset-password', { token, password });
 
       setIsSuccess(true);
       toast({

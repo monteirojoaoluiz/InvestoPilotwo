@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, LogIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ForgotPasswordModal from "./ForgotPasswordModal";
+import { apiRequest } from "@/lib/queryClient";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -39,21 +40,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
     console.log('Attempting login for:', email);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-
-      console.log('Login response status:', response.status);
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('Login failed:', error);
-        throw new Error(error.message || 'Login failed');
-      }
-
+      const response = await apiRequest('POST', '/api/auth/login', { email, password });
       const data = await response.json();
       console.log('Login successful:', data);
 
@@ -102,40 +89,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultTab = 'lo
     console.log('Attempting registration for:', email);
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      console.log('Registration response status:', response.status);
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('Registration failed:', error);
-        throw new Error(error.message || 'Registration failed');
-      }
-
+      const response = await apiRequest('POST', '/api/auth/register', { email, password });
       const data = await response.json();
       console.log('Registration successful:', data);
 
       // Auto login after successful registration
       console.log('Attempting auto-login after registration...');
-      const loginResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-
-      console.log('Auto-login response status:', loginResponse.status);
-
-      if (!loginResponse.ok) {
-        const loginError = await loginResponse.json();
-        console.error('Auto-login failed:', loginError);
-        throw new Error('Registration successful, but auto-login failed');
-      }
-
+      const loginResponse = await apiRequest('POST', '/api/auth/login', { email, password });
       const loginData = await loginResponse.json();
       console.log('Auto-login successful:', loginData);
 
