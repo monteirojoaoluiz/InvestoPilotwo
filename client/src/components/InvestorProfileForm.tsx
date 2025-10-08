@@ -1,21 +1,38 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCreateProfile, useCreateAllocation } from "@/hooks/use-allocation";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useCreateProfile, useCreateAllocation } from '@/hooks/use-allocation';
+import { useToast } from '@/hooks/use-toast';
 
 const investorProfileSchema = z.object({
-  riskAssessmentId: z.string().min(1, "Risk assessment ID is required"),
+  riskAssessmentId: z.string().min(1, 'Risk assessment ID is required'),
   riskTolerance: z.number().min(0).max(100),
   investmentHorizon: z.number().min(1).max(100),
-  riskCapacity: z.enum(["low", "medium", "high"]),
-  experienceLevel: z.enum(["beginner", "intermediate", "experienced", "expert"]),
+  riskCapacity: z.enum(['low', 'medium', 'high']),
+  experienceLevel: z.enum([
+    'beginner',
+    'intermediate',
+    'experienced',
+    'expert',
+  ]),
   cashOtherPreference: z.number().min(0).max(100),
 });
 
@@ -26,7 +43,10 @@ interface InvestorProfileFormProps {
   onSuccess?: () => void;
 }
 
-export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorProfileFormProps) {
+export function InvestorProfileForm({
+  riskAssessmentId,
+  onSuccess,
+}: InvestorProfileFormProps) {
   const { toast } = useToast();
   const createProfile = useCreateProfile();
   const createAllocation = useCreateAllocation();
@@ -41,18 +61,18 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
   } = useForm<InvestorProfileFormData>({
     resolver: zodResolver(investorProfileSchema),
     defaultValues: {
-      riskAssessmentId: riskAssessmentId || "default-assessment",
+      riskAssessmentId: riskAssessmentId || 'default-assessment',
       riskTolerance: 50,
       investmentHorizon: 10,
-      riskCapacity: "medium",
-      experienceLevel: "beginner",
+      riskCapacity: 'medium',
+      experienceLevel: 'beginner',
       cashOtherPreference: 50,
     },
   });
 
-  const riskCapacity = watch("riskCapacity");
-  const experienceLevel = watch("experienceLevel");
-  const riskTolerance = watch("riskTolerance");
+  const riskCapacity = watch('riskCapacity');
+  const experienceLevel = watch('experienceLevel');
+  const riskTolerance = watch('riskTolerance');
 
   const onSubmit = async (data: InvestorProfileFormData) => {
     try {
@@ -62,24 +82,25 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
       const profile = await createProfile.mutateAsync(data);
 
       toast({
-        title: "Profile created",
-        description: "Your investor profile has been created successfully.",
+        title: 'Profile created',
+        description: 'Your investor profile has been created successfully.',
       });
 
       // Automatically calculate allocation
       await createAllocation.mutateAsync(profile.id);
 
       toast({
-        title: "Allocation calculated",
-        description: "Your asset allocation has been calculated.",
+        title: 'Allocation calculated',
+        description: 'Your asset allocation has been calculated.',
       });
 
       onSuccess?.();
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create profile",
-        variant: "destructive",
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to create profile',
+        variant: 'destructive',
       });
     } finally {
       setIsCalculating(false);
@@ -91,7 +112,8 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
       <CardHeader>
         <CardTitle>Investor Profile</CardTitle>
         <CardDescription>
-          Tell us about your investment preferences to generate a personalized asset allocation.
+          Tell us about your investment preferences to generate a personalized
+          asset allocation.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -106,26 +128,34 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
               id="riskTolerance"
               min="0"
               max="100"
-              {...register("riskTolerance", { valueAsNumber: true })}
+              {...register('riskTolerance', { valueAsNumber: true })}
               className="w-full"
             />
             <p className="text-sm text-muted-foreground">
-              {riskTolerance < 33 && "Conservative: You prefer stability and lower risk"}
-              {riskTolerance >= 33 && riskTolerance < 67 && "Moderate: You balance growth and stability"}
-              {riskTolerance >= 67 && "Aggressive: You prioritize growth potential"}
+              {riskTolerance < 33 &&
+                'Conservative: You prefer stability and lower risk'}
+              {riskTolerance >= 33 &&
+                riskTolerance < 67 &&
+                'Moderate: You balance growth and stability'}
+              {riskTolerance >= 67 &&
+                'Aggressive: You prioritize growth potential'}
             </p>
             {errors.riskTolerance && (
-              <p className="text-sm text-destructive">{errors.riskTolerance.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.riskTolerance.message}
+              </p>
             )}
           </div>
 
           {/* Investment Horizon */}
           <div className="space-y-2">
-            <Label htmlFor="investmentHorizon">Investment Horizon (Years)</Label>
+            <Label htmlFor="investmentHorizon">
+              Investment Horizon (Years)
+            </Label>
             <Input
               type="number"
               id="investmentHorizon"
-              {...register("investmentHorizon", { valueAsNumber: true })}
+              {...register('investmentHorizon', { valueAsNumber: true })}
               placeholder="10"
               min="1"
               max="100"
@@ -134,7 +164,9 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
               How many years until you need this money?
             </p>
             {errors.investmentHorizon && (
-              <p className="text-sm text-destructive">{errors.investmentHorizon.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.investmentHorizon.message}
+              </p>
             )}
           </div>
 
@@ -143,7 +175,7 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
             <Label htmlFor="riskCapacity">Risk Capacity</Label>
             <Select
               value={riskCapacity}
-              onValueChange={(value) => setValue("riskCapacity", value as any)}
+              onValueChange={(value) => setValue('riskCapacity', value as any)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select risk capacity" />
@@ -164,7 +196,9 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
               Your financial ability to withstand investment losses
             </p>
             {errors.riskCapacity && (
-              <p className="text-sm text-destructive">{errors.riskCapacity.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.riskCapacity.message}
+              </p>
             )}
           </div>
 
@@ -173,7 +207,9 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
             <Label htmlFor="experienceLevel">Investment Experience</Label>
             <Select
               value={experienceLevel}
-              onValueChange={(value) => setValue("experienceLevel", value as any)}
+              onValueChange={(value) =>
+                setValue('experienceLevel', value as any)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select experience level" />
@@ -197,40 +233,47 @@ export function InvestorProfileForm({ riskAssessmentId, onSuccess }: InvestorPro
               Your investment knowledge and experience level
             </p>
             {errors.experienceLevel && (
-              <p className="text-sm text-destructive">{errors.experienceLevel.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.experienceLevel.message}
+              </p>
             )}
           </div>
 
           {/* Cash vs Other Preference */}
           <div className="space-y-2">
             <Label htmlFor="cashOtherPreference">
-              Cash Preference: {watch("cashOtherPreference")}% cash
+              Cash Preference: {watch('cashOtherPreference')}% cash
             </Label>
             <Input
               type="range"
               id="cashOtherPreference"
               min="0"
               max="100"
-              {...register("cashOtherPreference", { valueAsNumber: true })}
+              {...register('cashOtherPreference', { valueAsNumber: true })}
               className="w-full"
             />
             <p className="text-sm text-muted-foreground">
-              For non-stock/bond assets, how much should be in cash vs. other investments?
+              For non-stock/bond assets, how much should be in cash vs. other
+              investments?
             </p>
             {errors.cashOtherPreference && (
-              <p className="text-sm text-destructive">{errors.cashOtherPreference.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.cashOtherPreference.message}
+              </p>
             )}
           </div>
 
           {/* Hidden Risk Assessment ID */}
-          <input type="hidden" {...register("riskAssessmentId")} />
+          <input type="hidden" {...register('riskAssessmentId')} />
 
           <Button
             type="submit"
             className="w-full"
             disabled={isSubmitting || isCalculating}
           >
-            {isSubmitting || isCalculating ? "Calculating..." : "Generate Asset Allocation"}
+            {isSubmitting || isCalculating
+              ? 'Calculating...'
+              : 'Generate Asset Allocation'}
           </Button>
         </form>
       </CardContent>

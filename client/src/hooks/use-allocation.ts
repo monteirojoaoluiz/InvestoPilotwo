@@ -1,16 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { InvestorProfile, AssetAllocation, InsertInvestorProfile } from "@shared/schema";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type {
+  InvestorProfile,
+  AssetAllocation,
+  InsertInvestorProfile,
+} from '@shared/schema';
 
 // Fetch current asset allocation for a user
 export function useCurrentAllocation(userId?: string) {
   return useQuery<AssetAllocation | null>({
-    queryKey: ["asset-allocation", "current", userId],
+    queryKey: ['asset-allocation', 'current', userId],
     queryFn: async () => {
-      if (!userId) throw new Error("User ID is required");
-      
-      const response = await fetch(`/api/asset-allocations/user/${userId}/current`, {
-        credentials: "include",
-      });
+      if (!userId) throw new Error('User ID is required');
+
+      const response = await fetch(
+        `/api/asset-allocations/user/${userId}/current`,
+        {
+          credentials: 'include',
+        }
+      );
 
       // Return null for 404 without trying to parse JSON
       if (response.status === 404) {
@@ -18,7 +25,7 @@ export function useCurrentAllocation(userId?: string) {
       }
 
       if (!response.ok) {
-        throw new Error("Failed to fetch asset allocation");
+        throw new Error('Failed to fetch asset allocation');
       }
 
       return response.json();
@@ -30,12 +37,12 @@ export function useCurrentAllocation(userId?: string) {
 // Fetch current investor profile for a user
 export function useCurrentProfile(userId?: string) {
   return useQuery<InvestorProfile | null>({
-    queryKey: ["investor-profile", "current", userId],
+    queryKey: ['investor-profile', 'current', userId],
     queryFn: async () => {
-      if (!userId) throw new Error("User ID is required");
-      
+      if (!userId) throw new Error('User ID is required');
+
       const response = await fetch(`/api/investor-profiles/user/${userId}`, {
-        credentials: "include",
+        credentials: 'include',
       });
 
       // Return null for 404 without trying to parse JSON
@@ -44,7 +51,7 @@ export function useCurrentProfile(userId?: string) {
       }
 
       if (!response.ok) {
-        throw new Error("Failed to fetch investor profile");
+        throw new Error('Failed to fetch investor profile');
       }
 
       return response.json();
@@ -66,25 +73,25 @@ export function useCreateProfile() {
       experienceLevel: string;
       cashOtherPreference: number;
     }) => {
-      const response = await fetch("/api/investor-profiles", {
-        method: "POST",
+      const response = await fetch('/api/investor-profiles', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify(profileData),
       });
 
       if (!response.ok) {
         // Try to parse JSON error, but fall back to text if it fails
-        let errorMessage = "Failed to create investor profile";
+        let errorMessage = 'Failed to create investor profile';
         try {
           const error = await response.json();
           errorMessage = error.message || errorMessage;
         } catch {
           // If JSON parsing fails, try to get text
           const text = await response.text();
-          console.error("Non-JSON error response:", text.substring(0, 200));
+          console.error('Non-JSON error response:', text.substring(0, 200));
           errorMessage = `Server error (${response.status})`;
         }
         throw new Error(errorMessage);
@@ -94,7 +101,9 @@ export function useCreateProfile() {
     },
     onSuccess: (data) => {
       // Invalidate current profile query to refetch
-      queryClient.invalidateQueries({ queryKey: ["investor-profile", "current", data.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ['investor-profile', 'current', data.userId],
+      });
     },
   });
 }
@@ -105,25 +114,25 @@ export function useCreateAllocation() {
 
   return useMutation({
     mutationFn: async (investorProfileId: string) => {
-      const response = await fetch("/api/asset-allocations", {
-        method: "POST",
+      const response = await fetch('/api/asset-allocations', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify({ investorProfileId }),
       });
 
       if (!response.ok) {
         // Try to parse JSON error, but fall back to text if it fails
-        let errorMessage = "Failed to create asset allocation";
+        let errorMessage = 'Failed to create asset allocation';
         try {
           const error = await response.json();
           errorMessage = error.message || errorMessage;
         } catch {
           // If JSON parsing fails, try to get text
           const text = await response.text();
-          console.error("Non-JSON error response:", text.substring(0, 200));
+          console.error('Non-JSON error response:', text.substring(0, 200));
           errorMessage = `Server error (${response.status})`;
         }
         throw new Error(errorMessage);
@@ -133,7 +142,9 @@ export function useCreateAllocation() {
     },
     onSuccess: (data) => {
       // Invalidate current allocation query to refetch
-      queryClient.invalidateQueries({ queryKey: ["asset-allocation", "current", data.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ['asset-allocation', 'current', data.userId],
+      });
     },
   });
 }
