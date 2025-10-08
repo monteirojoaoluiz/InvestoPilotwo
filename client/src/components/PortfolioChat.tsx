@@ -10,7 +10,7 @@ import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bot, Plus } from "lucide-react";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -32,13 +32,12 @@ export default function PortfolioChat({
   const [isNewChat, setIsNewChat] = useState(false);
   const [showNewChatSuccess, setShowNewChatSuccess] = useState(false);
   const { toast } = useToast();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const queryClient = useQueryClient();
   const [portfolioId, setPortfolioId] = useState<string | null>(null);
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
 
-  // Fetch portfolio on mount - MUST be called before any conditional returns
+  // Fetch portfolio on mount
   const { data: portfolioData } = useQuery<{
     id: string;
     allocations: any[];
@@ -48,8 +47,13 @@ export default function PortfolioChat({
     queryKey: ["/api/portfolio"],
   });
 
-  // Use custom hooks - MUST be called before any conditional returns
-  // Pass portfolioId even if null, the hooks handle it internally
+  useEffect(() => {
+    if (portfolioData?.id) {
+      setPortfolioId(portfolioData.id);
+    }
+  }, [portfolioData]);
+
+  // Use custom hooks
   const { data: messagesData = [] } = usePortfolioMessages(portfolioId);
   const { streamingMessage, isStreaming, sendMessageWithStreaming } =
     useStreamingChat({
@@ -58,7 +62,17 @@ export default function PortfolioChat({
       setIsNewChat,
     });
 
-  // Compute suggested questions - useMemo is a hook, must be before returns
+  // Hide the new chat success message after 3 seconds
+  useEffect(() => {
+    if (showNewChatSuccess) {
+      const timer = setTimeout(() => {
+        setShowNewChatSuccess(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showNewChatSuccess]);
+
+  // Compute suggested questions early to keep hook order stable
   const suggestedQuestions = useMemo(() => {
     try {
       if (
@@ -109,46 +123,13 @@ export default function PortfolioChat({
         questions.push("Should I consider ESG investments?");
       }
 
-      return questions.slice(0, 8);
+      return questions.slice(0, 8); // Show more questions for better scrolling
     } catch (error) {
       console.error("Error generating suggested questions:", error);
       return ["What should I invest in as a beginner?"];
     }
   }, [portfolio]);
 
-  // Set portfolioId from data
-  useEffect(() => {
-    if (portfolioData?.id) {
-      setPortfolioId(portfolioData.id);
-    }
-  }, [portfolioData]);
-
-  // Hide the new chat success message after 3 seconds
-  useEffect(() => {
-    if (showNewChatSuccess) {
-      const timer = setTimeout(() => {
-        setShowNewChatSuccess(false);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showNewChatSuccess]);
-
-  // Compute messages - must be before early returns
-  const messages = [...messagesData, ...optimisticMessages];
-
-  // Auto-scroll to bottom when new messages arrive or streaming updates
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]",
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  }, [messages, streamingMessage, isStreaming]);
-
-  // NOW we can do early returns after all hooks are called
   // If !portfolioId return loading
   if (!portfolioId) {
     if (portfolioData === null) {
@@ -177,6 +158,8 @@ export default function PortfolioChat({
     }
     return <div>Loading portfolio...</div>;
   }
+
+  const messages = [...messagesData, ...optimisticMessages];
 
   const handleNewChat = async () => {
     if (!portfolioId) return;
@@ -295,7 +278,7 @@ export default function PortfolioChat({
         </div>
       </div>
 
-      <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg: Message) => (
             <ChatMessage key={msg.id} message={msg} />

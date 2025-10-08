@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 
 export interface Message {
   id: string;
