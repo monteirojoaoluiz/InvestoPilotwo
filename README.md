@@ -24,39 +24,67 @@ This application implements industry-standard security practices:
 ## 📋 Prerequisites
 
 - Node.js 18+
-- PostgreSQL database (Neon, Supabase, or similar)
-- Render account for deployment
+- Docker & Docker Compose (for local development)
+- PostgreSQL database (Neon, Supabase, or similar for production)
+- Render account for deployment (optional)
 
 ## 🚀 Quick Start
 
+### Local Development with Docker
+
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/monteirojoaoluiz/Stack16.git
    cd Stack16
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
-3. **Environment Setup**
+3. **Start PostgreSQL with Docker Compose**
+
    ```bash
-   cp .env.example .env
-   # Edit .env with your actual values
+   docker-compose up -d
    ```
 
-4. **Database Setup**
+4. **Environment Setup**
+
+   ```bash
+   cp .env.local.example .env
+   # Edit .env with your API keys if needed
+   ```
+
+5. **Database Setup**
+
    ```bash
    npm run db:push
    ```
 
-5. **Development**
+6. **Start Development Server**
+
    ```bash
    npm run dev
    ```
 
-6. **Production Build**
+7. **Stop the database when done**
+   ```bash
+   docker-compose down
+   ```
+
+### Production Setup
+
+1. **Environment Setup**
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your production values
+   ```
+
+2. **Production Build**
    ```bash
    npm run build
    npm start
@@ -64,15 +92,15 @@ This application implements industry-standard security practices:
 
 ## 🔧 Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | ✅ |
-| `SESSION_SECRET` | Random string for session encryption | ✅ |
-| `PASSWORD_PEPPER` | Random string for password peppering | ✅ |
-| `GROQ_API_KEY` | API key for Groq AI services | ❌ |
-| `SENDGRID_API_KEY` | API key for SendGrid email | ❌ |
-| `FRONTEND_URL` | Your deployed app URL | ❌ |
-| `NODE_ENV` | Environment (production/development) | ❌ |
+| Variable           | Description                          | Required |
+| ------------------ | ------------------------------------ | -------- |
+| `DATABASE_URL`     | PostgreSQL connection string         | ✅       |
+| `SESSION_SECRET`   | Random string for session encryption | ✅       |
+| `PASSWORD_PEPPER`  | Random string for password peppering | ✅       |
+| `GROQ_API_KEY`     | API key for Groq AI services         | ❌       |
+| `SENDGRID_API_KEY` | API key for SendGrid email           | ❌       |
+| `FRONTEND_URL`     | Your deployed app URL                | ❌       |
+| `NODE_ENV`         | Environment (production/development) | ❌       |
 
 ## 🗄️ Database Schema
 
@@ -83,6 +111,40 @@ The application uses Drizzle ORM with PostgreSQL. Key tables:
 - **portfolio_recommendations**: AI-generated portfolio allocations
 - **portfolio_messages**: Chat history with AI assistant
 - **sessions**: Secure session storage
+
+### Local Database Setup
+
+For local development, use the included Docker Compose configuration:
+
+```bash
+# Start PostgreSQL container
+docker-compose up -d
+
+# Check database status
+docker-compose ps
+
+# View database logs
+docker-compose logs postgres
+
+# Connect to database (optional)
+docker exec -it investopilotwo-db psql -U investopilot -d investopilotwo
+
+# Stop and remove containers
+docker-compose down
+
+# Remove containers and volumes (reset database)
+docker-compose down -v
+```
+
+The local database credentials are:
+
+- **Host**: localhost
+- **Port**: 5432
+- **Database**: investopilotwo
+- **User**: investopilot
+- **Password**: investopilot_dev_password
+
+Connection string: `postgresql://investopilot:investopilot_dev_password@localhost:5432/investopilotwo`
 
 ## 🚀 Deployment
 
@@ -103,14 +165,35 @@ The application uses Drizzle ORM with PostgreSQL. Key tables:
 
 ## 🧪 Development
 
+### Docker Compose Commands
+
+```bash
+# Start database
+docker-compose up -d
+
+# Stop database
+docker-compose down
+
+# View logs
+docker-compose logs -f postgres
+
+# Reset database (removes all data)
+docker-compose down -v
+```
+
+### Development Workflow
+
 ```bash
 # Install dependencies
 npm install
 
-# Database setup
+# Start local PostgreSQL
+docker-compose up -d
+
+# Setup/update database schema
 npm run db:push
 
-# Development server
+# Development server (with hot reload)
 npm run dev
 
 # Build for production
@@ -137,7 +220,9 @@ Stack16/
 │   └── index.ts           # Server entry point
 ├── shared/                 # Shared types and schemas
 ├── migrations/            # Database migrations
-└── docs/                  # Documentation
+├── docker-compose.yml     # Local PostgreSQL setup
+├── .env.example           # Production environment template
+└── .env.local.example     # Local development template
 ```
 
 ## 🔐 Security Best Practices

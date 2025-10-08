@@ -1,9 +1,9 @@
 import 'dotenv/config';
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { errorHandler, notFoundHandler } from "./errorHandler";
-import { logger } from "./logger";
+import express, { type Request, Response, NextFunction } from 'express';
+import { registerRoutes } from './routes';
+import { setupVite, serveStatic, log } from './vite';
+import { errorHandler, notFoundHandler } from './errorHandler';
+import { logger } from './logger';
 
 const app = express();
 app.set('trust proxy', 1); // Trust proxy for session cookies in production
@@ -21,16 +21,16 @@ app.use((req, res, next) => {
     return originalResJson.apply(res, [bodyJson, ...args]);
   };
 
-  res.on("finish", () => {
+  res.on('finish', () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
+    if (path.startsWith('/api')) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
       if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+        logLine = logLine.slice(0, 79) + '…';
       }
 
       log(logLine);
@@ -47,9 +47,16 @@ app.use((req, res, next) => {
     console.log('Testing database connection...');
     const result = await pool.query('SELECT NOW()');
     console.log('Database connection successful:', result.rows[0]);
-    
-    // Run migrations
-    await runMigrations();
+
+    // Run migrations only in production
+    // For local dev, use `npm run db:push` instead
+    if (process.env.NODE_ENV === 'production') {
+      await runMigrations();
+    } else {
+      console.log(
+        'Skipping migrations in development mode. Use `npm run db:push` to sync schema.'
+      );
+    }
   } catch (error) {
     console.error('Database initialization failed:', error);
     throw error;
@@ -60,7 +67,7 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  if (app.get('env') === 'development') {
     await setupVite(app, server);
   } else {
     serveStatic(app);
@@ -77,11 +84,14 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-  }, () => {
-    log(`serving on port ${port}`);
-    logger.info(`Server started on port ${port}`);
-  });
+  server.listen(
+    {
+      port,
+      host: '0.0.0.0',
+    },
+    () => {
+      log(`serving on port ${port}`);
+      logger.info(`Server started on port ${port}`);
+    }
+  );
 })();
