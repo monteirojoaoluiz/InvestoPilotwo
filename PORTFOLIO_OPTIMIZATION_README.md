@@ -9,6 +9,7 @@ This system implements **modern portfolio theory** and **convex optimization** t
 ### Files Created
 
 #### Backend (Server)
+
 - **`shared/portfolio-types.ts`** - TypeScript type definitions for ETF data, optimization parameters, and results
 - **`server/portfolioMapping.ts`** - Maps risk assessment answers to optimization parameters
 - **`server/portfolioStatistics.ts`** - Computes expected returns, covariance matrices, and constraint matrices
@@ -17,6 +18,7 @@ This system implements **modern portfolio theory** and **convex optimization** t
 - **`server/routes.ts`** - API endpoint `/api/portfolio/optimize` for portfolio generation
 
 #### Frontend (Client)
+
 - **`client/src/components/OptimizedPortfolio.tsx`** - Portfolio visualization component
 - **`client/src/pages/portfolio-optimization.tsx`** - Portfolio optimization page
 
@@ -32,6 +34,7 @@ max  μ'w - λ·w'Σw - α·fee'w - β·||A_reg·w - t_reg||² - γ·illiq'w
 ```
 
 Where:
+
 - **μ** = expected excess returns (annual, after shrinkage)
 - **w** = portfolio weights (decision variables)
 - **λ** = risk aversion parameter (0.5 to 2.5, based on risk score)
@@ -59,7 +62,7 @@ Where:
 ### 1. Risk Score Computation
 
 ```typescript
-risk_score = 0.40 × risk_tolerance 
+risk_score = 0.40 × risk_tolerance
            + 0.30 × risk_capacity
            + 0.20 × investment_horizon
            + 0.10 × investor_experience
@@ -69,17 +72,18 @@ All inputs are normalized to 0-100 scale.
 
 ### 2. Parameter Derivation
 
-| Parameter | Formula | Range |
-|-----------|---------|-------|
-| Target Volatility (σ*) | `5% + 0.15 × (risk_score/100)` | 5% - 20% |
-| Max ETFs (K) | `round(3 + 7 × (experience/100))` | 3 - 10 |
-| Risk Aversion (λ) | `2.0 × (1 - risk_score/100) + 0.5` | 0.5 - 2.5 |
+| Parameter               | Formula                            | Range     |
+| ----------------------- | ---------------------------------- | --------- |
+| Target Volatility (σ\*) | `5% + 0.15 × (risk_score/100)`     | 5% - 20%  |
+| Max ETFs (K)            | `round(3 + 7 × (experience/100))`  | 3 - 10    |
+| Risk Aversion (λ)       | `2.0 × (1 - risk_score/100) + 0.5` | 0.5 - 2.5 |
 
 ### 3. Risk Capacity Factors
 
 Computed from financial situation:
+
 - **Income stability**: ±20 points
-- **Emergency fund**: ±25 points  
+- **Emergency fund**: ±25 points
 - **Debt level**: ±25 points
 - **Income range**: ±15 points
 
@@ -98,6 +102,7 @@ Where `Σ_target` is a constant-correlation model and δ = 0.4.
 ### Expected Returns
 
 Two approaches:
+
 1. **Grand-mean shrinkage** (default): Historical mean shrunk toward market average
 2. **Black-Litterman** (optional): Equilibrium returns with "views" based on risk score
 
@@ -111,6 +116,7 @@ illiq_i = 0.5 × (1 - log(AUM_i + 1) / log(10000))
 ## ETF Universe
 
 Sample database includes:
+
 - **US Equity**: VUSA, CSPX, ESGV
 - **European Equity**: VEUR, MEUD, AEX
 - **Emerging Markets**: VFEM, EIMI
@@ -119,6 +125,7 @@ Sample database includes:
 - **Bonds**: AGGH, IEAG
 
 Each ETF has:
+
 - Historical returns (60+ months)
 - Regional exposure breakdown
 - Industry exposures
@@ -165,9 +172,9 @@ User must have completed risk assessment (`/api/risk-assessment`).
     "regionExposure": {
       "US": 0.45,
       "EU_EX_NL": 0.25,
-      "DEV_EX_US_EU": 0.20,
-      "EM": 0.10,
-      "NL": 0.00
+      "DEV_EX_US_EU": 0.2,
+      "EM": 0.1,
+      "NL": 0.0
     },
     "totalFees": 0.0014,
     "constraints": {
@@ -185,10 +192,10 @@ User must have completed risk assessment (`/api/risk-assessment`).
 ### Usage Example
 
 ```tsx
-import PortfolioOptimizationPage from '@/pages/portfolio-optimization';
+import PortfolioOptimizationPage from "@/pages/portfolio-optimization";
 
 // In your router:
-<Route path="/portfolio/optimize" element={<PortfolioOptimizationPage />} />
+<Route path="/portfolio/optimize" element={<PortfolioOptimizationPage />} />;
 ```
 
 ### Component Features
@@ -219,6 +226,7 @@ import PortfolioOptimizationPage from '@/pages/portfolio-optimization';
 ### Caching Strategy
 
 Consider caching:
+
 - ETF historical data (update weekly)
 - Covariance matrices (recompute monthly)
 - Optimization results (refresh quarterly or on profile change)
@@ -263,6 +271,7 @@ expect(params.maxETFs).toBeGreaterThanOrEqual(3);
 ### Environment Variables
 
 Ensure these are set:
+
 - `NODE_ENV=production`
 - `DATABASE_URL` (PostgreSQL)
 - Session secrets, etc.
@@ -277,6 +286,7 @@ Ensure these are set:
 ### Scaling
 
 For high traffic:
+
 - Consider worker pool for Pyodide instances
 - Queue optimization requests
 - Cache common profiles
@@ -285,18 +295,21 @@ For high traffic:
 ## Future Enhancements
 
 ### Short-term
+
 - [ ] Add transaction cost modeling for rebalancing
 - [ ] Support custom ETF selection
 - [ ] Multi-currency portfolios
 - [ ] Tax-loss harvesting suggestions
 
 ### Medium-term
+
 - [ ] Factor-based portfolio construction
 - [ ] Monte Carlo simulations for risk visualization
 - [ ] Backtesting with historical data
 - [ ] Robo-advisor chat integration
 
 ### Long-term
+
 - [ ] Real-time portfolio monitoring
 - [ ] Automatic rebalancing triggers
 - [ ] Options for tactical tilts
@@ -316,6 +329,7 @@ MIT License - See LICENSE file for details.
 ## Support
 
 For questions or issues:
+
 - Open GitHub issue
 - Contact: [your-email]
 - Documentation: [wiki-link]

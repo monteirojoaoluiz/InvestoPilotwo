@@ -2,13 +2,18 @@
  * Portfolio Optimization Page
  * Triggers portfolio optimization and displays results
  */
-
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles, AlertCircle } from "lucide-react";
 import OptimizedPortfolio from "@/components/OptimizedPortfolio";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { useState } from "react";
 
 export default function PortfolioOptimizationPage() {
   const [optimizedPortfolio, setOptimizedPortfolio] = useState<any>(null);
@@ -49,7 +54,7 @@ export default function PortfolioOptimizationPage() {
 
   if (assessmentLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -57,15 +62,18 @@ export default function PortfolioOptimizationPage() {
 
   if (!assessment) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto px-4 py-8">
         <Card className="border-yellow-200 bg-yellow-50">
           <CardContent className="pt-6">
             <div className="flex gap-3">
-              <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-600" />
               <div className="space-y-2">
-                <p className="font-medium text-yellow-900">Risk Assessment Required</p>
+                <p className="font-medium text-yellow-900">
+                  Risk Assessment Required
+                </p>
                 <p className="text-sm text-yellow-800">
-                  Please complete your risk assessment before generating an optimized portfolio.
+                  Please complete your risk assessment before generating an
+                  optimized portfolio.
                 </p>
                 <Button
                   variant="default"
@@ -83,13 +91,14 @@ export default function PortfolioOptimizationPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
+    <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Portfolio Optimization</h1>
           <p className="text-muted-foreground">
-            Generate an optimized portfolio based on modern portfolio theory and your risk profile
+            Generate an optimized portfolio based on modern portfolio theory and
+            your risk profile
           </p>
         </div>
 
@@ -102,20 +111,30 @@ export default function PortfolioOptimizationPage() {
                 Advanced Portfolio Optimization
               </CardTitle>
               <CardDescription>
-                Our algorithm uses CVXPY (Convex Optimization) to construct an efficient portfolio
-                that maximizes risk-adjusted returns while respecting your constraints.
+                Our algorithm uses CVXPY (Convex Optimization) to construct an
+                efficient portfolio that maximizes risk-adjusted returns while
+                respecting your constraints.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
+                <div className="space-y-2 rounded-lg bg-muted p-4 text-sm">
                   <p className="font-medium">Optimization Features:</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Ledoit-Wolf covariance shrinkage for robust risk estimates</li>
-                    <li>Mean-variance optimization with risk aversion tailored to your profile</li>
-                    <li>Geographic diversification across your preferred regions</li>
+                  <ul className="list-inside list-disc space-y-1 text-muted-foreground">
+                    <li>
+                      Ledoit-Wolf covariance shrinkage for robust risk estimates
+                    </li>
+                    <li>
+                      Mean-variance optimization with risk aversion tailored to
+                      your profile
+                    </li>
+                    <li>
+                      Geographic diversification across your preferred regions
+                    </li>
                     <li>Industry exclusions based on your ESG preferences</li>
-                    <li>Cost minimization (TER) and liquidity considerations</li>
+                    <li>
+                      Cost minimization (TER) and liquidity considerations
+                    </li>
                     <li>Cardinality constraints for portfolio simplicity</li>
                   </ul>
                 </div>
@@ -143,9 +162,11 @@ export default function PortfolioOptimizationPage() {
                   <Card className="border-red-200 bg-red-50">
                     <CardContent className="pt-6">
                       <div className="flex gap-3">
-                        <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
                         <div className="space-y-1">
-                          <p className="font-medium text-red-900">Optimization Failed</p>
+                          <p className="font-medium text-red-900">
+                            Optimization Failed
+                          </p>
                           <p className="text-sm text-red-800">
                             {optimizeMutation.error instanceof Error
                               ? optimizeMutation.error.message

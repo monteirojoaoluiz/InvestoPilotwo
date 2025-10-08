@@ -7,19 +7,19 @@
 export interface ETFData {
   ticker: string;
   name: string;
-  assetClass: 'equity' | 'bond' | 'commodity' | 'mixed';
+  assetClass: "equity" | "bond" | "commodity" | "mixed";
   domicile: string;
   ucits: boolean;
   ter: number; // Total Expense Ratio (annual %)
-  replication: 'physical' | 'synthetic';
+  replication: "physical" | "synthetic";
   currency: string;
   hedged: boolean;
-  
+
   // Liquidity metrics
   aum: number; // Assets under management (millions)
   avgSpread: number; // Average bid-ask spread (%)
   avgDailyVolume: number; // Average daily trading volume
-  
+
   // Regional exposures (must sum to ~1.0)
   regionExposure: {
     NL: number;
@@ -28,7 +28,7 @@ export interface ETFData {
     DEV_EX_US_EU: number; // Developed ex-US/EU
     EM: number; // Emerging markets
   };
-  
+
   // Industry exposures (for exclusions)
   industryExposure: {
     TOBACCO?: number;
@@ -38,12 +38,12 @@ export interface ETFData {
     ALCOHOL?: number;
     NUCLEAR?: number;
   };
-  
+
   esgCompliant: boolean;
-  
+
   // Historical returns (monthly net returns)
   monthlyReturns: number[];
-  
+
   // Optional: factor loadings
   factorLoads?: {
     market: number;
@@ -54,16 +54,16 @@ export interface ETFData {
 }
 
 // Geographic regions
-export type GeographicRegion = 'NL' | 'EU_EX_NL' | 'US' | 'DEV_EX_US_EU' | 'EM';
+export type GeographicRegion = "NL" | "EU_EX_NL" | "US" | "DEV_EX_US_EU" | "EM";
 
 // Industry exclusions
-export type IndustryExclusion = 
-  | 'TOBACCO' 
-  | 'FOSSIL_FUELS' 
-  | 'WEAPONS' 
-  | 'GAMBLING' 
-  | 'ALCOHOL' 
-  | 'NUCLEAR';
+export type IndustryExclusion =
+  | "TOBACCO"
+  | "FOSSIL_FUELS"
+  | "WEAPONS"
+  | "GAMBLING"
+  | "ALCOHOL"
+  | "NUCLEAR";
 
 // Risk profile inputs from assessment
 export interface RiskProfileInputs {

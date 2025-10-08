@@ -16,7 +16,7 @@ I've successfully implemented a complete **portfolio optimization system** based
 
 2. **`server/portfolioMapping.ts`** (267 lines)
    - Risk score computation (40/30/20/10 weighting)
-   - Parameter mapping (σ*, K, λ calculations)
+   - Parameter mapping (σ\*, K, λ calculations)
    - Assessment answer → numeric profile conversion
    - Risk capacity calculation from financial situation
    - Edge case handling
@@ -118,6 +118,7 @@ objective = (
 ## 🔧 Technical Features
 
 ### Pyodide Integration
+
 - ✅ Loads Python runtime in Node.js
 - ✅ Installs numpy, scipy, cvxpy
 - ✅ Warm-up at server startup (~30-60s initial load)
@@ -125,12 +126,14 @@ objective = (
 - ✅ Uses OSQP solver (fast, production-ready)
 
 ### Statistical Robustness
+
 - ✅ Ledoit-Wolf covariance shrinkage (δ=0.4)
 - ✅ Expected returns shrinkage toward grand mean
 - ✅ Black-Litterman equilibrium returns (optional)
 - ✅ Liquidity penalties based on AUM and spreads
 
 ### Data Quality
+
 - ✅ 14 real ETFs with realistic characteristics
 - ✅ Synthetic 60-month return histories
 - ✅ Regional exposures sum to 1.0
@@ -142,17 +145,17 @@ objective = (
 ```json
 {
   "allocations": [
-    {"ticker": "VUSA", "percentage": 35.5, "name": "Vanguard S&P 500"},
-    {"ticker": "VEUR", "percentage": 25.0, "name": "Vanguard Europe"},
-    {"ticker": "VFEM", "percentage": 20.0, "name": "Vanguard EM"},
-    {"ticker": "VJPN", "percentage": 12.5, "name": "Vanguard Japan"},
-    {"ticker": "AGGH", "percentage": 7.0, "name": "iShares Bonds"}
+    { "ticker": "VUSA", "percentage": 35.5, "name": "Vanguard S&P 500" },
+    { "ticker": "VEUR", "percentage": 25.0, "name": "Vanguard Europe" },
+    { "ticker": "VFEM", "percentage": 20.0, "name": "Vanguard EM" },
+    { "ticker": "VJPN", "percentage": 12.5, "name": "Vanguard Japan" },
+    { "ticker": "AGGH", "percentage": 7.0, "name": "iShares Bonds" }
   ],
   "optimization": {
-    "expectedReturn": 0.0687,      // 6.87% annual
-    "expectedVolatility": 0.1142,  // 11.42% risk
-    "sharpeRatio": 0.60,
-    "totalFees": 0.0012,           // 0.12% TER
+    "expectedReturn": 0.0687, // 6.87% annual
+    "expectedVolatility": 0.1142, // 11.42% risk
+    "sharpeRatio": 0.6,
+    "totalFees": 0.0012, // 0.12% TER
     "regionExposure": {
       "US": 0.45,
       "EU_EX_NL": 0.25,
@@ -166,11 +169,13 @@ objective = (
 ## 🚀 How to Use
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Start Server
+
 ```bash
 npm run dev
 ```
@@ -178,15 +183,18 @@ npm run dev
 Pyodide will initialize automatically (watch console for "Pyodide ready!").
 
 ### 3. API Call
+
 ```bash
 POST /api/portfolio/optimize
 Cookie: session=...
 ```
 
 ### 4. Frontend
+
 Navigate to `/portfolio/optimize` page or integrate the component:
+
 ```tsx
-import PortfolioOptimizationPage from '@/pages/portfolio-optimization';
+import PortfolioOptimizationPage from "@/pages/portfolio-optimization";
 ```
 
 ## ⚡ Performance
@@ -210,6 +218,7 @@ import PortfolioOptimizationPage from '@/pages/portfolio-optimization';
 ## 🔒 Production Readiness
 
 ### ✅ Implemented
+
 - Authentication required
 - Input validation
 - Error handling
@@ -218,6 +227,7 @@ import PortfolioOptimizationPage from '@/pages/portfolio-optimization';
 - Professional documentation
 
 ### 📝 Recommended Additions
+
 - Rate limiting on optimization endpoint
 - Request queuing for high load
 - Monitoring/logging
@@ -228,6 +238,7 @@ import PortfolioOptimizationPage from '@/pages/portfolio-optimization';
 ## 📚 Next Steps
 
 1. **Test the implementation**:
+
    ```bash
    npm run dev
    # Navigate to /risk-assessment
@@ -255,17 +266,20 @@ import PortfolioOptimizationPage from '@/pages/portfolio-optimization';
 ## 🐛 Troubleshooting
 
 ### Pyodide fails to load
+
 - Check internet connection (CDN required)
 - Increase timeout
 - Check console for errors
 
 ### Optimization infeasible
+
 - Too many constraints
 - Conflicting requirements
 - Empty ETF universe after filtering
 - Check constraint relaxation
 
 ### Slow performance
+
 - Pyodide cold start is normal
 - Consider worker pool for scale
 - Cache covariance matrices
@@ -287,6 +301,7 @@ import PortfolioOptimizationPage from '@/pages/portfolio-optimization';
 ## 🎉 Result
 
 You now have a **fully functional portfolio optimization system** that:
+
 - Takes user risk assessments as input
 - Applies modern portfolio theory
 - Solves convex optimization problems

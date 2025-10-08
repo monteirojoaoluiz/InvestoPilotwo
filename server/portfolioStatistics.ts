@@ -2,14 +2,13 @@
  * Portfolio Statistics Module
  * Computes expected returns, covariance matrix, and constraint matrices
  */
-
 import {
   ETFData,
   PortfolioStatistics,
   GeographicRegion,
   IndustryExclusion,
   OptimizationParams,
-} from '../shared/portfolio-types';
+} from "../shared/portfolio-types";
 
 /**
  * Compute sample mean returns from historical data
@@ -24,30 +23,32 @@ function computeSampleMean(returns: number[]): number {
  */
 function computeSampleCovariance(etfs: ETFData[]): number[][] {
   const n = etfs.length;
-  const minLength = Math.min(...etfs.map(e => e.monthlyReturns.length));
-  
+  const minLength = Math.min(...etfs.map((e) => e.monthlyReturns.length));
+
   // Compute means
-  const means = etfs.map(etf => 
-    computeSampleMean(etf.monthlyReturns.slice(-minLength))
+  const means = etfs.map((etf) =>
+    computeSampleMean(etf.monthlyReturns.slice(-minLength)),
   );
-  
+
   // Compute covariance matrix
-  const cov: number[][] = Array(n).fill(0).map(() => Array(n).fill(0));
-  
+  const cov: number[][] = Array(n)
+    .fill(0)
+    .map(() => Array(n).fill(0));
+
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
       let sum = 0;
       const returns_i = etfs[i].monthlyReturns.slice(-minLength);
       const returns_j = etfs[j].monthlyReturns.slice(-minLength);
-      
+
       for (let t = 0; t < minLength; t++) {
         sum += (returns_i[t] - means[i]) * (returns_j[t] - means[j]);
       }
-      
+
       cov[i][j] = sum / (minLength - 1);
     }
   }
-  
+
   return cov;
 }
 
@@ -57,27 +58,30 @@ function computeSampleCovariance(etfs: ETFData[]): number[][] {
  */
 function shrinkCovariance(sampleCov: number[][]): number[][] {
   const n = sampleCov.length;
-  
+
   // Compute sample variances and average correlation
   const variances = sampleCov.map((row, i) => row[i]);
   const avgStd = Math.sqrt(variances.reduce((a, b) => a + b, 0) / n);
-  
+
   // Compute average correlation
   let sumCorr = 0;
   let countCorr = 0;
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
       if (i !== j) {
-        const corr = sampleCov[i][j] / Math.sqrt(sampleCov[i][i] * sampleCov[j][j]);
+        const corr =
+          sampleCov[i][j] / Math.sqrt(sampleCov[i][i] * sampleCov[j][j]);
         sumCorr += corr;
         countCorr++;
       }
     }
   }
   const avgCorr = countCorr > 0 ? sumCorr / countCorr : 0.3;
-  
+
   // Target matrix: constant correlation with sample variances
-  const target: number[][] = Array(n).fill(0).map(() => Array(n).fill(0));
+  const target: number[][] = Array(n)
+    .fill(0)
+    .map(() => Array(n).fill(0));
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
       if (i === j) {
@@ -87,18 +91,21 @@ function shrinkCovariance(sampleCov: number[][]): number[][] {
       }
     }
   }
-  
+
   // Shrinkage intensity (simplified, typically 0.3-0.5)
   const shrinkage = 0.4;
-  
+
   // Shrunk covariance
-  const shrunk: number[][] = Array(n).fill(0).map(() => Array(n).fill(0));
+  const shrunk: number[][] = Array(n)
+    .fill(0)
+    .map(() => Array(n).fill(0));
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
-      shrunk[i][j] = shrinkage * target[i][j] + (1 - shrinkage) * sampleCov[i][j];
+      shrunk[i][j] =
+        shrinkage * target[i][j] + (1 - shrinkage) * sampleCov[i][j];
     }
   }
-  
+
   return shrunk;
 }
 
@@ -108,23 +115,23 @@ function shrinkCovariance(sampleCov: number[][]): number[][] {
  */
 function computeExpectedReturns(
   etfs: ETFData[],
-  shrinkageIntensity: number = 0.5
+  shrinkageIntensity: number = 0.5,
 ): number[] {
   const n = etfs.length;
-  
+
   // Compute sample means (monthly)
-  const sampleMeans = etfs.map(etf => computeSampleMean(etf.monthlyReturns));
-  
+  const sampleMeans = etfs.map((etf) => computeSampleMean(etf.monthlyReturns));
+
   // Grand mean (equal-weighted average)
   const grandMean = sampleMeans.reduce((a, b) => a + b, 0) / n;
-  
+
   // Shrink toward grand mean
-  const expectedReturns = sampleMeans.map(mean => 
-    shrinkageIntensity * grandMean + (1 - shrinkageIntensity) * mean
+  const expectedReturns = sampleMeans.map(
+    (mean) => shrinkageIntensity * grandMean + (1 - shrinkageIntensity) * mean,
   );
-  
+
   // Annualize (12 months)
-  return expectedReturns.map(r => r * 12);
+  return expectedReturns.map((r) => r * 12);
 }
 
 /**
@@ -135,20 +142,20 @@ function computeBlackLittermanReturns(
   etfs: ETFData[],
   covMatrix: number[][],
   riskAversion: number,
-  params: OptimizationParams
+  params: OptimizationParams,
 ): number[] {
   // Equilibrium market weights based on target region mix
   const equilibriumWeights = computeEquilibriumWeights(etfs, params);
-  
+
   // Implied equilibrium returns: Π = λ * Σ * w_eq
   const impliedReturns = matrixVectorMultiply(
     scalarMatrixMultiply(riskAversion, covMatrix),
-    equilibriumWeights
+    equilibriumWeights,
   );
-  
+
   // For now, use implied returns directly
   // In a full implementation, add "views" to adjust specific ETF expectations
-  
+
   return impliedReturns;
 }
 
@@ -157,27 +164,33 @@ function computeBlackLittermanReturns(
  */
 function computeEquilibriumWeights(
   etfs: ETFData[],
-  params: OptimizationParams
+  params: OptimizationParams,
 ): number[] {
   const n = etfs.length;
   const weights = new Array(n).fill(0);
-  
+
   // Score each ETF by region alignment
-  const scores = etfs.map(etf => {
+  const scores = etfs.map((etf) => {
     let score = 0;
-    const regions: GeographicRegion[] = ['NL', 'EU_EX_NL', 'US', 'DEV_EX_US_EU', 'EM'];
+    const regions: GeographicRegion[] = [
+      "NL",
+      "EU_EX_NL",
+      "US",
+      "DEV_EX_US_EU",
+      "EM",
+    ];
     for (const region of regions) {
       score += etf.regionExposure[region] * params.targetRegionMix[region];
     }
     return score;
   });
-  
+
   // Normalize to sum to 1
   const totalScore = scores.reduce((a, b) => a + b, 0);
   if (totalScore > 0) {
-    return scores.map(s => s / totalScore);
+    return scores.map((s) => s / totalScore);
   }
-  
+
   // Fallback: equal weights
   return new Array(n).fill(1 / n);
 }
@@ -187,13 +200,13 @@ function computeEquilibriumWeights(
  * Higher penalty for lower AUM and higher spreads
  */
 function computeLiquidityPenalty(etfs: ETFData[]): number[] {
-  return etfs.map(etf => {
+  return etfs.map((etf) => {
     // Normalize AUM (lower AUM = higher penalty)
     const aumPenalty = Math.max(0, 1 - Math.log(etf.aum + 1) / Math.log(10000));
-    
+
     // Spread penalty (higher spread = higher penalty)
     const spreadPenalty = etf.avgSpread * 100; // Convert to basis points
-    
+
     return aumPenalty * 0.5 + spreadPenalty * 0.5;
   });
 }
@@ -202,11 +215,15 @@ function computeLiquidityPenalty(etfs: ETFData[]): number[] {
  * Build region exposure matrix (5 regions x n ETFs)
  */
 function buildRegionMatrix(etfs: ETFData[]): number[][] {
-  const regions: GeographicRegion[] = ['NL', 'EU_EX_NL', 'US', 'DEV_EX_US_EU', 'EM'];
-  
-  return regions.map(region => 
-    etfs.map(etf => etf.regionExposure[region])
-  );
+  const regions: GeographicRegion[] = [
+    "NL",
+    "EU_EX_NL",
+    "US",
+    "DEV_EX_US_EU",
+    "EM",
+  ];
+
+  return regions.map((region) => etfs.map((etf) => etf.regionExposure[region]));
 }
 
 /**
@@ -215,12 +232,12 @@ function buildRegionMatrix(etfs: ETFData[]): number[][] {
  */
 function buildIndustryExclusionMatrix(
   etfs: ETFData[],
-  exclusions: IndustryExclusion[]
+  exclusions: IndustryExclusion[],
 ): number[][] {
   if (exclusions.length === 0) return [];
-  
-  return exclusions.map(industry =>
-    etfs.map(etf => etf.industryExposure[industry] || 0)
+
+  return exclusions.map((industry) =>
+    etfs.map((etf) => etf.industryExposure[industry] || 0),
   );
 }
 
@@ -230,24 +247,27 @@ function buildIndustryExclusionMatrix(
 export function computePortfolioStatistics(
   etfs: ETFData[],
   params: OptimizationParams,
-  industryExclusions: IndustryExclusion[]
+  industryExclusions: IndustryExclusion[],
 ): PortfolioStatistics {
   // Compute covariance matrix
   const sampleCov = computeSampleCovariance(etfs);
   const covarianceMatrix = shrinkCovariance(sampleCov);
-  
+
   // Compute expected returns (use Black-Litterman for more sophisticated approach)
   const expectedReturns = computeExpectedReturns(etfs);
   // Alternative: const expectedReturns = computeBlackLittermanReturns(etfs, covarianceMatrix, params.riskAversion, params);
-  
+
   // Compute penalties
-  const feePenalties = etfs.map(etf => etf.ter / 100); // Convert percentage to decimal
+  const feePenalties = etfs.map((etf) => etf.ter / 100); // Convert percentage to decimal
   const liquidityPenalties = computeLiquidityPenalty(etfs);
-  
+
   // Build constraint matrices
   const regionMatrix = buildRegionMatrix(etfs);
-  const industryExclusionMatrix = buildIndustryExclusionMatrix(etfs, industryExclusions);
-  
+  const industryExclusionMatrix = buildIndustryExclusionMatrix(
+    etfs,
+    industryExclusions,
+  );
+
   return {
     expectedReturns,
     covarianceMatrix,
@@ -264,21 +284,29 @@ export function computePortfolioStatistics(
 export function filterETFsByConstraints(
   etfs: ETFData[],
   params: OptimizationParams,
-  industryExclusions: IndustryExclusion[]
+  industryExclusions: IndustryExclusion[],
 ): ETFData[] {
-  return etfs.filter(etf => {
+  return etfs.filter((etf) => {
     // Check region constraints
-    const regions: GeographicRegion[] = ['NL', 'EU_EX_NL', 'US', 'DEV_EX_US_EU', 'EM'];
-    const selectedRegions = regions.filter(r => params.targetRegionMix[r] > 0);
-    
+    const regions: GeographicRegion[] = [
+      "NL",
+      "EU_EX_NL",
+      "US",
+      "DEV_EX_US_EU",
+      "EM",
+    ];
+    const selectedRegions = regions.filter(
+      (r) => params.targetRegionMix[r] > 0,
+    );
+
     if (selectedRegions.length > 0) {
       // ETF must have some exposure to selected regions
-      const hasExposure = selectedRegions.some(region => 
-        etf.regionExposure[region] > 0.1 // At least 10% exposure
+      const hasExposure = selectedRegions.some(
+        (region) => etf.regionExposure[region] > 0.1, // At least 10% exposure
       );
       if (!hasExposure) return false;
     }
-    
+
     // Check industry exclusions (hard filter if ESG screening required)
     if (industryExclusions.length > 0 && !etf.esgCompliant) {
       // If not ESG compliant, check if it violates exclusions significantly
@@ -288,14 +316,14 @@ export function filterETFsByConstraints(
         }
       }
     }
-    
+
     // Minimum liquidity requirements
     if (etf.aum < 50) return false; // At least €50M AUM
     if (etf.avgSpread > 0.005) return false; // Max 0.5% spread
-    
+
     // Must have sufficient return history
     if (etf.monthlyReturns.length < 36) return false; // At least 3 years
-    
+
     return true;
   });
 }
@@ -303,13 +331,13 @@ export function filterETFsByConstraints(
 // Helper functions for matrix operations
 
 function matrixVectorMultiply(matrix: number[][], vector: number[]): number[] {
-  return matrix.map(row => 
-    row.reduce((sum, val, i) => sum + val * vector[i], 0)
+  return matrix.map((row) =>
+    row.reduce((sum, val, i) => sum + val * vector[i], 0),
   );
 }
 
 function scalarMatrixMultiply(scalar: number, matrix: number[][]): number[][] {
-  return matrix.map(row => row.map(val => val * scalar));
+  return matrix.map((row) => row.map((val) => val * scalar));
 }
 
 /**
@@ -317,7 +345,7 @@ function scalarMatrixMultiply(scalar: number, matrix: number[][]): number[][] {
  */
 export function computePortfolioVolatility(
   weights: number[],
-  covMatrix: number[][]
+  covMatrix: number[][],
 ): number {
   // w^T * Σ * w
   let variance = 0;
@@ -334,7 +362,7 @@ export function computePortfolioVolatility(
  */
 export function computePortfolioReturn(
   weights: number[],
-  expectedReturns: number[]
+  expectedReturns: number[],
 ): number {
   return weights.reduce((sum, w, i) => sum + w * expectedReturns[i], 0);
 }

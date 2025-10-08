@@ -21,8 +21,8 @@ import yahooFinance from "yahoo-finance2";
 import { z } from "zod";
 
 import { pool } from "./db";
-import { storage } from "./storage";
 import { warmupPyodide } from "./portfolioOptimizerPyodide";
+import { storage } from "./storage";
 
 const groqClient = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
@@ -705,12 +705,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const user = req.user;
 
         if (!(user as any).password) {
-          return res
-            .status(400)
-            .json({
-              message:
-                "This account does not have a password set. Use password reset to set one.",
-            });
+          return res.status(400).json({
+            message:
+              "This account does not have a password set. Use password reset to set one.",
+          });
         }
 
         // Verify current password
@@ -820,12 +818,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const user = req.user;
 
         if (!(user as any).password) {
-          return res
-            .status(400)
-            .json({
-              message:
-                "Cannot delete account without password verification. Please set a password first.",
-            });
+          return res.status(400).json({
+            message:
+              "Cannot delete account without password verification. Please set a password first.",
+          });
         }
 
         // Verify current password
@@ -1110,13 +1106,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Starting optimized portfolio generation...");
 
         // Import optimization modules
-        const { assessmentToRiskProfile, mapRiskProfileToParams, adjustParamsForEdgeCases } = 
-          await import("./portfolioMapping");
+        const {
+          assessmentToRiskProfile,
+          mapRiskProfileToParams,
+          adjustParamsForEdgeCases,
+        } = await import("./portfolioMapping");
         const { getETFUniverse } = await import("./etfDatabase");
-        const { filterETFsByConstraints, computePortfolioStatistics } = 
+        const { filterETFsByConstraints, computePortfolioStatistics } =
           await import("./portfolioStatistics");
-        const { optimizePortfolioWithPyodide } = 
-          await import("./portfolioOptimizerPyodide");
+        const { optimizePortfolioWithPyodide } = await import(
+          "./portfolioOptimizerPyodide"
+        );
 
         // Convert assessment to risk profile
         const riskProfile = assessmentToRiskProfile(assessment.answers);
@@ -1135,13 +1135,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const filteredETFs = filterETFsByConstraints(
           allETFs,
           params,
-          riskProfile.industryExclusions
+          riskProfile.industryExclusions,
         );
         console.log(`Filtered ETFs: ${filteredETFs.length}`);
 
         if (filteredETFs.length === 0) {
           return res.status(400).json({
-            message: "No ETFs match your investment criteria. Please adjust your preferences.",
+            message:
+              "No ETFs match your investment criteria. Please adjust your preferences.",
           });
         }
 
@@ -1149,7 +1150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const stats = computePortfolioStatistics(
           filteredETFs,
           params,
-          riskProfile.industryExclusions
+          riskProfile.industryExclusions,
         );
         console.log("Computed portfolio statistics");
 
@@ -1158,16 +1159,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           filteredETFs,
           stats,
           params,
-          riskProfile.industryExclusions
+          riskProfile.industryExclusions,
         );
         console.log("Optimization complete:", optimizedPortfolio);
 
         // Convert to storage format
-        const allocations = optimizedPortfolio.etfDetails.map(etf => ({
+        const allocations = optimizedPortfolio.etfDetails.map((etf) => ({
           ticker: etf.ticker,
           name: etf.name,
           percentage: Math.round(etf.weight * 100 * 100) / 100, // Round to 2 decimals
-          assetType: filteredETFs.find(e => e.ticker === etf.ticker)?.assetClass || 'equity',
+          assetType:
+            filteredETFs.find((e) => e.ticker === etf.ticker)?.assetClass ||
+            "equity",
         }));
 
         // Store portfolio
@@ -1176,7 +1179,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           riskAssessmentId: assessment.id,
           allocations,
           totalValue: 0,
-          totalReturn: Math.round(optimizedPortfolio.expectedReturn * 100 * 100), // Store as basis points
+          totalReturn: Math.round(
+            optimizedPortfolio.expectedReturn * 100 * 100,
+          ), // Store as basis points
         });
 
         res.json({
@@ -1192,9 +1197,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (error) {
         console.error("Error optimizing portfolio:", error);
-        res.status(500).json({ 
+        res.status(500).json({
           message: "Failed to optimize portfolio",
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     },
@@ -1885,11 +1890,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Verify the portfolio belongs to the user
         const portfolio = await storage.getPortfolioByUserId(userId);
         if (!portfolio || portfolio.id !== portfolioId) {
-          return res
-            .status(403)
-            .json({
-              message: "Unauthorized to delete messages for this portfolio",
-            });
+          return res.status(403).json({
+            message: "Unauthorized to delete messages for this portfolio",
+          });
         }
 
         await storage.deletePortfolioMessages(portfolioId);

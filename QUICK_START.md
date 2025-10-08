@@ -3,6 +3,7 @@
 ## 🚀 Getting Started
 
 ### 1. Installation Complete ✅
+
 The `pyodide` package has already been installed in your project.
 
 ### 2. Start the Development Server
@@ -12,6 +13,7 @@ npm run dev
 ```
 
 **What happens on startup:**
+
 - Server starts on port 5000
 - Database connection is established
 - **Pyodide begins initializing** (this takes 30-60 seconds)
@@ -20,11 +22,13 @@ npm run dev
 ### 3. Test the System
 
 #### Step 1: Complete Risk Assessment
+
 1. Navigate to: `http://localhost:5000/risk-assessment`
 2. Fill out the questionnaire
 3. Submit your answers
 
 #### Step 2: Generate Optimized Portfolio
+
 1. Navigate to: `http://localhost:5000/portfolio/optimize`
 2. Click **"Generate Optimized Portfolio"**
 3. Wait 1-2 seconds for optimization
@@ -76,6 +80,7 @@ Netherlands:         3%
 ## 🔍 What's Happening Under the Hood
 
 ### First Request (Cold Start)
+
 ```
 1. Pyodide loads (~50MB WebAssembly)         [30s]
 2. numpy, scipy installed                     [10s]
@@ -86,6 +91,7 @@ Total: ~60 seconds
 ```
 
 ### Subsequent Requests (Warm Cache)
+
 ```
 1. Pyodide already loaded                    [0s]
 2. Optimization runs                         [1-2s]
@@ -96,9 +102,11 @@ Total: ~1-2 seconds
 ## 🎯 Key Files to Customize
 
 ### ETF Universe
+
 **File:** `server/etfDatabase.ts`
 
 Add your own ETFs:
+
 ```typescript
 {
   ticker: 'YOUR_ETF',
@@ -112,24 +120,28 @@ Add your own ETFs:
 ```
 
 ### Optimization Parameters
+
 **File:** `server/portfolioMapping.ts`
 
 Tune the formulas:
+
 ```typescript
 // More conservative volatility targets
-targetVolatility = 0.04 + 0.12 * (riskScore / 100);  // 4%-16%
+targetVolatility = 0.04 + 0.12 * (riskScore / 100); // 4%-16%
 
 // More ETFs for all users
-maxETFs = 5 + 10 * (experience / 100);  // 5-15 ETFs
+maxETFs = 5 + 10 * (experience / 100); // 5-15 ETFs
 
 // Higher risk aversion
-riskAversion = 3.0 * (1 - riskScore / 100) + 1.0;  // 1.0-4.0
+riskAversion = 3.0 * (1 - riskScore / 100) + 1.0; // 1.0-4.0
 ```
 
 ### Penalty Weights
+
 **File:** `server/portfolioMapping.ts`
 
 Adjust trade-offs:
+
 ```typescript
 feePenalty: 2.0,      // Care more about costs
 regionPenalty: 5.0,   // More flexible on regions
@@ -139,22 +151,26 @@ liquidityPenalty: 0.5, // Care less about liquidity
 ## 🐛 Troubleshooting
 
 ### "Pyodide initialization failed"
+
 - Check internet connection (needs CDN access)
 - Check console for specific error
 - Try restarting server
 
 ### "No ETFs match your investment criteria"
+
 - Profile too restrictive
 - Try removing some exclusions
 - Check `server/etfDatabase.ts` has enough ETFs
 
 ### "Optimization failed with status: infeasible"
+
 - Constraints are conflicting
 - Lower volatility cap is too tight
 - Region requirements too strict
 - Check console logs for details
 
 ### Slow first optimization
+
 - **This is normal!** Pyodide loads ~50MB on first use
 - Subsequent optimizations will be fast (1-2s)
 - Consider pre-warming at server startup (already done)
@@ -162,6 +178,7 @@ liquidityPenalty: 0.5, // Care less about liquidity
 ## 📈 Monitoring
 
 Watch the console for:
+
 ```
 ✅ Pyodide initialization complete
 ✅ Starting optimized portfolio generation...
@@ -176,15 +193,17 @@ Watch the console for:
 ## 🎨 Frontend Integration
 
 ### Add to Navigation
+
 In your main layout/navigation:
+
 ```tsx
-<Link to="/portfolio/optimize">
-  Optimize Portfolio
-</Link>
+<Link to="/portfolio/optimize">Optimize Portfolio</Link>
 ```
 
 ### Custom Styling
+
 The component uses shadcn/ui, so it respects your theme:
+
 - Light/dark mode support
 - Customizable colors
 - Responsive design
@@ -221,6 +240,7 @@ Your portfolio optimization system is fully operational. The math is sound, the 
 ---
 
 Need help? Check:
+
 - Console logs for detailed errors
 - `PORTFOLIO_OPTIMIZATION_README.md` for deep dive
 - Network tab for API responses
