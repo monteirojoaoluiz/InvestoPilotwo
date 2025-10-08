@@ -22,6 +22,7 @@ import { z } from "zod";
 
 import { pool } from "./db";
 import { storage } from "./storage";
+import { warmupPyodide } from "./portfolioOptimizerPyodide";
 
 const groqClient = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
@@ -1087,6 +1088,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (error) {
         console.error("Error fetching risk assessment:", error);
         res.status(500).json({ message: "Failed to fetch risk assessment" });
+      }
+    },
+  );
+
+  // Optimized Portfolio Generation (using CVXPY via Pyodide)
+  app.post(
+    "/api/portfolio/optimize",
+    isAuthenticated,
+    async (req: Request, res: Response) => {
+      try {
+        const userId = (req.user as any).id;
+        const assessment = await storage.getRiskAssessmentByUserId(userId);
+
+        if (!assessment) {
+          return res
+            .status(400)
+            .json({ message: "Please complete risk assessment first" });
+        }
+
+        console.log("Starting optimized portfolio generation...");
+
+        // Import optimization modules
+        const { assessmentToRiskProfile, mapRiskProfileToParams, adjustParamsForEdgeCases } = 
+          await import("./portfolioMapping");
+        const { getETFUniverse } = await import("./etfDatabase");
+        const { filterETFsByConstraints, computePortfolioStatistics } = 
+          await import("./portfolioStatistics");
+        const { optimizePortfolioWithPyodide } = 
+          await import("./portfolioOptimizerPyodide");
+
+        // Convert assessment to risk profile
+        const riskProfile = assessmentToRiskProfile(assessment.answers);
+        console.log("Risk profile:", riskProfile);
+
+        // Map to optimization parameters
+        let params = mapRiskProfileToParams(riskProfile);
+        params = adjustParamsForEdgeCases(params, riskProfile);
+        console.log("Optimization parameters:", params);
+
+        // Get ETF universe
+        const allETFs = getETFUniverse();
+        console.log(`Total ETFs in universe: ${allETFs.length}`);
+
+        // Filter ETFs by constraints
+        const filteredETFs = filterETFsByConstraints(
+          allETFs,
+          params,
+          riskProfile.industryExclusions
+        );
+        console.log(`Filtered ETFs: ${filteredETFs.length}`);
+
+        if (filteredETFs.length === 0) {
+          return res.status(400).json({
+            message: "No ETFs match your investment criteria. Please adjust your preferences.",
+          });
+        }
+
+        // Compute statistics
+        const stats = computePortfolioStatistics(
+          filteredETFs,
+          params,
+          riskProfile.industryExclusions
+        );
+        console.log("Computed portfolio statistics");
+
+        // Run optimization
+        const optimizedPortfolio = await optimizePortfolioWithPyodide(
+          filteredETFs,
+          stats,
+          params,
+          riskProfile.industryExclusions
+        );
+        console.log("Optimization complete:", optimizedPortfolio);
+
+        // Convert to storage format
+        const allocations = optimizedPortfolio.etfDetails.map(etf => ({
+          ticker: etf.ticker,
+          name: etf.name,
+          percentage: Math.round(etf.weight * 100 * 100) / 100, // Round to 2 decimals
+          assetType: filteredETFs.find(e => e.ticker === etf.ticker)?.assetClass || 'equity',
+        }));
+
+        // Store portfolio
+        const portfolio = await storage.createPortfolioRecommendation({
+          userId,
+          riskAssessmentId: assessment.id,
+          allocations,
+          totalValue: 0,
+          totalReturn: Math.round(optimizedPortfolio.expectedReturn * 100 * 100), // Store as basis points
+        });
+
+        res.json({
+          ...portfolio,
+          optimization: {
+            expectedReturn: optimizedPortfolio.expectedReturn,
+            expectedVolatility: optimizedPortfolio.expectedVolatility,
+            sharpeRatio: optimizedPortfolio.sharpeRatio,
+            regionExposure: optimizedPortfolio.regionExposure,
+            totalFees: optimizedPortfolio.totalFees,
+            constraints: optimizedPortfolio.constraints,
+          },
+        });
+      } catch (error) {
+        console.error("Error optimizing portfolio:", error);
+        res.status(500).json({ 
+          message: "Failed to optimize portfolio",
+          error: error instanceof Error ? error.message : String(error)
+        });
       }
     },
   );
