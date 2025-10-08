@@ -331,8 +331,8 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 p-4 relative">
+        <div className="space-y-4 pb-20">
           {messages.map((msg: Message) => (
             <div
               key={msg.id}
@@ -371,25 +371,6 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
             </div>
           ))}
           
-          {/* Streaming AI message */}
-          {isStreaming && streamingMessage && (
-            <div className="flex gap-3 justify-start animate-in fade-in duration-200">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
-                <Bot className="h-4 w-4" />
-              </div>
-              <div className="max-w-[85%] sm:max-w-[80%] rounded-lg p-3 bg-muted">
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingMessage}</ReactMarkdown>
-                </div>
-                <div className="flex items-center gap-1 mt-2">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {isLoading && !isStreaming && (
             <div className="flex gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
@@ -405,6 +386,27 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
             </div>
           )}
         </div>
+        
+        {/* Sticky Streaming AI message */}
+        {isStreaming && streamingMessage && (
+          <div className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t shadow-lg p-4 animate-in fade-in duration-200 z-10">
+            <div className="flex gap-3 justify-start">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
+                <Bot className="h-4 w-4" />
+              </div>
+              <div className="max-w-[85%] sm:max-w-[80%] rounded-lg p-3 bg-muted">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingMessage}</ReactMarkdown>
+                </div>
+                <div className="flex items-center gap-1 mt-2">
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </ScrollArea>
 
       <div className="p-4 border-t overflow-hidden relative">

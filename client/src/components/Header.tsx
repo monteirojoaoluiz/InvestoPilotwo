@@ -9,9 +9,10 @@ interface HeaderProps {
   onGetStartedClick?: () => void;
   onMenuClick?: () => void;
   showMenuButton?: boolean;
+  forceLogo?: string;
 }
 
-export default function Header({ onSignInClick, onGetStartedClick, onMenuClick, showMenuButton = false }: HeaderProps) {
+export default function Header({ onSignInClick, onGetStartedClick, onMenuClick, showMenuButton = false, forceLogo }: HeaderProps) {
   const [isDark, setIsDark] = useState(() => {
     return document.documentElement.classList.contains('dark');
   });
@@ -46,10 +47,10 @@ export default function Header({ onSignInClick, onGetStartedClick, onMenuClick, 
           )}
           <div className="flex items-center gap-2">
             <img 
-              src={isDark ? darkLogo : lightLogo} 
+              src={forceLogo || (isDark ? darkLogo : lightLogo)} 
               alt="Stack16 Logo" 
               className="h-8 w-8 rounded-lg"
-              key={isDark ? 'dark' : 'light'}
+              key={forceLogo ? 'forced' : (isDark ? 'dark' : 'light')}
             />
             <span className="text-xl font-semibold">Stack16</span>
           </div>

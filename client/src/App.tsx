@@ -24,9 +24,10 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import { TrendingUp, Clock, Heart, MapPin, Target, LogOut, Download, Trash2, Shield, Calendar, BookOpen, Globe, Filter } from "lucide-react";
+import { TrendingUp, Clock, Heart, MapPin, Target, LogOut, Download, Trash2, Shield, Calendar, BookOpen, Globe, Filter, ExternalLink } from "lucide-react";
 import lightHeaderLogo from "@assets/generated_images/White Favicon.png";
 import darkHeaderLogo from "@assets/generated_images/Dark Favicon.png";
+import whiteLogo from "@assets/generated_images/White Favicon.png";
 
 // Hooks
 import { useAuth } from "./hooks/useAuth";
@@ -263,6 +264,43 @@ function Dashboard() {
   return (
     <div className="p-4 sm:p-6 w-full min-w-0 max-w-full overflow-x-hidden">
       <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 break-words">Stack16 Dashboard</h1>
+      
+      {/* Investment Disclaimer Banner */}
+      <Card className="mb-6 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+        <CardHeader className="pb-3">
+          <div className="flex items-start gap-3">
+            <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <CardTitle className="text-base text-amber-900 dark:text-amber-100">
+                Important Investment Disclosure
+              </CardTitle>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-amber-900/90 dark:text-amber-100/90">
+            <strong>Not Financial Advice:</strong> The information provided on this platform is for educational and informational purposes only and does not constitute financial, investment, or professional advice.
+          </p>
+          <p className="text-amber-900/90 dark:text-amber-100/90">
+            <strong>Investment Risk Warning:</strong> All investments carry risk, including the potential loss of principal. Past performance does not guarantee future results. Volatile assets may experience significant price fluctuations.
+          </p>
+          <p className="text-amber-900/90 dark:text-amber-100/90">
+            <strong>Do Your Own Research:</strong> Before making any investment decisions, consult with a qualified financial advisor and conduct your own due diligence.
+          </p>
+          <div className="flex items-center gap-2 pt-2 border-t border-amber-200 dark:border-amber-800">
+            <a 
+              href="https://www.investor.gov/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-amber-700 dark:text-amber-300 hover:underline text-xs flex items-center gap-1"
+            >
+              SEC Investor Resources
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </CardContent>
+      </Card>
+
       {hasAssessmentButNoPortfolio && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-800 mb-2">Your investor profile is complete, but no portfolio has been generated yet.</p>
@@ -1319,7 +1357,7 @@ function Router() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header onSignInClick={openLoginModal} onGetStartedClick={openRegisterModal} showMenuButton={false} />
+      <Header onSignInClick={openLoginModal} onGetStartedClick={openRegisterModal} showMenuButton={false} forceLogo={whiteLogo} />
       <main className="flex-1">
         <Switch>
           <Route path="/">

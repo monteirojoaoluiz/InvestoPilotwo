@@ -173,7 +173,7 @@ export default function ETFCatalog() {
   // UI state - with localStorage persistence
   const [filtersCollapsed, setFiltersCollapsed] = useState(() => {
     const saved = localStorage.getItem('etf-catalog-filters-collapsed');
-    return saved ? JSON.parse(saved) : false;
+    return saved ? JSON.parse(saved) : true;
   });
   
   // Favorites state - with localStorage persistence
