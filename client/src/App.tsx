@@ -60,7 +60,7 @@ import AuthModal from "./components/AuthModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Header from "./components/Header";
 import LandingPage from "./components/LandingPage";
-import PortfolioChat from "./components/PortfolioChat";
+import { PortfolioChat } from "./components/chat";
 import RiskAssessment from "./components/RiskAssessment";
 // Components
 import { ThemeProvider } from "./components/ThemeProvider";
