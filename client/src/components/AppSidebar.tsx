@@ -72,6 +72,13 @@ export default function AppSidebar() {
 
   const hasAssessment = !!assessment;
 
+  // Handler to close sidebar on mobile when a menu item is clicked
+  const handleMenuItemClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <TooltipProvider>
       <Sidebar collapsible="icon">
@@ -122,7 +129,7 @@ export default function AppSidebar() {
                         asChild
                         isActive={location === item.url}
                       >
-                        <Link href={item.url}>
+                        <Link href={item.url} onClick={handleMenuItemClick}>
                           <a
                             className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
                             data-testid={item.testId}
@@ -149,7 +156,7 @@ export default function AppSidebar() {
                 {accountItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={location === item.url}>
-                      <Link href={item.url}>
+                      <Link href={item.url} onClick={handleMenuItemClick}>
                         <a
                           className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
                           data-testid={item.testId}
