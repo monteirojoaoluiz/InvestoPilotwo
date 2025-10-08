@@ -1,41 +1,30 @@
-import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { Switch, Route, useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query'; // Add useQuery
-import { queryClient } from './lib/queryClient';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button'; // Add Button import
+import { Button } from "@/components/ui/button";
+// Add Button import
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from 'recharts';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
+import NotFound from "@/pages/not-found";
+import darkHeaderLogo from "@assets/generated_images/Dark Favicon.png";
+import lightHeaderLogo from "@assets/generated_images/White Favicon.png";
+import { useQuery } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   TrendingUp,
   Clock,
@@ -50,28 +39,40 @@ import {
   BookOpen,
   Globe,
   Filter,
-} from 'lucide-react';
-import lightHeaderLogo from '@assets/generated_images/White Favicon.png';
-import darkHeaderLogo from '@assets/generated_images/Dark Favicon.png';
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
+import { Switch, Route, useLocation } from "wouter";
 
-// Hooks
-import { useAuth } from './hooks/useAuth';
-import { apiRequest } from './lib/queryClient';
-import { humanizeProfile } from './lib/profileHumanizer';
-
+import AppSidebar from "./components/AppSidebar";
+import AuthModal from "./components/AuthModal";
+import ErrorBoundary from "./components/ErrorBoundary";
+import Header from "./components/Header";
+import LandingPage from "./components/LandingPage";
+import PortfolioChat from "./components/PortfolioChat";
+import RiskAssessment from "./components/RiskAssessment";
 // Components
-import { ThemeProvider } from './components/ThemeProvider';
-import { ThemeToggle } from './components/ThemeToggle';
-import Header from './components/Header';
-import LandingPage from './components/LandingPage';
-import AppSidebar from './components/AppSidebar';
-import RiskAssessment from './components/RiskAssessment';
-import PortfolioChat from './components/PortfolioChat';
-import NotFound from '@/pages/not-found';
-import ETFCatalog from './pages/etf-catalog';
-import AuthModal from './components/AuthModal';
-import ErrorBoundary from './components/ErrorBoundary';
-import ResetPassword from './pages/reset-password';
+import { ThemeProvider } from "./components/ThemeProvider";
+import { ThemeToggle } from "./components/ThemeToggle";
+// Hooks
+import { useAuth } from "./hooks/useAuth";
+import { humanizeProfile } from "./lib/profileHumanizer";
+// Add useQuery
+import { queryClient } from "./lib/queryClient";
+import { apiRequest } from "./lib/queryClient";
+import ETFCatalog from "./pages/etf-catalog";
+import ResetPassword from "./pages/reset-password";
 
 function Dashboard() {
   const [location] = useLocation();
@@ -79,8 +80,8 @@ function Dashboard() {
   // Force scroll to top and prevent any scrolling behavior
   useEffect(() => {
     // Disable scroll restoration
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
     }
 
     // Multiple scroll attempts with increasing delays
@@ -103,8 +104,8 @@ function Dashboard() {
     const cleanup = setTimeout(() => {
       clearInterval(interval);
       // Re-enable scroll restoration
-      if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'auto';
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "auto";
       }
     }, 1000);
 
@@ -113,17 +114,17 @@ function Dashboard() {
       clearInterval(interval);
       clearTimeout(cleanup);
       // Re-enable scroll restoration
-      if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'auto';
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "auto";
       }
     };
   }, [location]);
 
   const { data: portfolioData, refetch: refetchPortfolio } = useQuery({
-    queryKey: ['/api/portfolio'],
+    queryKey: ["/api/portfolio"],
     queryFn: async () => {
-      const res = await apiRequest('GET', '/api/portfolio');
-      if (!res.ok) throw new Error('Failed to fetch portfolio');
+      const res = await apiRequest("GET", "/api/portfolio");
+      if (!res.ok) throw new Error("Failed to fetch portfolio");
       return res.json();
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -131,10 +132,10 @@ function Dashboard() {
   });
 
   const { data: assessmentData, refetch: refetchAssessment } = useQuery({
-    queryKey: ['/api/risk-assessment'],
+    queryKey: ["/api/risk-assessment"],
     queryFn: async () => {
-      const res = await apiRequest('GET', '/api/risk-assessment');
-      if (!res.ok) throw new Error('Failed to fetch assessment');
+      const res = await apiRequest("GET", "/api/risk-assessment");
+      if (!res.ok) throw new Error("Failed to fetch assessment");
       return res.json();
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -147,10 +148,10 @@ function Dashboard() {
     points: { date: string; value: number }[];
     warning?: string;
   } | null>({
-    queryKey: ['/api/portfolio/performance', portfolioId || 'default'],
+    queryKey: ["/api/portfolio/performance", portfolioId || "default"],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/portfolio/performance`);
-      if (!res.ok) throw new Error('Failed to fetch portfolio performance');
+      const res = await apiRequest("GET", `/api/portfolio/performance`);
+      if (!res.ok) throw new Error("Failed to fetch portfolio performance");
       return res.json();
     },
     enabled: !!portfolioData, // Only fetch when portfolio exists
@@ -169,8 +170,8 @@ function Dashboard() {
       const lastVal = pts[pts.length - 1]?.value;
 
       if (
-        typeof firstVal !== 'number' ||
-        typeof lastVal !== 'number' ||
+        typeof firstVal !== "number" ||
+        typeof lastVal !== "number" ||
         firstVal <= 0
       ) {
         return null;
@@ -184,8 +185,8 @@ function Dashboard() {
         const prev = pts[i - 1]?.value;
         const cur = pts[i]?.value;
         if (
-          typeof prev === 'number' &&
-          typeof cur === 'number' &&
+          typeof prev === "number" &&
+          typeof cur === "number" &&
           prev > 0 &&
           cur > 0
         ) {
@@ -199,7 +200,7 @@ function Dashboard() {
         dailyReturns.length > 1
           ? dailyReturns.reduce(
               (sum, r) => sum + Math.pow(r - meanDaily, 2),
-              0
+              0,
             ) /
             (dailyReturns.length - 1)
           : 0;
@@ -211,7 +212,7 @@ function Dashboard() {
       // Gains per calendar year (for last up to 3 years in series)
       const yearMap = new Map<number, { first?: number; last?: number }>();
       for (const p of pts) {
-        if (!p?.date || typeof p.value !== 'number') continue;
+        if (!p?.date || typeof p.value !== "number") continue;
         try {
           const y = new Date(p.date).getFullYear();
           const entry = yearMap.get(y) || {};
@@ -247,7 +248,7 @@ function Dashboard() {
         yearlyAvgGain,
       };
     } catch (error) {
-      console.error('Error calculating metrics:', error);
+      console.error("Error calculating metrics:", error);
       return null;
     }
   }, [combined?.points]);
@@ -257,26 +258,26 @@ function Dashboard() {
 
   const handleGeneratePortfolio = async () => {
     try {
-      const res = await apiRequest('POST', '/api/portfolio/generate');
+      const res = await apiRequest("POST", "/api/portfolio/generate");
       if (!res.ok) {
         throw new Error(`Failed to generate: ${res.statusText}`);
       }
       const newPortfolio = await res.json();
       if (!newPortfolio) {
-        throw new Error('Invalid portfolio data received');
+        throw new Error("Invalid portfolio data received");
       }
       await refetchPortfolio();
       toast({
-        title: 'Portfolio Generated!',
-        description: 'Your recommendations are now available.',
+        title: "Portfolio Generated!",
+        description: "Your recommendations are now available.",
       });
     } catch (error) {
-      console.error('Portfolio generation error:', error);
+      console.error("Portfolio generation error:", error);
       toast({
-        title: 'Failed to Generate',
+        title: "Failed to Generate",
         description:
-          error instanceof Error ? error.message : 'Please try again.',
-        variant: 'destructive',
+          error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -286,22 +287,22 @@ function Dashboard() {
   const riskScore = assessmentData?.riskTolerance
     ? assessmentData.riskTolerance.charAt(0).toUpperCase() +
       assessmentData.riskTolerance.slice(1)
-    : 'Not Assessed';
+    : "Not Assessed";
 
   const hasAssessmentButNoPortfolio = assessmentData && !portfolioData;
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedTicker, setSelectedTicker] = useState('');
+  const [selectedTicker, setSelectedTicker] = useState("");
 
   const { data: etfInfo } = useQuery({
-    queryKey: ['/api/etf', selectedTicker, 'info'],
+    queryKey: ["/api/etf", selectedTicker, "info"],
     queryFn: async () => {
       try {
-        const res = await apiRequest('GET', `/api/etf/${selectedTicker}/info`);
-        if (!res.ok) throw new Error('Failed to fetch ETF info');
+        const res = await apiRequest("GET", `/api/etf/${selectedTicker}/info`);
+        if (!res.ok) throw new Error("Failed to fetch ETF info");
         return res.json();
       } catch (error) {
-        console.error('Error fetching ETF info:', error);
+        console.error("Error fetching ETF info:", error);
         throw error;
       }
     },
@@ -311,25 +312,25 @@ function Dashboard() {
   });
 
   return (
-    <div className="p-4 sm:p-6 w-full min-w-0 max-w-full overflow-x-hidden">
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 break-words">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden p-4 sm:p-6">
+      <h1 className="mb-4 break-words text-xl font-bold sm:mb-6 sm:text-2xl lg:text-3xl">
         Stack16 Dashboard
       </h1>
       {hasAssessmentButNoPortfolio && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-blue-800 mb-2">
+        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <p className="mb-2 text-blue-800">
             Your investor profile is complete, but no portfolio has been
             generated yet.
           </p>
           <Button onClick={handleGeneratePortfolio} className="mr-2">
             Generate Portfolio Now
           </Button>
-          <Button variant="outline" onClick={() => navigate('/dashboard')}>
+          <Button variant="outline" onClick={() => navigate("/dashboard")}>
             View Dashboard
           </Button>
         </div>
       )}
-      <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-full min-w-0">
+      <div className="grid w-full min-w-0 max-w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl lg:text-2xl">
@@ -344,14 +345,14 @@ function Dashboard() {
             {assessmentData && assessmentData.investorProfile ? (
               (() => {
                 const humanized = humanizeProfile(
-                  assessmentData.investorProfile
+                  assessmentData.investorProfile,
                 );
                 return (
                   <div className="grid gap-4">
-                    <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                      <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-900/20">
+                      <TrendingUp className="h-5 w-5 flex-shrink-0 text-orange-600 dark:text-orange-400" />
                       <div className="flex-1">
-                        <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">
+                        <div className="text-xs font-medium uppercase tracking-wide text-orange-700 dark:text-orange-300">
                           Risk Tolerance
                         </div>
                         <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">
@@ -360,10 +361,10 @@ function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                      <Shield className="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
                       <div className="flex-1">
-                        <div className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                        <div className="text-xs font-medium uppercase tracking-wide text-blue-700 dark:text-blue-300">
                           Risk Capacity
                         </div>
                         <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">
@@ -372,10 +373,10 @@ function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                      <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 p-3 dark:border-purple-800 dark:bg-purple-900/20">
+                      <Calendar className="h-5 w-5 flex-shrink-0 text-purple-600 dark:text-purple-400" />
                       <div className="flex-1">
-                        <div className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">
+                        <div className="text-xs font-medium uppercase tracking-wide text-purple-700 dark:text-purple-300">
                           Investment Horizon
                         </div>
                         <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">
@@ -384,10 +385,10 @@ function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <BookOpen className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+                      <BookOpen className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
                       <div className="flex-1">
-                        <div className="text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wide">
+                        <div className="text-xs font-medium uppercase tracking-wide text-green-700 dark:text-green-300">
                           Investor Experience
                         </div>
                         <div className="text-sm font-semibold text-green-900 dark:text-green-100">
@@ -396,10 +397,10 @@ function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                      <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-900/20">
+                      <Globe className="h-5 w-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
                       <div className="flex-1">
-                        <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
+                        <div className="text-xs font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
                           Geographic Focus
                         </div>
                         <div className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
@@ -408,10 +409,10 @@ function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                      <Filter className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+                      <Filter className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
                       <div className="flex-1">
-                        <div className="text-xs font-medium text-amber-700 dark:text-amber-300 uppercase tracking-wide">
+                        <div className="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
                           Industry Exclusions
                         </div>
                         <div className="text-sm font-semibold text-amber-900 dark:text-amber-100">
@@ -423,9 +424,9 @@ function Dashboard() {
                 );
               })()
             ) : (
-              <div className="text-center py-8">
-                <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground mb-2">
+              <div className="py-8 text-center">
+                <Target className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <p className="mb-2 text-muted-foreground">
                   No investor profile found
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -450,19 +451,19 @@ function Dashboard() {
             {portfolioData ? (
               <div className="flex flex-col items-center gap-6">
                 {/* Donut Chart */}
-                <div className="flex-shrink-0 w-full max-w-[220px] sm:max-w-[200px] mx-auto">
+                <div className="mx-auto w-full max-w-[220px] flex-shrink-0 sm:max-w-[200px]">
                   <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
                       <Pie
                         data={(portfolioData.allocations || [])?.map(
                           (a: any) => ({
-                            name: a?.ticker || a?.name || 'Unknown',
+                            name: a?.ticker || a?.name || "Unknown",
                             value:
-                              typeof a?.percentage === 'number'
+                              typeof a?.percentage === "number"
                                 ? a.percentage
                                 : 0,
-                            color: a?.color || '#8884d8',
-                          })
+                            color: a?.color || "#8884d8",
+                          }),
                         )}
                         cx="50%"
                         cy="50%"
@@ -476,13 +477,13 @@ function Dashboard() {
                           (entry: any, index: number) => (
                             <Cell
                               key={`cell-${index}`}
-                              fill={entry?.color || '#8884d8'}
+                              fill={entry?.color || "#8884d8"}
                             />
-                          )
+                          ),
                         )}
                       </Pie>
                       <Tooltip
-                        formatter={(value: any) => [`${value}%`, 'Allocation']}
+                        formatter={(value: any) => [`${value}%`, "Allocation"]}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -494,7 +495,7 @@ function Dashboard() {
                     (a: any, index: number) => (
                       <div
                         key={`${a?.ticker || a?.name || `allocation-${index}`}`}
-                        className="flex items-center justify-between py-2 cursor-pointer hover:bg-muted/50 rounded"
+                        className="flex cursor-pointer items-center justify-between rounded py-2 hover:bg-muted/50"
                         onClick={() => {
                           if (a?.ticker) {
                             setSelectedTicker(a.ticker);
@@ -502,36 +503,36 @@ function Dashboard() {
                           }
                         }}
                       >
-                        <div className="flex items-center gap-3 flex-1">
+                        <div className="flex flex-1 items-center gap-3">
                           <div
-                            className="w-4 h-4 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: a?.color || '#8884d8' }}
+                            className="h-4 w-4 flex-shrink-0 rounded-full"
+                            style={{ backgroundColor: a?.color || "#8884d8" }}
                           />
                           <div>
-                            <div className="font-semibold text-sm">
-                              {a?.ticker || a?.name || 'Unknown'}
+                            <div className="text-sm font-semibold">
+                              {a?.ticker || a?.name || "Unknown"}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              {a?.assetType || 'ETF'}
+                              {a?.assetType || "ETF"}
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-sm">
-                            {typeof a?.percentage === 'number'
+                          <div className="text-sm font-semibold">
+                            {typeof a?.percentage === "number"
                               ? a.percentage
                               : 0}
                             %
                           </div>
                         </div>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8">
-                <div className="text-muted-foreground mb-2">
+              <div className="py-8 text-center">
+                <div className="mb-2 text-muted-foreground">
                   No portfolio recommendations yet
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -554,32 +555,32 @@ function Dashboard() {
               <div className="space-y-6">
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                    <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/50">
+                    <div className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-400">
                       Total Return
                     </div>
                     <div
-                      className={`text-2xl font-bold ${metrics.totalGainPct >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      className={`text-2xl font-bold ${metrics.totalGainPct >= 0 ? "text-green-600" : "text-red-600"}`}
                     >
-                      {metrics.totalGainPct >= 0 ? '+' : ''}
+                      {metrics.totalGainPct >= 0 ? "+" : ""}
                       {metrics.totalGainPct.toFixed(1)}%
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                    <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/50">
+                    <div className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-400">
                       Avg Annual
                     </div>
                     <div
-                      className={`text-2xl font-bold ${metrics.yearlyAvgGain >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      className={`text-2xl font-bold ${metrics.yearlyAvgGain >= 0 ? "text-green-600" : "text-red-600"}`}
                     >
-                      {metrics.yearlyAvgGain >= 0 ? '+' : ''}
+                      {metrics.yearlyAvgGain >= 0 ? "+" : ""}
                       {metrics.yearlyAvgGain.toFixed(1)}%
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                    <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/50">
+                    <div className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-400">
                       Volatility
                     </div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -587,8 +588,8 @@ function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-center">
-                    <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/50">
+                    <div className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-400">
                       Sharpe Ratio
                     </div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -599,36 +600,36 @@ function Dashboard() {
 
                 {/* Annual Performance Timeline */}
                 <div className="border-t pt-4">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
+                  <h4 className="mb-4 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">
                     Annual Performance
                   </h4>
                   <div className="space-y-4">
                     {metrics.gainsPerYear.map((g) => (
                       <div
                         key={g.year}
-                        className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+                        className="flex items-center justify-between rounded-lg bg-gray-50 p-2 dark:bg-gray-800/50"
                       >
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 w-12 text-center">
+                        <div className="flex min-w-0 flex-1 items-center gap-3">
+                          <div className="w-12 text-center text-sm font-medium text-gray-700 dark:text-gray-300">
                             {g.year}
                           </div>
-                          <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative overflow-hidden">
+                          <div className="relative h-3 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                             <div
-                              className={`h-full rounded-full transition-all duration-500 ${g.gainPct >= 0 ? 'bg-green-500' : 'bg-red-500'}`}
+                              className={`h-full rounded-full transition-all duration-500 ${g.gainPct >= 0 ? "bg-green-500" : "bg-red-500"}`}
                               style={{
                                 width: `${Math.min(Math.abs(g.gainPct) * 3, 100)}%`,
                                 marginLeft:
                                   g.gainPct < 0
                                     ? `${100 - Math.min(Math.abs(g.gainPct) * 3, 100)}%`
-                                    : '0%',
+                                    : "0%",
                               }}
                             />
                           </div>
                         </div>
                         <div
-                          className={`text-sm font-bold w-16 text-right ${g.gainPct >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                          className={`w-16 text-right text-sm font-bold ${g.gainPct >= 0 ? "text-green-600" : "text-red-600"}`}
                         >
-                          {g.gainPct >= 0 ? '+' : ''}
+                          {g.gainPct >= 0 ? "+" : ""}
                           {g.gainPct.toFixed(1)}%
                         </div>
                       </div>
@@ -647,7 +648,7 @@ function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 Complete your portfolio to see performance metrics
               </p>
             </CardContent>
@@ -655,7 +656,7 @@ function Dashboard() {
         )}
       </div>
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl w-[95vw] max-h-[85vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="max-h-[85vh] w-[95vw] max-w-2xl overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>{selectedTicker} Details</DialogTitle>
           </DialogHeader>
@@ -667,7 +668,7 @@ function Dashboard() {
               </div>
               <div>
                 <h3 className="font-semibold">Category</h3>
-                <p>{etfInfo?.category || 'N/A'}</p>
+                <p>{etfInfo?.category || "N/A"}</p>
               </div>
               {etfInfo?.summaryProfile?.longBusinessSummary && (
                 <div>
@@ -682,12 +683,12 @@ function Dashboard() {
                 <p>
                   {etfInfo?.summaryDetail?.annualReportExpenseRatio
                     ? `${(etfInfo.summaryDetail.annualReportExpenseRatio * 100).toFixed(2)}%`
-                    : 'N/A (not available via current API)'}
+                    : "N/A (not available via current API)"}
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold">Top 10 Holdings</h3>
-                <p className="text-sm text-muted-foreground italic">
+                <p className="text-sm italic text-muted-foreground">
                   Detailed holdings data not available via current API. Please
                   refer to the ETF provider's website for complete holdings
                   information.
@@ -695,7 +696,7 @@ function Dashboard() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               <p>Loading ETF details...</p>
             </div>
           )}
@@ -712,7 +713,7 @@ function Dashboard() {
               <CardDescription>
                 Normalized index (100 = start)
                 {combined?.warning && (
-                  <div className="mt-2 text-amber-600 dark:text-amber-400 text-sm">
+                  <div className="mt-2 text-sm text-amber-600 dark:text-amber-400">
                     ⚠️ {combined.warning}
                   </div>
                 )}
@@ -724,15 +725,15 @@ function Dashboard() {
                   <LineChart data={combined?.points || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
-                      dataKey={'date'}
+                      dataKey={"date"}
                       tickFormatter={(dateStr) => {
                         try {
-                          if (!dateStr) return '';
+                          if (!dateStr) return "";
                           const date = new Date(dateStr);
-                          if (isNaN(date.getTime())) return '';
+                          if (isNaN(date.getTime())) return "";
                           return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(-2)}`;
                         } catch {
-                          return '';
+                          return "";
                         }
                       }}
                       interval="preserveStartEnd"
@@ -742,26 +743,26 @@ function Dashboard() {
                       height={60}
                       className="text-xs"
                     />
-                    <YAxis domain={['auto', 'auto']} />
+                    <YAxis domain={["auto", "auto"]} />
                     <Tooltip
                       labelFormatter={(dateStr) => {
                         try {
-                          if (!dateStr) return '';
+                          if (!dateStr) return "";
                           const date = new Date(dateStr);
-                          if (isNaN(date.getTime())) return '';
-                          return date.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
+                          if (isNaN(date.getTime())) return "";
+                          return date.toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
                           });
                         } catch {
-                          return '';
+                          return "";
                         }
                       }}
                     />
                     <Line
                       type="monotone"
-                      dataKey={'value'}
+                      dataKey={"value"}
                       stroke="#8884d8"
                       dot={false}
                     />
@@ -777,13 +778,13 @@ function Dashboard() {
       )}
 
       {portfolioData === null && !hasAssessmentButNoPortfolio && (
-        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mt-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <p className="text-yellow-800">
             No portfolio available. Start by completing your investor profile.
           </p>
           <Button
             variant="outline"
-            onClick={() => navigate('/assessment')}
+            onClick={() => navigate("/assessment")}
             className="mt-2"
           >
             Build Profile
@@ -801,14 +802,14 @@ function Assessment() {
   const handleAssessmentComplete = async () => {
     try {
       // Generate portfolio based on assessment
-      const res = await apiRequest('POST', '/api/portfolio/generate');
+      const res = await apiRequest("POST", "/api/portfolio/generate");
       if (!res.ok) {
         throw new Error(`Failed to generate portfolio: ${res.statusText}`);
       }
       const portfolio = await res.json();
 
       if (!portfolio) {
-        throw new Error('Invalid portfolio data received from server');
+        throw new Error("Invalid portfolio data received from server");
       }
 
       // Normalise allocations so the dashboard can render immediately
@@ -816,37 +817,37 @@ function Assessment() {
         ...portfolio,
         allocations: Array.isArray(portfolio.allocations)
           ? portfolio.allocations
-          : typeof portfolio.allocations === 'string'
+          : typeof portfolio.allocations === "string"
             ? JSON.parse(portfolio.allocations)
             : [],
       };
 
-      queryClient.setQueryData(['portfolio'], normalizedPortfolio);
-      await queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+      queryClient.setQueryData(["portfolio"], normalizedPortfolio);
+      await queryClient.invalidateQueries({ queryKey: ["portfolio"] });
       // Navigate to dashboard
-      navigate('/dashboard');
+      navigate("/dashboard");
 
       toast({
-        title: 'Portfolio Generated!',
-        description: 'Your personalized investment recommendations are ready.',
+        title: "Portfolio Generated!",
+        description: "Your personalized investment recommendations are ready.",
       });
     } catch (error) {
-      console.error('Failed to generate portfolio:', error);
+      console.error("Failed to generate portfolio:", error);
       toast({
-        title: 'Generation Failed',
+        title: "Generation Failed",
         description:
           error instanceof Error
             ? error.message
-            : 'Please try again or contact support.',
-        variant: 'destructive',
+            : "Please try again or contact support.",
+        variant: "destructive",
       });
       // Still navigate to dashboard even if portfolio generation fails
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
   };
 
   return (
-    <div className="p-6 w-full min-w-0 max-w-full overflow-x-hidden">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden p-6">
       <RiskAssessment onComplete={handleAssessmentComplete} />
     </div>
   );
@@ -861,34 +862,34 @@ function ETFCatalogPage() {
   useEffect(() => {
     const updateCompactState = () => {
       try {
-        if (typeof window === 'undefined') return;
+        if (typeof window === "undefined") return;
         const width = window.innerWidth;
         // Force sidebar closed on mobile (< 768px) and tablet (768-1024px)
         const shouldBeCompact = width < 1024;
         console.log(
-          'Screen width:',
+          "Screen width:",
           width,
-          'Compact sidebar:',
+          "Compact sidebar:",
           shouldBeCompact,
-          'User agent:',
-          navigator.userAgent
+          "User agent:",
+          navigator.userAgent,
         );
         setIsCompactSidebar(shouldBeCompact);
       } catch (error) {
-        console.error('Error updating compact sidebar state:', error);
+        console.error("Error updating compact sidebar state:", error);
       }
     };
 
     updateCompactState();
-    window.addEventListener('resize', updateCompactState);
-    return () => window.removeEventListener('resize', updateCompactState);
+    window.addEventListener("resize", updateCompactState);
+    return () => window.removeEventListener("resize", updateCompactState);
   }, []);
 
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />
-      <div className="flex flex-col flex-1 min-w-0 max-w-full overflow-x-hidden">
-        <main className="flex-1 overflow-auto w-full max-w-full min-h-0">
+      <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-x-hidden">
+        <main className="min-h-0 w-full max-w-full flex-1 overflow-auto">
           <ErrorBoundary>
             <ETFCatalog />
           </ErrorBoundary>
@@ -908,16 +909,16 @@ function Account() {
     createdAt: string;
     lastLogin?: string;
   }>({
-    queryKey: ['/api/auth/user'],
+    queryKey: ["/api/auth/user"],
   });
 
   const { data: assessment } = useQuery<{ investorProfile: any }>({
-    queryKey: ['/api/risk-assessment'],
+    queryKey: ["/api/risk-assessment"],
   });
 
   const formattedDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString()
-    : '—';
+    : "—";
   const profileDisplay = assessment?.investorProfile
     ? humanizeProfile(assessment.investorProfile)
     : null;
@@ -926,47 +927,47 @@ function Account() {
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-  const [currentPass, setCurrentPass] = useState('');
-  const [newPass, setNewPass] = useState('');
-  const [confirmPass, setConfirmPass] = useState('');
+  const [currentPass, setCurrentPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
 
   const [changeEmailOpen, setChangeEmailOpen] = useState(false);
-  const [newEmail, setNewEmail] = useState('');
+  const [newEmail, setNewEmail] = useState("");
 
   const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
+  const [deletePassword, setDeletePassword] = useState("");
 
   const [downloadDataLoading, setDownloadDataLoading] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get('success');
-    const error = urlParams.get('error');
+    const success = urlParams.get("success");
+    const error = urlParams.get("error");
 
-    if (success === 'email_changed') {
+    if (success === "email_changed") {
       toast({
-        title: 'Success',
-        description: 'Your email has been updated successfully.',
+        title: "Success",
+        description: "Your email has been updated successfully.",
       });
     } else if (error) {
-      let message = 'An error occurred.';
-      if (error === 'invalid_token')
-        message = 'Invalid or expired verification link.';
-      else if (error === 'no_token')
-        message = 'No verification token provided.';
-      else if (error === 'server_error')
-        message = 'Server error. Please try again.';
+      let message = "An error occurred.";
+      if (error === "invalid_token")
+        message = "Invalid or expired verification link.";
+      else if (error === "no_token")
+        message = "No verification token provided.";
+      else if (error === "server_error")
+        message = "Server error. Please try again.";
 
       toast({
-        title: 'Error',
+        title: "Error",
         description: message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
 
     // Clear params
     if (success || error) {
-      window.history.replaceState({}, '', window.location.pathname);
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
 
@@ -974,26 +975,26 @@ function Account() {
     e.preventDefault();
     if (newPass !== confirmPass) {
       toast({
-        title: 'Error',
-        description: 'New passwords do not match',
-        variant: 'destructive',
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
       });
       return;
     }
     if (!passwordRegex.test(newPass)) {
       toast({
-        title: 'Weak Password',
+        title: "Weak Password",
         description:
-          'New password must contain uppercase, lowercase, number, and special character',
-        variant: 'destructive',
+          "New password must contain uppercase, lowercase, number, and special character",
+        variant: "destructive",
       });
       return;
     }
     try {
-      const response = await fetch('/api/auth/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           currentPassword: currentPass,
           newPassword: newPass,
@@ -1002,21 +1003,21 @@ function Account() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to change password');
+        throw new Error(error.message || "Failed to change password");
       }
       toast({
-        title: 'Success',
-        description: 'Password changed successfully',
+        title: "Success",
+        description: "Password changed successfully",
       });
       setChangePasswordOpen(false);
-      setCurrentPass('');
-      setNewPass('');
-      setConfirmPass('');
+      setCurrentPass("");
+      setNewPass("");
+      setConfirmPass("");
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to change password',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to change password",
+        variant: "destructive",
       });
     }
   };
@@ -1024,29 +1025,29 @@ function Account() {
   const handleChangeEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth/change-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/auth/change-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ newEmail }),
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to request email change');
+        throw new Error(errorData.message || "Failed to request email change");
       }
       const data = await response.json();
       toast({
-        title: 'Email Change Requested',
+        title: "Email Change Requested",
         description:
-          data.message || 'Please check your new email for verification.',
+          data.message || "Please check your new email for verification.",
       });
       setChangeEmailOpen(false);
-      setNewEmail('');
+      setNewEmail("");
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to request email change',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to request email change",
+        variant: "destructive",
       });
     }
   };
@@ -1054,29 +1055,29 @@ function Account() {
   const handleDeleteAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth/delete-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/auth/delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ currentPassword: deletePassword }),
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete account');
+        throw new Error(errorData.message || "Failed to delete account");
       }
       toast({
-        title: 'Account Deleted',
-        description: 'Your account and all data have been permanently deleted.',
+        title: "Account Deleted",
+        description: "Your account and all data have been permanently deleted.",
       });
       setDeleteAccountOpen(false);
-      setDeletePassword('');
-      navigate('/');
+      setDeletePassword("");
+      navigate("/");
       window.location.reload(); // to clear session
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete account',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Failed to delete account",
+        variant: "destructive",
       });
     }
   };
@@ -1084,39 +1085,39 @@ function Account() {
   const handleDownloadData = async () => {
     setDownloadDataLoading(true);
     try {
-      const response = await fetch('/api/auth/download-data', {
-        method: 'GET',
-        credentials: 'include',
+      const response = await fetch("/api/auth/download-data", {
+        method: "GET",
+        credentials: "include",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to download data');
+        throw new Error("Failed to download data");
       }
 
       const data = await response.json();
 
       // Create and download JSON file
       const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json',
+        type: "application/json",
       });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `stack16-data-${data.user.email}-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `stack16-data-${data.user.email}-${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       toast({
-        title: 'Data Downloaded',
-        description: 'Your data has been downloaded successfully.',
+        title: "Data Downloaded",
+        description: "Your data has been downloaded successfully.",
       });
     } catch (error: any) {
       toast({
-        title: 'Download Failed',
-        description: error?.message || 'Please try again.',
-        variant: 'destructive',
+        title: "Download Failed",
+        description: error?.message || "Please try again.",
+        variant: "destructive",
       });
     } finally {
       setDownloadDataLoading(false);
@@ -1125,29 +1126,29 @@ function Account() {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
       });
       if (!res.ok) {
-        throw new Error('Failed to log out');
+        throw new Error("Failed to log out");
       }
-      navigate('/');
+      navigate("/");
       window.location.reload();
     } catch (error: any) {
       toast({
-        title: 'Logout Failed',
-        description: error?.message || 'Please try again.',
-        variant: 'destructive',
+        title: "Logout Failed",
+        description: error?.message || "Please try again.",
+        variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="p-6 w-full min-w-0 max-w-full overflow-x-hidden">
-      <h1 className="text-3xl font-bold mb-6 break-words">Account</h1>
-      <div className="max-w-6xl w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden p-6">
+      <h1 className="mb-6 break-words text-3xl font-bold">Account</h1>
+      <div className="w-full max-w-6xl">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
           <Card>
             <CardHeader>
               <CardTitle>Account Information</CardTitle>
@@ -1156,17 +1157,17 @@ function Account() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
                 <div className="flex-1">
                   <div className="text-sm font-medium text-blue-700 dark:text-blue-300">
                     Email
                   </div>
                   <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                    {user?.email || '—'}
+                    {user?.email || "—"}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+              <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
                 <div className="flex-1">
                   <div className="text-sm font-medium text-green-700 dark:text-green-300">
                     Member Since
@@ -1176,7 +1177,7 @@ function Account() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 p-3 dark:border-purple-800 dark:bg-purple-900/20">
                 <div className="flex-1">
                   <div className="text-sm font-medium text-purple-700 dark:text-purple-300">
                     Last Login
@@ -1184,7 +1185,7 @@ function Account() {
                   <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">
                     {user?.lastLogin
                       ? new Date(user.lastLogin).toLocaleString()
-                      : 'Never'}
+                      : "Never"}
                   </div>
                 </div>
               </div>
@@ -1199,7 +1200,7 @@ function Account() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
                 <div>
                   <div className="font-medium">Theme</div>
                   <div className="text-sm text-muted-foreground">
@@ -1215,7 +1216,7 @@ function Account() {
                   onOpenChange={setChangePasswordOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full mb-2">
+                    <Button variant="outline" className="mb-2 w-full">
                       Change Password
                     </Button>
                   </DialogTrigger>
@@ -1272,7 +1273,7 @@ function Account() {
                   onOpenChange={setChangeEmailOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full mb-2">
+                    <Button variant="outline" className="mb-2 w-full">
                       Change Email
                     </Button>
                   </DialogTrigger>
@@ -1303,7 +1304,7 @@ function Account() {
                 <Button
                   variant="outline"
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+                  className="flex w-full items-center gap-2 border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
                   data-testid="button-logout"
                 >
                   <LogOut className="h-4 w-4" />
@@ -1322,7 +1323,7 @@ function Account() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="border-t pt-4">
-                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                   <div>
                     <div className="font-medium">Download My Data</div>
                     <div className="text-sm text-muted-foreground">
@@ -1336,7 +1337,7 @@ function Account() {
                   >
                     {downloadDataLoading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         Downloading...
                       </>
                     ) : (
@@ -1356,7 +1357,7 @@ function Account() {
                 >
                   <DialogTrigger asChild>
                     <Button variant="destructive" className="w-full">
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="mr-2 h-4 w-4" />
                       Right to be Forgotten (Delete Account)
                     </Button>
                   </DialogTrigger>
@@ -1402,7 +1403,7 @@ function Account() {
                           variant="destructive"
                           className="w-full"
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          <Trash2 className="mr-2 h-4 w-4" />
                           Permanently Delete My Account
                         </Button>
                       </form>
@@ -1420,16 +1421,16 @@ function Account() {
 
 function AuthenticatedRouter() {
   const [isDark, setIsDark] = useState(() =>
-    document.documentElement.classList.contains('dark')
+    document.documentElement.classList.contains("dark"),
   );
   useEffect(() => {
     const updateTheme = () =>
-      setIsDark(document.documentElement.classList.contains('dark'));
+      setIsDark(document.documentElement.classList.contains("dark"));
     updateTheme();
     const observer = new MutationObserver(updateTheme);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class'],
+      attributeFilter: ["class"],
     });
     return () => observer.disconnect();
   }, []);
@@ -1438,28 +1439,28 @@ function AuthenticatedRouter() {
     investorProfile: any;
   }>({
     // Add useQuery for assessment
-    queryKey: ['/api/risk-assessment'],
+    queryKey: ["/api/risk-assessment"],
   });
 
   useEffect(() => {
     // Add useEffect for redirect
     if (!assessmentLoading) {
       // Allow access to account page even without assessment
-      const allowedPagesWithoutAssessment = ['/account', '/assessment'];
+      const allowedPagesWithoutAssessment = ["/account", "/assessment"];
 
       if (!assessment && !allowedPagesWithoutAssessment.includes(location)) {
         // Only redirect to assessment if user doesn't have assessment and isn't on allowed pages
-        navigate('/assessment', { replace: true });
-      } else if (assessment && location === '/') {
+        navigate("/assessment", { replace: true });
+      } else if (assessment && location === "/") {
         // If user has assessment and is at root, redirect to dashboard
-        navigate('/dashboard', { replace: true });
+        navigate("/dashboard", { replace: true });
       }
     }
   }, [assessmentLoading, assessment, location, navigate]);
 
   const style = {
-    '--sidebar-width': '16rem',
-    '--sidebar-width-icon': '3rem',
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "3rem",
   } as React.CSSProperties;
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Start closed for mobile
@@ -1469,27 +1470,27 @@ function AuthenticatedRouter() {
   useEffect(() => {
     const updateCompactState = () => {
       try {
-        if (typeof window === 'undefined') return;
+        if (typeof window === "undefined") return;
         const width = window.innerWidth;
         // Force sidebar closed on mobile (< 768px) and tablet (768-1024px)
         const shouldBeCompact = width < 1024;
         console.log(
-          'Screen width:',
+          "Screen width:",
           width,
-          'Compact sidebar:',
+          "Compact sidebar:",
           shouldBeCompact,
-          'User agent:',
-          navigator.userAgent
+          "User agent:",
+          navigator.userAgent,
         );
         setIsCompactSidebar(shouldBeCompact);
       } catch (error) {
-        console.error('Error updating compact sidebar state:', error);
+        console.error("Error updating compact sidebar state:", error);
       }
     };
 
     updateCompactState();
-    window.addEventListener('resize', updateCompactState);
-    return () => window.removeEventListener('resize', updateCompactState);
+    window.addEventListener("resize", updateCompactState);
+    return () => window.removeEventListener("resize", updateCompactState);
   }, []);
 
   useEffect(() => {
@@ -1506,7 +1507,7 @@ function AuthenticatedRouter() {
       sidebarToggledByUserRef.current = true;
       setIsSidebarOpen(open);
     } catch (error) {
-      console.error('Error changing sidebar state:', error);
+      console.error("Error changing sidebar state:", error);
     }
   }, []);
 
@@ -1516,28 +1517,28 @@ function AuthenticatedRouter() {
       open={isSidebarOpen}
       onOpenChange={handleSidebarOpenChange}
     >
-      <div className="flex min-h-screen h-screen w-full max-w-full overflow-hidden">
+      <div className="flex h-screen min-h-screen w-full max-w-full overflow-hidden">
         {/* Force sidebar to be hidden on mobile/tablet */}
-        <div className={`${isCompactSidebar ? 'hidden' : ''}`}>
+        <div className={`${isCompactSidebar ? "hidden" : ""}`}>
           <AppSidebar />
         </div>
-        <div className="flex flex-col flex-1 min-w-0 max-w-full overflow-hidden">
-          <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-full max-w-full flex-shrink-0">
-            <div className="flex items-center gap-2 min-w-0">
+        <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-hidden">
+          <header className="sticky top-0 z-50 flex w-full max-w-full flex-shrink-0 items-center justify-between border-b bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex min-w-0 items-center gap-2">
               <SidebarTrigger
-                className={`${isCompactSidebar ? 'block' : 'md:hidden'} mr-2 flex-shrink-0`}
+                className={`${isCompactSidebar ? "block" : "md:hidden"} mr-2 flex-shrink-0`}
               />
               <img
                 src={isDark ? darkHeaderLogo : lightHeaderLogo}
                 alt="Stack16 Logo"
-                className="w-8 h-8 rounded-lg flex-shrink-0"
-                key={isDark ? 'dark' : 'light'}
+                className="h-8 w-8 flex-shrink-0 rounded-lg"
+                key={isDark ? "dark" : "light"}
               />
-              <span className="font-semibold text-lg truncate">Stack16</span>
+              <span className="truncate text-lg font-semibold">Stack16</span>
             </div>
             <ThemeToggle />
           </header>
-          <main className="flex-1 overflow-auto w-full max-w-full min-h-0">
+          <main className="min-h-0 w-full max-w-full flex-1 overflow-auto">
             <ErrorBoundary>
               <Switch>
                 <Route path="/dashboard" component={Dashboard} />
@@ -1557,26 +1558,26 @@ function AuthenticatedRouter() {
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>(
-    'login'
+  const [authModalTab, setAuthModalTab] = useState<"login" | "register">(
+    "login",
   );
 
   const openLoginModal = () => {
-    setAuthModalTab('login');
+    setAuthModalTab("login");
     setIsAuthModalOpen(true);
   };
 
   const openRegisterModal = () => {
-    console.log('Opening register modal');
-    setAuthModalTab('register');
+    console.log("Opening register modal");
+    setAuthModalTab("register");
     setIsAuthModalOpen(true);
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -1588,7 +1589,7 @@ function Router() {
   }
 
   return (
-    <div className="min-h-screen h-screen flex flex-col overflow-hidden">
+    <div className="flex h-screen min-h-screen flex-col overflow-hidden">
       <Header
         onSignInClick={openLoginModal}
         onGetStartedClick={openRegisterModal}

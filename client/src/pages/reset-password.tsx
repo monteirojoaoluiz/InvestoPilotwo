@@ -1,11 +1,17 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, XCircle, Key, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CheckCircle, XCircle, Key, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
@@ -19,18 +25,19 @@ export default function ResetPassword() {
   useEffect(() => {
     // Get token from URL query parameters
     const params = new URLSearchParams(window.location.search);
-    const tokenParam = params.get('token');
-    
+    const tokenParam = params.get("token");
+
     if (tokenParam) {
       setToken(tokenParam);
     } else {
       toast({
         title: "Invalid Link",
-        description: "This password reset link is invalid. Please request a new one.",
+        description:
+          "This password reset link is invalid. Please request a new one.",
         variant: "destructive",
       });
       // Redirect to home after a delay
-      setTimeout(() => navigate('/'), 3000);
+      setTimeout(() => navigate("/"), 3000);
     }
   }, [navigate, toast]);
 
@@ -47,11 +54,13 @@ export default function ResetPassword() {
     }
 
     // Strong password validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       toast({
         title: "Weak Password",
-        description: "Password must be at least 8 characters and contain uppercase, lowercase, number, and special character (@$!%*?&)",
+        description:
+          "Password must be at least 8 characters and contain uppercase, lowercase, number, and special character (@$!%*?&)",
         variant: "destructive",
       });
       return;
@@ -60,29 +69,32 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to reset password');
+        throw new Error(error.message || "Failed to reset password");
       }
 
       setIsSuccess(true);
       toast({
         title: "Password Reset",
-        description: "Your password has been successfully reset. You can now log in with your new password.",
+        description:
+          "Your password has been successfully reset. You can now log in with your new password.",
       });
 
       // Redirect to home after 3 seconds
-      setTimeout(() => navigate('/'), 3000);
+      setTimeout(() => navigate("/"), 3000);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to reset password. The link may have expired.",
+        description:
+          error.message ||
+          "Failed to reset password. The link may have expired.",
         variant: "destructive",
       });
     } finally {
@@ -92,21 +104,22 @@ export default function ResetPassword() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
-        <Card className="max-w-md w-full">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+        <Card className="w-full max-w-md">
           <CardHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-full">
+            <div className="mb-2 flex items-center gap-3">
+              <div className="rounded-full bg-red-100 p-2 dark:bg-red-900/20">
                 <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
               </div>
               <CardTitle>Invalid Reset Link</CardTitle>
             </div>
             <CardDescription>
-              This password reset link is invalid or has expired. Please request a new one.
+              This password reset link is invalid or has expired. Please request
+              a new one.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/')} className="w-full">
+            <Button onClick={() => navigate("/")} className="w-full">
               Return to Home
             </Button>
           </CardContent>
@@ -117,21 +130,22 @@ export default function ResetPassword() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
-        <Card className="max-w-md w-full">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+        <Card className="w-full max-w-md">
           <CardHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-full">
+            <div className="mb-2 flex items-center gap-3">
+              <div className="rounded-full bg-green-100 p-2 dark:bg-green-900/20">
                 <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <CardTitle>Password Reset Successful</CardTitle>
             </div>
             <CardDescription>
-              Your password has been successfully reset. You can now log in with your new password.
+              Your password has been successfully reset. You can now log in with
+              your new password.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/')} className="w-full">
+            <Button onClick={() => navigate("/")} className="w-full">
               Go to Login
             </Button>
           </CardContent>
@@ -141,11 +155,11 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
-      <Card className="max-w-md w-full">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+      <Card className="w-full max-w-md">
         <CardHeader>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+          <div className="mb-2 flex items-center gap-3">
+            <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/20">
               <Key className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <CardTitle>Reset Your Password</CardTitle>
@@ -168,7 +182,8 @@ export default function ResetPassword() {
                 minLength={8}
               />
               <p className="text-xs text-muted-foreground">
-                Must contain 8+ characters with uppercase, lowercase, number, and special character (@$!%*?&)
+                Must contain 8+ characters with uppercase, lowercase, number,
+                and special character (@$!%*?&)
               </p>
             </div>
 
@@ -184,11 +199,7 @@ export default function ResetPassword() {
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -206,7 +217,7 @@ export default function ResetPassword() {
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               disabled={isLoading}
             >
               Cancel

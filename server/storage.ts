@@ -22,8 +22,9 @@ import {
   type EmailChangeToken,
   type InsertEmailChangeToken,
 } from "@shared/schema";
-import { db } from "./db";
 import { eq, desc, and, lt, sql, isNull } from "drizzle-orm";
+
+import { db } from "./db";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -33,47 +34,72 @@ export interface IStorage {
   createUser(user: UpsertUser): Promise<User>;
 
   // Risk assessment operations
-  createRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment>;
-  getRiskAssessmentByUserId(userId: string): Promise<RiskAssessment | undefined>;
+  createRiskAssessment(
+    assessment: InsertRiskAssessment,
+  ): Promise<RiskAssessment>;
+  getRiskAssessmentByUserId(
+    userId: string,
+  ): Promise<RiskAssessment | undefined>;
 
   // Portfolio operations
-  createPortfolioRecommendation(portfolio: InsertPortfolioRecommendation): Promise<PortfolioRecommendation>;
-  getPortfolioByUserId(userId: string): Promise<PortfolioRecommendation | undefined>;
-  updatePortfolioValue(portfolioId: string, totalValue: number, totalReturn: number): Promise<void>;
+  createPortfolioRecommendation(
+    portfolio: InsertPortfolioRecommendation,
+  ): Promise<PortfolioRecommendation>;
+  getPortfolioByUserId(
+    userId: string,
+  ): Promise<PortfolioRecommendation | undefined>;
+  updatePortfolioValue(
+    portfolioId: string,
+    totalValue: number,
+    totalReturn: number,
+  ): Promise<void>;
 
   // Chat operations
-  createPortfolioMessage(message: InsertPortfolioMessage): Promise<PortfolioMessage>;
+  createPortfolioMessage(
+    message: InsertPortfolioMessage,
+  ): Promise<PortfolioMessage>;
   getPortfolioMessages(portfolioId: string): Promise<PortfolioMessage[]>;
   deletePortfolioMessages(portfolioId: string): Promise<void>;
   createAuthToken(token: InsertAuthToken): Promise<AuthToken>;
   getAuthTokenByToken(token: string): Promise<AuthToken | undefined>;
   markTokenAsUsed(tokenId: string): Promise<void>;
   deleteExpiredTokens(): Promise<void>;
-  
+
   // Password reset operations
-  createPasswordResetToken(token: InsertPasswordResetToken): Promise<PasswordResetToken>;
+  createPasswordResetToken(
+    token: InsertPasswordResetToken,
+  ): Promise<PasswordResetToken>;
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenAsUsed(tokenId: string): Promise<void>;
   deleteExpiredPasswordResetTokens(): Promise<void>;
   updateUserPassword(userId: string, hashedPassword: string): Promise<void>;
   updateUserLastLogin(userId: string): Promise<void>;
   // Email change operations
-  createEmailChangeToken(token: InsertEmailChangeToken): Promise<EmailChangeToken>;
-  getEmailChangeTokenByToken(token: string): Promise<EmailChangeToken | undefined>;
+  createEmailChangeToken(
+    token: InsertEmailChangeToken,
+  ): Promise<EmailChangeToken>;
+  getEmailChangeTokenByToken(
+    token: string,
+  ): Promise<EmailChangeToken | undefined>;
   markEmailChangeTokenAsUsed(tokenId: string): Promise<void>;
   deleteExpiredEmailChangeTokens(): Promise<void>;
   updateUserEmail(userId: string, email: string): Promise<void>;
   // User deletion
   deleteUserData(userId: string): Promise<void>;
   getRiskAssessmentsByUserId(userId: string): Promise<RiskAssessment[]>;
-  getPortfolioRecommendationsByUserId(userId: string): Promise<PortfolioRecommendation[]>;
+  getPortfolioRecommendationsByUserId(
+    userId: string,
+  ): Promise<PortfolioRecommendation[]>;
   getPortfolioMessagesByUserId(userId: string): Promise<PortfolioMessage[]>;
 }
 
 export class DatabaseStorage implements IStorage {
   // User operations (mandatory for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(and(eq(users.id, id), isNull(users.deletedAt)));
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.id, id), isNull(users.deletedAt)));
     return user;
   }
 
@@ -93,7 +119,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(and(eq(users.email, email), isNull(users.deletedAt)));
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.email, email), isNull(users.deletedAt)));
     return user;
   }
 
@@ -103,7 +132,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Risk assessment operations
-  async createRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment> {
+  async createRiskAssessment(
+    assessment: InsertRiskAssessment,
+  ): Promise<RiskAssessment> {
     const [riskAssessment] = await db
       .insert(riskAssessments)
       .values(assessment)
@@ -111,7 +142,9 @@ export class DatabaseStorage implements IStorage {
     return riskAssessment;
   }
 
-  async getRiskAssessmentByUserId(userId: string): Promise<RiskAssessment | undefined> {
+  async getRiskAssessmentByUserId(
+    userId: string,
+  ): Promise<RiskAssessment | undefined> {
     const [assessment] = await db
       .select()
       .from(riskAssessments)
@@ -122,7 +155,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Portfolio operations
-  async createPortfolioRecommendation(portfolio: InsertPortfolioRecommendation): Promise<PortfolioRecommendation> {
+  async createPortfolioRecommendation(
+    portfolio: InsertPortfolioRecommendation,
+  ): Promise<PortfolioRecommendation> {
     const [recommendation] = await db
       .insert(portfolioRecommendations)
       .values(portfolio)
@@ -130,27 +165,36 @@ export class DatabaseStorage implements IStorage {
     return recommendation;
   }
 
-  async getPortfolioByUserId(userId: string): Promise<PortfolioRecommendation | undefined> {
+  async getPortfolioByUserId(
+    userId: string,
+  ): Promise<PortfolioRecommendation | undefined> {
     try {
-      console.log('Querying DB for portfolio with userId:', userId);
+      console.log("Querying DB for portfolio with userId:", userId);
       const [portfolio] = await db
         .select()
         .from(portfolioRecommendations)
         .where(eq(portfolioRecommendations.userId, userId))
         .orderBy(desc(portfolioRecommendations.createdAt))
         .limit(1);
-      console.log('DB query result:', portfolio ? 'Found portfolio' : 'No portfolio found');
+      console.log(
+        "DB query result:",
+        portfolio ? "Found portfolio" : "No portfolio found",
+      );
       return portfolio;
     } catch (error) {
-      console.error('DB error in getPortfolioByUserId:', error);
+      console.error("DB error in getPortfolioByUserId:", error);
       throw error;
     }
   }
 
-  async updatePortfolioValue(portfolioId: string, totalValue: number, totalReturn: number): Promise<void> {
+  async updatePortfolioValue(
+    portfolioId: string,
+    totalValue: number,
+    totalReturn: number,
+  ): Promise<void> {
     await db
       .update(portfolioRecommendations)
-      .set({ 
+      .set({
         totalValue,
         totalReturn,
         updatedAt: new Date(),
@@ -159,7 +203,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Chat operations
-  async createPortfolioMessage(message: InsertPortfolioMessage): Promise<PortfolioMessage> {
+  async createPortfolioMessage(
+    message: InsertPortfolioMessage,
+  ): Promise<PortfolioMessage> {
     const [portfolioMessage] = await db
       .insert(portfolioMessages)
       .values(message)
@@ -176,7 +222,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deletePortfolioMessages(portfolioId: string): Promise<void> {
-    await db.delete(portfolioMessages).where(eq(portfolioMessages.portfolioId, portfolioId));
+    await db
+      .delete(portfolioMessages)
+      .where(eq(portfolioMessages.portfolioId, portfolioId));
   }
 
   async createAuthToken(token: InsertAuthToken): Promise<AuthToken> {
@@ -185,30 +233,42 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAuthTokenByToken(token: string): Promise<AuthToken | undefined> {
-    const [tokenData] = await db.select().from(authTokens).where(eq(authTokens.token, token));
+    const [tokenData] = await db
+      .select()
+      .from(authTokens)
+      .where(eq(authTokens.token, token));
     return tokenData;
   }
 
   async markTokenAsUsed(tokenId: string): Promise<void> {
-    await db.update(authTokens).set({ used: true }).where(eq(authTokens.id, tokenId));
+    await db
+      .update(authTokens)
+      .set({ used: true })
+      .where(eq(authTokens.id, tokenId));
   }
 
   async deleteExpiredTokens(): Promise<void> {
-    await db.delete(authTokens).where(
-      and(
-        lt(authTokens.expiresAt, sql`NOW()`),
-        eq(authTokens.used, false)
-      )
-    );
+    await db
+      .delete(authTokens)
+      .where(
+        and(lt(authTokens.expiresAt, sql`NOW()`), eq(authTokens.used, false)),
+      );
   }
 
   // Password reset operations
-  async createPasswordResetToken(token: InsertPasswordResetToken): Promise<PasswordResetToken> {
-    const [newToken] = await db.insert(passwordResetTokens).values(token).returning();
+  async createPasswordResetToken(
+    token: InsertPasswordResetToken,
+  ): Promise<PasswordResetToken> {
+    const [newToken] = await db
+      .insert(passwordResetTokens)
+      .values(token)
+      .returning();
     return newToken;
   }
 
-  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+  async getPasswordResetToken(
+    token: string,
+  ): Promise<PasswordResetToken | undefined> {
     const [tokenData] = await db
       .select()
       .from(passwordResetTokens)
@@ -224,18 +284,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteExpiredPasswordResetTokens(): Promise<void> {
-    await db.delete(passwordResetTokens).where(
-      and(
-        lt(passwordResetTokens.expiresAt, sql`NOW()`),
-        eq(passwordResetTokens.used, false)
-      )
-    );
+    await db
+      .delete(passwordResetTokens)
+      .where(
+        and(
+          lt(passwordResetTokens.expiresAt, sql`NOW()`),
+          eq(passwordResetTokens.used, false),
+        ),
+      );
   }
 
-  async updateUserPassword(userId: string, hashedPassword: string): Promise<void> {
+  async updateUserPassword(
+    userId: string,
+    hashedPassword: string,
+  ): Promise<void> {
     await db
       .update(users)
-      .set({ 
+      .set({
         password: hashedPassword,
         updatedAt: new Date(),
       })
@@ -245,19 +310,26 @@ export class DatabaseStorage implements IStorage {
   async updateUserLastLogin(userId: string): Promise<void> {
     await db
       .update(users)
-      .set({ 
+      .set({
         lastLogin: new Date(),
       })
       .where(eq(users.id, userId));
   }
 
   // Email change operations
-  async createEmailChangeToken(token: InsertEmailChangeToken): Promise<EmailChangeToken> {
-    const [newToken] = await db.insert(emailChangeTokens).values(token).returning();
+  async createEmailChangeToken(
+    token: InsertEmailChangeToken,
+  ): Promise<EmailChangeToken> {
+    const [newToken] = await db
+      .insert(emailChangeTokens)
+      .values(token)
+      .returning();
     return newToken;
   }
 
-  async getEmailChangeTokenByToken(token: string): Promise<EmailChangeToken | undefined> {
+  async getEmailChangeTokenByToken(
+    token: string,
+  ): Promise<EmailChangeToken | undefined> {
     const [tokenData] = await db
       .select()
       .from(emailChangeTokens)
@@ -273,18 +345,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteExpiredEmailChangeTokens(): Promise<void> {
-    await db.delete(emailChangeTokens).where(
-      and(
-        lt(emailChangeTokens.expiresAt, sql`NOW()`),
-        eq(emailChangeTokens.used, false)
-      )
-    );
+    await db
+      .delete(emailChangeTokens)
+      .where(
+        and(
+          lt(emailChangeTokens.expiresAt, sql`NOW()`),
+          eq(emailChangeTokens.used, false),
+        ),
+      );
   }
 
   async updateUserEmail(userId: string, email: string): Promise<void> {
     await db
       .update(users)
-      .set({ 
+      .set({
         email,
         updatedAt: new Date(),
       })
@@ -293,14 +367,32 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUserData(userId: string): Promise<void> {
     // Soft delete user
-    await db.update(users).set({ deletedAt: new Date() }).where(eq(users.id, userId));
+    await db
+      .update(users)
+      .set({ deletedAt: new Date() })
+      .where(eq(users.id, userId));
 
     // Hard delete related data (no grace for these)
-    await db.delete(authTokens).where(eq(authTokens.email, sql`(SELECT email FROM users WHERE id = ${userId})`));
-    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
-    await db.delete(emailChangeTokens).where(eq(emailChangeTokens.userId, userId));
-    await db.delete(portfolioMessages).where(eq(portfolioMessages.userId, userId));
-    await db.delete(portfolioRecommendations).where(eq(portfolioRecommendations.userId, userId));
+    await db
+      .delete(authTokens)
+      .where(
+        eq(
+          authTokens.email,
+          sql`(SELECT email FROM users WHERE id = ${userId})`,
+        ),
+      );
+    await db
+      .delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.userId, userId));
+    await db
+      .delete(emailChangeTokens)
+      .where(eq(emailChangeTokens.userId, userId));
+    await db
+      .delete(portfolioMessages)
+      .where(eq(portfolioMessages.userId, userId));
+    await db
+      .delete(portfolioRecommendations)
+      .where(eq(portfolioRecommendations.userId, userId));
     await db.delete(riskAssessments).where(eq(riskAssessments.userId, userId));
   }
 
@@ -309,7 +401,10 @@ export class DatabaseStorage implements IStorage {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     // Get users to delete
-    const oldUsers = await db.select({id: users.id}).from(users).where(lt(users.deletedAt!, thirtyDaysAgo));
+    const oldUsers = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(lt(users.deletedAt!, thirtyDaysAgo));
 
     for (const user of oldUsers) {
       await this.deleteUserData(user.id); // This now hard deletes everything
@@ -319,15 +414,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRiskAssessmentsByUserId(userId: string): Promise<RiskAssessment[]> {
-    return await db.select().from(riskAssessments).where(eq(riskAssessments.userId, userId));
+    return await db
+      .select()
+      .from(riskAssessments)
+      .where(eq(riskAssessments.userId, userId));
   }
 
-  async getPortfolioRecommendationsByUserId(userId: string): Promise<PortfolioRecommendation[]> {
-    return await db.select().from(portfolioRecommendations).where(eq(portfolioRecommendations.userId, userId));
+  async getPortfolioRecommendationsByUserId(
+    userId: string,
+  ): Promise<PortfolioRecommendation[]> {
+    return await db
+      .select()
+      .from(portfolioRecommendations)
+      .where(eq(portfolioRecommendations.userId, userId));
   }
 
-  async getPortfolioMessagesByUserId(userId: string): Promise<PortfolioMessage[]> {
-    return await db.select().from(portfolioMessages).where(eq(portfolioMessages.userId, userId));
+  async getPortfolioMessagesByUserId(
+    userId: string,
+  ): Promise<PortfolioMessage[]> {
+    return await db
+      .select()
+      .from(portfolioMessages)
+      .where(eq(portfolioMessages.userId, userId));
   }
 }
 

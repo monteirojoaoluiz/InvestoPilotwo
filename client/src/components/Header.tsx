@@ -1,8 +1,8 @@
-import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import lightLogo from '@assets/generated_images/Dark Favicon.png';
-import darkLogo from '@assets/generated_images/White Favicon.png';
+import { Button } from "@/components/ui/button";
+import lightLogo from "@assets/generated_images/Dark Favicon.png";
+import darkLogo from "@assets/generated_images/White Favicon.png";
+import { Menu } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface HeaderProps {
   onSignInClick?: () => void;
@@ -18,13 +18,13 @@ export default function Header({
   showMenuButton = false,
 }: HeaderProps) {
   const [isDark, setIsDark] = useState(() => {
-    return document.documentElement.classList.contains('dark');
+    return document.documentElement.classList.contains("dark");
   });
 
   useEffect(() => {
     const updateTheme = () => {
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      console.log('Theme changed, isDark:', isDarkMode);
+      const isDarkMode = document.documentElement.classList.contains("dark");
+      console.log("Theme changed, isDark:", isDarkMode);
       setIsDark(isDarkMode);
     };
 
@@ -32,7 +32,7 @@ export default function Header({
     const observer = new MutationObserver(updateTheme);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class'],
+      attributeFilter: ["class"],
     });
     return () => observer.disconnect();
   }, []);
@@ -54,10 +54,9 @@ export default function Header({
           )}
           <div className="flex items-center gap-2">
             <img
-              src={isDark ? darkLogo : lightLogo}
+              src={darkLogo}
               alt="Stack16 Logo"
               className="h-8 w-8 rounded-lg"
-              key={isDark ? 'dark' : 'light'}
             />
             <span className="text-xl font-semibold">Stack16</span>
           </div>

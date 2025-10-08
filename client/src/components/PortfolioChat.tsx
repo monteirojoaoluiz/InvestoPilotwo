@@ -1,14 +1,14 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Send, Bot, User, Plus } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -22,12 +22,15 @@ interface PortfolioChatProps {
   portfolio?: any; // Add portfolio prop
 }
 
-export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioChatProps) {
+export default function PortfolioChat({
+  onSendMessage,
+  portfolio,
+}: PortfolioChatProps) {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isNewChat, setIsNewChat] = useState(false);
   const [showNewChatSuccess, setShowNewChatSuccess] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState<string>('');
+  const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState(false);
   const { toast } = useToast();
 
@@ -37,8 +40,13 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
 
   // Fetch portfolio on mount
-  const { data: portfolioData } = useQuery<{ id: string; allocations: any[]; totalValue: number; totalReturn: number }>({
-    queryKey: ['/api/portfolio'],
+  const { data: portfolioData } = useQuery<{
+    id: string;
+    allocations: any[];
+    totalValue: number;
+    totalReturn: number;
+  }>({
+    queryKey: ["/api/portfolio"],
   });
 
   useEffect(() => {
@@ -58,9 +66,12 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   }, [showNewChatSuccess]);
 
   const { data: messagesData = [] } = useQuery({
-    queryKey: ['/api/portfolio', portfolioId, 'messages'],
+    queryKey: ["/api/portfolio", portfolioId, "messages"],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/portfolio/${portfolioId}/messages`);
+      const res = await apiRequest(
+        "GET",
+        `/api/portfolio/${portfolioId}/messages`,
+      );
       const data = await res.json();
       return data.map((msg: any) => ({
         id: msg.id,
@@ -77,27 +88,27 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   const sendMessageWithStreaming = async (content: string) => {
     try {
       const response = await fetch(`/api/portfolio/${portfolioId}/messages`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({ content }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        throw new Error("Failed to send message");
       }
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      
+
       if (!reader) {
-        throw new Error('No reader available');
+        throw new Error("No reader available");
       }
 
       let userMessageData: any = null;
-      let accumulatedContent = '';
+      let accumulatedContent = "";
       setIsStreaming(true);
 
       while (true) {
@@ -105,26 +116,31 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
         if (done) break;
 
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
+        const lines = chunk.split("\n");
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6));
-              
-              if (data.type === 'userMessage') {
+
+              if (data.type === "userMessage") {
                 userMessageData = data.data;
-              } else if (data.type === 'chunk') {
+              } else if (data.type === "chunk") {
                 accumulatedContent += data.data;
                 setStreamingMessage(accumulatedContent);
-              } else if (data.type === 'complete') {
+              } else if (data.type === "complete") {
                 // Message complete, refresh the list
                 setIsStreaming(false);
-                setStreamingMessage('');
+                setStreamingMessage("");
                 if (!isNewChat) {
-                  queryClient.invalidateQueries({ queryKey: ['messages', portfolioId] });
+                  queryClient.invalidateQueries({
+                    queryKey: ["messages", portfolioId],
+                  });
                 } else {
-                  const currentMessages = (queryClient.getQueryData(['messages', portfolioId]) as Message[] | undefined) || [];
+                  const currentMessages =
+                    (queryClient.getQueryData(["messages", portfolioId]) as
+                      | Message[]
+                      | undefined) || [];
                   const transformedMessages = [
                     {
                       id: userMessageData.id,
@@ -137,24 +153,27 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
                       content: data.data.content,
                       sender: data.data.sender,
                       timestamp: new Date(data.data.createdAt),
-                    }
+                    },
                   ] as Message[];
-                  queryClient.setQueryData(['messages', portfolioId], [...currentMessages, ...transformedMessages]);
+                  queryClient.setQueryData(
+                    ["messages", portfolioId],
+                    [...currentMessages, ...transformedMessages],
+                  );
                   setIsNewChat(false);
                 }
-              } else if (data.type === 'error') {
+              } else if (data.type === "error") {
                 throw new Error(data.data.message);
               }
             } catch (e) {
-              console.error('Error parsing SSE data:', e);
+              console.error("Error parsing SSE data:", e);
             }
           }
         }
       }
     } catch (error) {
-      console.error('Streaming error:', error);
+      console.error("Streaming error:", error);
       setIsStreaming(false);
-      setStreamingMessage('');
+      setStreamingMessage("");
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
@@ -167,44 +186,58 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   // Compute suggested questions early to keep hook order stable
   const suggestedQuestions = useMemo(() => {
     try {
-      if (!portfolio?.allocations || !Array.isArray(portfolio.allocations) || portfolio.allocations.length === 0) {
-        return ['What should I invest in as a beginner?'];
+      if (
+        !portfolio?.allocations ||
+        !Array.isArray(portfolio.allocations) ||
+        portfolio.allocations.length === 0
+      ) {
+        return ["What should I invest in as a beginner?"];
       }
 
       const questions = [
-        'Explain my current allocation',
-        'What if the market drops 20%?',
-        'How can I reduce risk?',
-        'Should I rebalance?',
-        'What about ESG investing?',
-        'How much should I invest monthly?',
-        'When should I retire?',
-        'What about international stocks?',
-        'How to handle market volatility?',
-        'What are the tax implications?'
+        "Explain my current allocation",
+        "What if the market drops 20%?",
+        "How can I reduce risk?",
+        "Should I rebalance?",
+        "What about ESG investing?",
+        "How much should I invest monthly?",
+        "When should I retire?",
+        "What about international stocks?",
+        "How to handle market volatility?",
+        "What are the tax implications?",
       ];
-      
-      const bondPct = portfolio.allocations.reduce((sum: number, a: any) => sum + (a?.assetType === 'Bonds' ? (a?.percentage || 0) : 0), 0);
-      const stockPct = portfolio.allocations.reduce((sum: number, a: any) => sum + ((a?.assetType?.includes('Equity')) ? (a?.percentage || 0) : 0), 0);
-      const esg = portfolio.allocations.some((a: any) => a?.name?.includes('ESG'));
+
+      const bondPct = portfolio.allocations.reduce(
+        (sum: number, a: any) =>
+          sum + (a?.assetType === "Bonds" ? a?.percentage || 0 : 0),
+        0,
+      );
+      const stockPct = portfolio.allocations.reduce(
+        (sum: number, a: any) =>
+          sum + (a?.assetType?.includes("Equity") ? a?.percentage || 0 : 0),
+        0,
+      );
+      const esg = portfolio.allocations.some((a: any) =>
+        a?.name?.includes("ESG"),
+      );
 
       // Add personalized questions based on portfolio
       if (bondPct > 50) {
-        questions.push('Why is my portfolio so conservative?');
+        questions.push("Why is my portfolio so conservative?");
       }
       if (stockPct > 70) {
-        questions.push('How can I reduce risk in my portfolio?');
+        questions.push("How can I reduce risk in my portfolio?");
       }
       if (esg) {
-        questions.push('Tell me more about the ESG focus in my investments');
+        questions.push("Tell me more about the ESG focus in my investments");
       } else {
-        questions.push('Should I consider ESG investments?');
+        questions.push("Should I consider ESG investments?");
       }
 
       return questions.slice(0, 8); // Show more questions for better scrolling
     } catch (error) {
-      console.error('Error generating suggested questions:', error);
-      return ['What should I invest in as a beginner?'];
+      console.error("Error generating suggested questions:", error);
+      return ["What should I invest in as a beginner?"];
     }
   }, [portfolio]);
 
@@ -212,20 +245,23 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   if (!portfolioId) {
     if (portfolioData === null) {
       return (
-        <Card className="flex flex-col h-[600px]">
-          <div className="p-4 border-b">
-            <h3 className="font-semibold flex items-center gap-2">
+        <Card className="flex h-[600px] flex-col">
+          <div className="border-b p-4">
+            <h3 className="flex items-center gap-2 font-semibold">
               <Bot className="h-5 w-5 text-primary" />
               Chat with Your Portfolio AI
             </h3>
             <p className="text-sm text-muted-foreground">
-              No portfolio generated yet. Please complete your investor profile and generate a portfolio to start chatting.
+              No portfolio generated yet. Please complete your investor profile
+              and generate a portfolio to start chatting.
             </p>
           </div>
-          <div className="flex-1 p-4 flex items-center justify-center">
+          <div className="flex flex-1 items-center justify-center p-4">
             <div className="text-center">
-              <Bot className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">Portfolio AI is ready when you are.</p>
+              <Bot className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <p className="text-muted-foreground">
+                Portfolio AI is ready when you are.
+              </p>
             </div>
           </div>
         </Card>
@@ -241,14 +277,14 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
 
     try {
       // Delete all messages from the database
-      await apiRequest('DELETE', `/api/portfolio/${portfolioId}/messages`);
+      await apiRequest("DELETE", `/api/portfolio/${portfolioId}/messages`);
 
       // Clear optimistic messages and input
       setOptimisticMessages([]);
       setMessage("");
 
       // Set the messages query data to empty array immediately
-      queryClient.setQueryData(['messages', portfolioId], []);
+      queryClient.setQueryData(["messages", portfolioId], []);
 
       // Mark that we're in new chat mode to prevent query invalidation on first message
       setIsNewChat(true);
@@ -256,7 +292,7 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
       // Show inline success message near the button
       setShowNewChatSuccess(true);
     } catch (error) {
-      console.error('Error starting new chat:', error);
+      console.error("Error starting new chat:", error);
       toast({
         title: "Error",
         description: "Failed to start new chat. Please try again.",
@@ -295,35 +331,36 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
-    <Card className="flex flex-col h-[600px] w-full min-w-0 max-w-full">
-      <div className="p-4 border-b">
+    <Card className="flex h-[600px] w-full min-w-0 max-w-full flex-col">
+      <div className="border-b p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold flex items-center gap-2 text-base sm:text-lg">
-              <Bot className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <h3 className="flex items-center gap-2 text-base font-semibold sm:text-lg">
+              <Bot className="h-5 w-5 flex-shrink-0 text-primary" />
               <span className="truncate">Chat with Your Portfolio AI</span>
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Ask questions about your investments, market trends, or portfolio strategy
+            <p className="mt-1 text-sm text-muted-foreground">
+              Ask questions about your investments, market trends, or portfolio
+              strategy
             </p>
           </div>
-          <div className="flex flex-col items-start sm:items-end gap-2 sm:flex-shrink-0">
+          <div className="flex flex-col items-start gap-2 sm:flex-shrink-0 sm:items-end">
             <Button
               variant="outline"
               size="sm"
               onClick={handleNewChat}
-              className="flex items-center gap-2 w-full sm:w-auto min-h-[36px] touch-manipulation"
+              className="flex min-h-[36px] w-full touch-manipulation items-center gap-2 sm:w-auto"
               data-testid="button-new-chat"
             >
               <Plus className="h-4 w-4" />
               New Chat
             </Button>
             {showNewChatSuccess && (
-              <div className="text-xs text-green-600 dark:text-green-400 font-medium animate-in fade-in-0 slide-in-from-top-1 duration-300">
+              <div className="text-xs font-medium text-green-600 duration-300 animate-in fade-in-0 slide-in-from-top-1 dark:text-green-400">
                 ✓ Conversation cleared
               </div>
             )}
@@ -339,13 +376,13 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
               className={`flex gap-3 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.sender === "ai" && (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                   <Bot className="h-4 w-4" />
                 </div>
               )}
-              
+
               <div
-                className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-3 ${
+                className={`max-w-[85%] rounded-lg p-3 sm:max-w-[80%] ${
                   msg.sender === "user"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted"
@@ -353,38 +390,51 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
               >
                 {msg.sender === "ai" ? (
                   <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
                   </div>
                 ) : (
                   <p className="text-sm">{msg.content}</p>
                 )}
-                <p className={`text-xs mt-1 opacity-70`}>
+                <p className={`mt-1 text-xs opacity-70`}>
                   {formatTime(msg.timestamp)}
                 </p>
               </div>
 
               {msg.sender === "user" && (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground flex-shrink-0">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
                   <User className="h-4 w-4" />
                 </div>
               )}
             </div>
           ))}
-          
+
           {/* Streaming AI message */}
           {isStreaming && streamingMessage && (
-            <div className="flex gap-3 justify-start animate-in fade-in duration-200">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
+            <div className="flex justify-start gap-3 duration-200 animate-in fade-in">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Bot className="h-4 w-4" />
               </div>
-              <div className="max-w-[85%] sm:max-w-[80%] rounded-lg p-3 bg-muted">
+              <div className="max-w-[85%] rounded-lg bg-muted p-3 sm:max-w-[80%]">
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingMessage}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {streamingMessage}
+                  </ReactMarkdown>
                 </div>
-                <div className="flex items-center gap-1 mt-2">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="mt-2 flex items-center gap-1">
+                  <div
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary"
+                    style={{ animationDelay: "0ms" }}
+                  ></div>
+                  <div
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary"
+                    style={{ animationDelay: "150ms" }}
+                  ></div>
+                  <div
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary"
+                    style={{ animationDelay: "300ms" }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -395,11 +445,17 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Bot className="h-4 w-4" />
               </div>
-              <div className="bg-muted rounded-lg p-3">
+              <div className="rounded-lg bg-muted p-3">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground"></div>
+                  <div
+                    className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground"
+                    style={{ animationDelay: "0.1s" }}
+                  ></div>
+                  <div
+                    className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -407,66 +463,67 @@ export default function PortfolioChat({ onSendMessage, portfolio }: PortfolioCha
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t overflow-hidden relative">
+      <div className="relative overflow-hidden border-t p-4">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-foreground">Suggested questions</span>
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
+          <span className="text-sm font-medium text-foreground">
+            Suggested questions
+          </span>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <span className="hidden sm:inline">Swipe horizontally</span>
             <span className="sm:hidden">← Swipe →</span>
           </span>
         </div>
         <div className="relative">
           <div
-            className="suggested-questions-container flex gap-2 overflow-x-auto overflow-y-hidden pb-2 -mx-4 px-4 scrollbar-hide [&::-webkit-scrollbar]:hidden"
+            className="suggested-questions-container scrollbar-hide -mx-4 flex gap-2 overflow-x-auto overflow-y-hidden px-4 pb-2 [&::-webkit-scrollbar]:hidden"
             style={{
-              WebkitOverflowScrolling: 'touch',
-              scrollBehavior: 'smooth',
-              overscrollBehaviorX: 'contain',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              touchAction: 'pan-x',
-              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: "touch",
+              scrollBehavior: "smooth",
+              overscrollBehaviorX: "contain",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              touchAction: "pan-x",
+              scrollSnapType: "x mandatory",
               // Ensure proper scrolling on mobile
-              minHeight: '56px', // Ensure touch target size and better scrolling
-              maxHeight: '120px', // Prevent excessive height on mobile
+              minHeight: "56px", // Ensure touch target size and better scrolling
+              maxHeight: "120px", // Prevent excessive height on mobile
             }}
           >
-          
-          {suggestedQuestions.map((q, i) => (
-            <Button
-              key={i}
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                setMessage(q);
-                handleSendMessage(e);
-              }}
-              className="text-xs sm:text-sm h-auto py-3 px-4 sm:px-5 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 whitespace-nowrap flex-shrink-0 min-w-fit touch-manipulation transition-all duration-200 active:scale-95 scroll-snap-align-start"
-              style={{
-                // Ensure minimum touch target size on mobile
-                minHeight: '48px',
-                minWidth: 'max-content',
-                // Prevent text selection during scroll
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                // Better mobile touch scrolling
-                touchAction: 'manipulation',
-              }}
-            >
-              {q}
-            </Button>
-          ))}
+            {suggestedQuestions.map((q, i) => (
+              <Button
+                key={i}
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMessage(q);
+                  handleSendMessage(e);
+                }}
+                className="scroll-snap-align-start h-auto min-w-fit flex-shrink-0 touch-manipulation whitespace-nowrap rounded-full border-primary/20 px-4 py-3 text-xs transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 active:scale-95 sm:px-5 sm:text-sm"
+                style={{
+                  // Ensure minimum touch target size on mobile
+                  minHeight: "48px",
+                  minWidth: "max-content",
+                  // Prevent text selection during scroll
+                  userSelect: "none",
+                  WebkitUserSelect: "none",
+                  // Better mobile touch scrolling
+                  touchAction: "manipulation",
+                }}
+              >
+                {q}
+              </Button>
+            ))}
 
-          {/* Add padding at the end for better scrolling experience */}
-          <div className="w-1 flex-shrink-0"></div>
+            {/* Add padding at the end for better scrolling experience */}
+            <div className="w-1 flex-shrink-0"></div>
           </div>
 
           {/* Gradient fades removed to simplify appearance */}
         </div>
       </div>
 
-      <form onSubmit={handleSendMessage} className="p-4 border-t">
+      <form onSubmit={handleSendMessage} className="border-t p-4">
         <div className="flex gap-3">
           <Input
             value={message}

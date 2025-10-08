@@ -1,7 +1,13 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -36,8 +42,8 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
+    if (process.env.NODE_ENV === "development") {
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
 
     // Log error to monitoring service (if configured)
@@ -58,9 +64,9 @@ class ErrorBoundary extends Component<Props, State> {
   logErrorToService(error: Error, errorInfo: ErrorInfo) {
     // TODO: Integrate with error monitoring service
     // Example: Sentry.captureException(error, { contexts: { react: { componentStack: errorInfo.componentStack } } });
-    
+
     // For now, just log to console
-    console.error('Error logged:', {
+    console.error("Error logged:", {
       message: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
@@ -80,7 +86,7 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   render() {
@@ -92,34 +98,35 @@ class ErrorBoundary extends Component<Props, State> {
 
       // Default error UI
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
-          <Card className="max-w-2xl w-full">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+          <Card className="w-full max-w-2xl">
             <CardHeader>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-full">
+              <div className="mb-2 flex items-center gap-3">
+                <div className="rounded-full bg-red-100 p-2 dark:bg-red-900/20">
                   <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
                 </div>
                 <CardTitle className="text-2xl">Something went wrong</CardTitle>
               </div>
               <CardDescription>
-                We're sorry, but something unexpected happened. Our team has been notified.
+                We're sorry, but something unexpected happened. Our team has
+                been notified.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-red-900 dark:text-red-100 mb-2">
+              {process.env.NODE_ENV === "development" && this.state.error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/10">
+                  <h3 className="mb-2 text-sm font-semibold text-red-900 dark:text-red-100">
                     Error Details (Development Only):
                   </h3>
-                  <pre className="text-xs text-red-800 dark:text-red-200 overflow-auto max-h-40 whitespace-pre-wrap">
+                  <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs text-red-800 dark:text-red-200">
                     {this.state.error.message}
                   </pre>
                   {this.state.errorInfo && (
                     <details className="mt-2">
-                      <summary className="text-xs font-medium text-red-900 dark:text-red-100 cursor-pointer">
+                      <summary className="cursor-pointer text-xs font-medium text-red-900 dark:text-red-100">
                         Component Stack
                       </summary>
-                      <pre className="text-xs text-red-800 dark:text-red-200 overflow-auto max-h-40 mt-2 whitespace-pre-wrap">
+                      <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap text-xs text-red-800 dark:text-red-200">
                         {this.state.errorInfo.componentStack}
                       </pre>
                     </details>
@@ -127,11 +134,11 @@ class ErrorBoundary extends Component<Props, State> {
                 </div>
               )}
 
-              <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/10">
+                <h3 className="mb-2 text-sm font-semibold text-blue-900 dark:text-blue-100">
                   What you can do:
                 </h3>
-                <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                <ul className="list-inside list-disc space-y-1 text-sm text-blue-800 dark:text-blue-200">
                   <li>Try refreshing the page</li>
                   <li>Return to the home page</li>
                   <li>If the problem persists, please contact support</li>
@@ -139,15 +146,26 @@ class ErrorBoundary extends Component<Props, State> {
               </div>
 
               <div className="flex flex-wrap gap-3 pt-2">
-                <Button onClick={this.handleReset} variant="outline" className="flex items-center gap-2">
+                <Button
+                  onClick={this.handleReset}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
                   <RefreshCcw className="h-4 w-4" />
                   Try Again
                 </Button>
-                <Button onClick={this.handleReload} variant="outline" className="flex items-center gap-2">
+                <Button
+                  onClick={this.handleReload}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
                   <RefreshCcw className="h-4 w-4" />
                   Reload Page
                 </Button>
-                <Button onClick={this.handleGoHome} className="flex items-center gap-2">
+                <Button
+                  onClick={this.handleGoHome}
+                  className="flex items-center gap-2"
+                >
                   <Home className="h-4 w-4" />
                   Go to Home
                 </Button>

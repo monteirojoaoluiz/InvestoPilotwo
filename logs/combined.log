@@ -16,3 +16,5 @@
 {"level":"info","message":"Server started on port 5000","service":"investopilot-api","timestamp":"2025-10-07T19:42:05.803Z"}
 {"level":"info","message":"Server started on port 5000","service":"investopilot-api","timestamp":"2025-10-07T19:43:20.574Z"}
 {"level":"info","message":"Server started on port 3000","service":"investopilot-api","timestamp":"2025-10-08T16:21:39.303Z"}
+{"level":"info","message":"Server started on port 3000","service":"investopilot-api","timestamp":"2025-10-08T18:41:09.184Z"}
+{"level":"info","message":"Server started on port 3000","service":"investopilot-api","timestamp":"2025-10-08T18:57:55.005Z"}

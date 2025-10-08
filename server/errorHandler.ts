@@ -1,12 +1,17 @@
-import type { Request, Response, NextFunction } from 'express';
-import { logger } from './logger';
+import type { Request, Response, NextFunction } from "express";
+
+import { logger } from "./logger";
 
 // Custom error class
 export class AppError extends Error {
   statusCode: number;
   isOperational: boolean;
 
-  constructor(message: string, statusCode: number = 500, isOperational: boolean = true) {
+  constructor(
+    message: string,
+    statusCode: number = 500,
+    isOperational: boolean = true,
+  ) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
@@ -19,12 +24,12 @@ export const errorHandler = (
   err: any,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // Default error values
   let statusCode = err.statusCode || err.status || 500;
-  let message = err.message || 'Internal Server Error';
-  
+  let message = err.message || "Internal Server Error";
+
   // Log error details
   if (statusCode >= 500) {
     logger.error({
@@ -46,16 +51,16 @@ export const errorHandler = (
   }
 
   // Don't leak sensitive information in production
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     // Only send generic message for 500 errors
     if (statusCode >= 500) {
-      message = 'An unexpected error occurred. Please try again later.';
+      message = "An unexpected error occurred. Please try again later.";
     }
-    
+
     // Send error response without stack trace
     return res.status(statusCode).json({
       message,
-      ...(statusCode < 500 && err.errors ? { errors: err.errors } : {})
+      ...(statusCode < 500 && err.errors ? { errors: err.errors } : {}),
     });
   }
 
@@ -63,7 +68,7 @@ export const errorHandler = (
   res.status(statusCode).json({
     message,
     stack: err.stack,
-    ...(err.errors ? { errors: err.errors } : {})
+    ...(err.errors ? { errors: err.errors } : {}),
   });
 };
 
@@ -75,7 +80,11 @@ export const asyncHandler = (fn: Function) => {
 };
 
 // 404 handler
-export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
+export const notFoundHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const error = new AppError(`Route ${req.originalUrl} not found`, 404);
   next(error);
 };
