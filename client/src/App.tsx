@@ -43,6 +43,7 @@ import RiskAssessment from "./components/RiskAssessment";
 import PortfolioChat from "./components/PortfolioChat";
 import NotFound from "@/pages/not-found";
 import ETFCatalog from "./pages/etf-catalog";
+import PortfolioAllocation from "./pages/portfolio-allocation";
 import AuthModal from "./components/AuthModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ResetPassword from "./pages/reset-password";
@@ -1274,6 +1275,7 @@ function AuthenticatedRouter() {
               <Switch>
                 <Route path="/dashboard" component={Dashboard} />
                 <Route path="/assessment" component={Assessment} />
+                <Route path="/allocation" component={PortfolioAllocation} />
                 <Route path="/etf-catalog" component={ETFCatalogPage} />
                 <Route path="/account" component={Account} />
                 <Route path="/" component={Dashboard} />

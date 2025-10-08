@@ -931,6 +931,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Investor Profile routes
+  app.post('/api/investor-profiles', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // Validate input
+      const profileData = investorProfileInputSchema.parse(req.body);
+      
+      // Create investor profile
+      const profile = await storage.createInvestorProfile({
+        userId,
+        riskAssessmentId: profileData.riskAssessmentId,
+        riskTolerance: profileData.riskTolerance,
+        investmentHorizon: profileData.investmentHorizon,
+        riskCapacity: profileData.riskCapacity,
+        experienceLevel: profileData.experienceLevel,
+        cashOtherPreference: profileData.cashOtherPreference,
+      });
+
+      res.json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid input", errors: error.errors });
+      }
+      console.error("Error creating investor profile:", error);
+      res.status(500).json({ message: "Failed to create investor profile" });
+    }
+  });
+
+  app.get('/api/investor-profiles/user/:userId', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const requestUserId = (req.user as any).id;
+
+      // Ensure user can only access their own profile
+      if (userId !== requestUserId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const profile = await storage.getUserCurrentProfile(userId);
+
+      if (!profile) {
+        return res.status(404).json({ message: "No investor profile found" });
+      }
+
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching investor profile:", error);
+      res.status(500).json({ message: "Failed to fetch investor profile" });
+    }
+  });
+
+  // Asset Allocation routes
+  app.post('/api/asset-allocations', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const { investorProfileId } = req.body;
+
+      if (!investorProfileId) {
+        return res.status(400).json({ message: "investorProfileId is required" });
+      }
+
+      // Get the investor profile
+      const profile = await storage.getInvestorProfileById(investorProfileId);
+
+      if (!profile) {
+        return res.status(404).json({ message: "Investor profile not found" });
+      }
+
+      // Ensure user owns the profile
+      if (profile.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      // Calculate allocation
+      const allocationResult = calculateAllocation(profile);
+
+      // Save allocation to database
+      const allocation = await storage.createAssetAllocation({
+        userId,
+        investorProfileId,
+        equityPercent: allocationResult.equityPercent.toString(),
+        bondsPercent: allocationResult.bondsPercent.toString(),
+        cashPercent: allocationResult.cashPercent.toString(),
+        otherPercent: allocationResult.otherPercent.toString(),
+        holdingsCount: allocationResult.holdingsCount,
+        allocationMetadata: allocationResult.allocationMetadata,
+      });
+
+      res.json(allocation);
+    } catch (error) {
+      console.error("Error creating asset allocation:", error);
+      res.status(500).json({ message: "Failed to create asset allocation" });
+    }
+  });
+
+  app.get('/api/asset-allocations/user/:userId/current', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const requestUserId = (req.user as any).id;
+
+      // Ensure user can only access their own allocation
+      if (userId !== requestUserId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const allocation = await storage.getUserCurrentAllocation(userId);
+
+      if (!allocation) {
+        return res.status(404).json({ message: "No asset allocation found" });
+      }
+
+      res.json(allocation);
+    } catch (error) {
+      console.error("Error fetching asset allocation:", error);
+      res.status(500).json({ message: "Failed to fetch asset allocation" });
+    }
+  });
+
   // ETF market data routes
   app.get('/api/etf/:ticker/history', isAuthenticated, async (req: Request, res: Response) => {
     try {
