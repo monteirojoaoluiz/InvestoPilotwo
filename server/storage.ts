@@ -7,6 +7,8 @@ import {
   authTokens,
   passwordResetTokens,
   emailChangeTokens,
+  investorProfiles,
+  assetAllocations,
   type User,
   type UpsertUser,
   type RiskAssessment,
@@ -21,6 +23,10 @@ import {
   type InsertPasswordResetToken,
   type EmailChangeToken,
   type InsertEmailChangeToken,
+  type InvestorProfile,
+  type InsertInvestorProfile,
+  type AssetAllocation,
+  type InsertAssetAllocation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, lt, sql, isNull } from "drizzle-orm";
@@ -68,6 +74,16 @@ export interface IStorage {
   getRiskAssessmentsByUserId(userId: string): Promise<RiskAssessment[]>;
   getPortfolioRecommendationsByUserId(userId: string): Promise<PortfolioRecommendation[]>;
   getPortfolioMessagesByUserId(userId: string): Promise<PortfolioMessage[]>;
+
+  // Investor profile operations
+  createInvestorProfile(profile: InsertInvestorProfile): Promise<InvestorProfile>;
+  getInvestorProfileById(id: string): Promise<InvestorProfile | undefined>;
+  getUserCurrentProfile(userId: string): Promise<InvestorProfile | undefined>;
+
+  // Asset allocation operations
+  createAssetAllocation(allocation: InsertAssetAllocation): Promise<AssetAllocation>;
+  getUserCurrentAllocation(userId: string): Promise<AssetAllocation | undefined>;
+  getUserAllocationHistory(userId: string, limit?: number, offset?: number): Promise<AssetAllocation[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -328,6 +344,63 @@ export class DatabaseStorage implements IStorage {
 
   async getPortfolioMessagesByUserId(userId: string): Promise<PortfolioMessage[]> {
     return await db.select().from(portfolioMessages).where(eq(portfolioMessages.userId, userId));
+  }
+
+  // Investor profile operations
+  async createInvestorProfile(profile: InsertInvestorProfile): Promise<InvestorProfile> {
+    const [createdProfile] = await db
+      .insert(investorProfiles)
+      .values(profile)
+      .returning();
+    return createdProfile;
+  }
+
+  async getInvestorProfileById(id: string): Promise<InvestorProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(investorProfiles)
+      .where(eq(investorProfiles.id, id));
+    return profile;
+  }
+
+  async getUserCurrentProfile(userId: string): Promise<InvestorProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(investorProfiles)
+      .where(eq(investorProfiles.userId, userId))
+      .orderBy(desc(investorProfiles.createdAt))
+      .limit(1);
+    return profile;
+  }
+
+  // Asset allocation operations
+  async createAssetAllocation(allocation: InsertAssetAllocation): Promise<AssetAllocation> {
+    const [createdAllocation] = await db
+      .insert(assetAllocations)
+      .values(allocation)
+      .returning();
+    return createdAllocation;
+  }
+
+  async getUserCurrentAllocation(userId: string): Promise<AssetAllocation | undefined> {
+    const [allocation] = await db
+      .select()
+      .from(assetAllocations)
+      .where(eq(assetAllocations.userId, userId))
+      .orderBy(desc(assetAllocations.createdAt))
+      .limit(1);
+    return allocation;
+  }
+
+  async getUserAllocationHistory(userId: string, limit: number = 10, offset: number = 0): Promise<AssetAllocation[]> {
+    const allocations = await db
+      .select()
+      .from(assetAllocations)
+      .where(eq(assetAllocations.userId, userId))
+      .orderBy(desc(assetAllocations.createdAt))
+      .limit(limit)
+      .offset(offset);
+    return allocations;
   }
 }
 

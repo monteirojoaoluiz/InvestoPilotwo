@@ -1,0 +1,544 @@
+openapi: 3.0.3
+info:
+  title: Asset Allocation API
+  description: API for managing investor profiles and asset allocation recommendations
+  version: 1.0.0
+  contact:
+    name: InvestoPilot Team
+
+servers:
+  - url: http://localhost:5000/api
+    description: Development server
+  - url: https://api.investopilot.example.com/api
+    description: Production server
+
+tags:
+  - name: Investor Profiles
+    description: Manage investor profile data
+  - name: Asset Allocations
+    description: Calculate and retrieve asset allocation recommendations
+
+paths:
+  /investor-profiles:
+    post:
+      tags:
+        - Investor Profiles
+      summary: Create or update investor profile
+      description: Creates a new investor profile or updates an existing one. Each update creates a new profile version (immutable pattern).
+      operationId: createInvestorProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestorProfileInput'
+            examples:
+              beginnerProfile:
+                summary: Beginner investor with low risk tolerance
+                value:
+                  riskAssessmentId: "550e8400-e29b-41d4-a716-446655440000"
+                  riskTolerance: 25
+                  investmentHorizon: 10
+                  riskCapacity: "low"
+                  experienceLevel: "beginner"
+                  cashOtherPreference: 80
+              experiencedProfile:
+                summary: Experienced investor with high risk tolerance
+                value:
+                  riskAssessmentId: "550e8400-e29b-41d4-a716-446655440001"
+                  riskTolerance: 85
+                  investmentHorizon: 25
+                  riskCapacity: "high"
+                  experienceLevel: "experienced"
+                  cashOtherPreference: 30
+      responses:
+        '201':
+          description: Investor profile created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestorProfile'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - user not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /investor-profiles/{id}:
+    get:
+      tags:
+        - Investor Profiles
+      summary: Get specific investor profile by ID
+      operationId: getInvestorProfileById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Investor profile UUID
+      responses:
+        '200':
+          description: Investor profile found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestorProfile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /investor-profiles/user/{userId}:
+    get:
+      tags:
+        - Investor Profiles
+      summary: Get user's current investor profile
+      description: Returns the most recent investor profile for the specified user
+      operationId: getUserCurrentProfile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User UUID
+      responses:
+        '200':
+          description: Current profile found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestorProfile'
+        '404':
+          description: No profile found for user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /asset-allocations:
+    post:
+      tags:
+        - Asset Allocations
+      summary: Calculate and store new asset allocation
+      description: Calculates asset allocation based on investor profile and stores the result. Returns the calculated allocation.
+      operationId: calculateAllocation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - investorProfileId
+              properties:
+                investorProfileId:
+                  type: string
+                  format: uuid
+                  description: ID of the investor profile to use for calculation
+            examples:
+              allocationRequest:
+                summary: Request allocation for a profile
+                value:
+                  investorProfileId: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '201':
+          description: Allocation calculated and stored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetAllocation'
+        '400':
+          description: Invalid input or profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error during calculation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /asset-allocations/{id}:
+    get:
+      tags:
+        - Asset Allocations
+      summary: Get specific asset allocation by ID
+      operationId: getAllocationById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Asset allocation UUID
+      responses:
+        '200':
+          description: Allocation found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetAllocation'
+        '404':
+          description: Allocation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /asset-allocations/user/{userId}:
+    get:
+      tags:
+        - Asset Allocations
+      summary: Get allocation history for user
+      description: Returns all asset allocations for the specified user, ordered by creation time (newest first)
+      operationId: getUserAllocationHistory
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User UUID
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Maximum number of allocations to return
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of allocations to skip (for pagination)
+      responses:
+        '200':
+          description: Allocation history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allocations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AssetAllocation'
+                  total:
+                    type: integer
+                    description: Total number of allocations for this user
+                  limit:
+                    type: integer
+                    description: Limit applied to this request
+                  offset:
+                    type: integer
+                    description: Offset applied to this request
+        '404':
+          description: No allocations found for user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /asset-allocations/user/{userId}/current:
+    get:
+      tags:
+        - Asset Allocations
+      summary: Get user's most recent allocation
+      description: Returns the most recent asset allocation for the specified user
+      operationId: getUserCurrentAllocation
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User UUID
+      responses:
+        '200':
+          description: Current allocation found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetAllocation'
+        '404':
+          description: No allocation found for user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    InvestorProfileInput:
+      type: object
+      required:
+        - riskAssessmentId
+        - riskTolerance
+        - investmentHorizon
+        - riskCapacity
+        - experienceLevel
+        - cashOtherPreference
+      properties:
+        riskAssessmentId:
+          type: string
+          format: uuid
+          description: ID of the risk assessment this profile is based on
+        riskTolerance:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Risk tolerance score (0=very conservative, 100=very aggressive)
+          example: 65
+        investmentHorizon:
+          type: integer
+          minimum: 1
+          description: Investment time horizon in years
+          example: 15
+        riskCapacity:
+          type: string
+          enum: [low, medium, high]
+          description: Financial capacity to take risk
+          example: "medium"
+        experienceLevel:
+          type: string
+          enum: [beginner, intermediate, experienced, expert]
+          description: Investment experience level
+          example: "intermediate"
+        cashOtherPreference:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Preference for cash vs other assets (0=all other, 100=all cash)
+          example: 50
+
+    InvestorProfile:
+      allOf:
+        - $ref: '#/components/schemas/InvestorProfileInput'
+        - type: object
+          required:
+            - id
+            - userId
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Profile UUID
+            userId:
+              type: string
+              format: uuid
+              description: User who owns this profile
+            createdAt:
+              type: string
+              format: date-time
+              description: Profile creation timestamp
+            updatedAt:
+              type: string
+              format: date-time
+              description: Last update timestamp
+
+    AssetAllocation:
+      type: object
+      required:
+        - id
+        - userId
+        - investorProfileId
+        - equityPercent
+        - bondsPercent
+        - cashPercent
+        - otherPercent
+        - holdingsCount
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Allocation UUID
+        userId:
+          type: string
+          format: uuid
+          description: User who owns this allocation
+        investorProfileId:
+          type: string
+          format: uuid
+          description: Profile used for this allocation calculation
+        equityPercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Percentage allocated to stocks/equity
+          example: 60.50
+        bondsPercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Percentage allocated to bonds/fixed income
+          example: 30.00
+        cashPercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Percentage allocated to cash/money market
+          example: 7.50
+        otherPercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Percentage allocated to other assets
+          example: 2.00
+        holdingsCount:
+          type: integer
+          minimum: 1
+          description: Number of holdings recommended
+          example: 7
+        allocationMetadata:
+          type: object
+          description: Calculation audit trail (optional)
+          properties:
+            baseAllocation:
+              type: object
+              properties:
+                equity:
+                  type: number
+                bonds:
+                  type: number
+            horizonAdjustment:
+              type: object
+              properties:
+                equityIncrease:
+                  type: number
+                  description: Percentage points added to equity
+                horizonCategory:
+                  type: string
+                  enum: [short, medium, long]
+            capacityConstraint:
+              type: object
+              properties:
+                originalEquity:
+                  type: number
+                cappedEquity:
+                  type: number
+                capApplied:
+                  type: boolean
+                capacityLevel:
+                  type: string
+                  enum: [low, medium, high]
+            remainderSplit:
+              type: object
+              properties:
+                totalRemainder:
+                  type: number
+                cashPercent:
+                  type: number
+                otherPercent:
+                  type: number
+            boundaryInterpolation:
+              type: object
+              properties:
+                applied:
+                  type: boolean
+                riskTolerance:
+                  type: number
+                band1:
+                  type: string
+                band2:
+                  type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: Allocation creation timestamp
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+        code:
+          type: string
+          description: Machine-readable error code
+        details:
+          type: object
+          description: Additional error details (e.g., validation errors)
+
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Session-based authentication using Express session cookies
+
+security:
+  - sessionAuth: []

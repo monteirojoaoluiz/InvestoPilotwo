@@ -3,6 +3,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertRiskAssessmentSchema, insertPortfolioMessageSchema } from "@shared/schema";
+import { investorProfileInputSchema } from "@shared/types";
+import { calculateAllocation } from "./services/allocation-engine";
 import { z } from "zod";
 import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
@@ -1412,6 +1414,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating message:", error);
       res.status(500).json({ message: "Failed to create message" });
+    }
+  });
+
+  // T016: POST /api/investor-profiles - Create/update investor profile
+  app.post('/api/investor-profiles', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      const validated = investorProfileInputSchema.parse(req.body);
+
+      const profile = await storage.createInvestorProfile({
+        userId,
+        ...validated,
+      });
+
+      res.status(201).json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      }
+      console.error("Error creating investor profile:", error);
+      res.status(500).json({ message: "Failed to create investor profile" });
+    }
+  });
+
+  // T017: GET /api/investor-profiles/user/:userId - Get user's current profile
+  app.get('/api/investor-profiles/user/:userId', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+
+      // Verify user can only access their own profile
+      if (userId !== req.session.userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const profile = await storage.getUserCurrentProfile(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching investor profile:", error);
+      res.status(500).json({ message: "Failed to fetch investor profile" });
+    }
+  });
+
+  // T018: POST /api/asset-allocations - Calculate and store allocation
+  app.post('/api/asset-allocations', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      const { investorProfileId } = req.body;
+
+      if (!investorProfileId) {
+        return res.status(400).json({ message: "investorProfileId is required" });
+      }
+
+      // Get the profile
+      const profile = await storage.getInvestorProfileById(investorProfileId);
+      if (!profile) {
+        return res.status(404).json({ message: "Investor profile not found" });
+      }
+
+      // Verify user owns this profile
+      if (profile.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Calculate allocation
+      const allocationResult = calculateAllocation(profile);
+
+      // Store the allocation
+      const allocation = await storage.createAssetAllocation({
+        userId,
+        investorProfileId,
+        equityPercent: allocationResult.equityPercent.toString(),
+        bondsPercent: allocationResult.bondsPercent.toString(),
+        cashPercent: allocationResult.cashPercent.toString(),
+        otherPercent: allocationResult.otherPercent.toString(),
+        holdingsCount: allocationResult.holdingsCount,
+        allocationMetadata: allocationResult.allocationMetadata as any,
+      });
+
+      res.status(201).json({
+        ...allocation,
+        equityPercent: parseFloat(allocation.equityPercent),
+        bondsPercent: parseFloat(allocation.bondsPercent),
+        cashPercent: parseFloat(allocation.cashPercent),
+        otherPercent: parseFloat(allocation.otherPercent),
+      });
+    } catch (error) {
+      console.error("Error calculating allocation:", error);
+      res.status(500).json({ message: "Failed to calculate allocation" });
+    }
+  });
+
+  // T019: GET /api/asset-allocations/user/:userId/current - Get user's current allocation
+  app.get('/api/asset-allocations/user/:userId/current', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+
+      // Verify user can only access their own allocation
+      if (userId !== req.session.userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const allocation = await storage.getUserCurrentAllocation(userId);
+      if (!allocation) {
+        return res.status(404).json({ message: "No allocation found" });
+      }
+
+      res.json({
+        ...allocation,
+        equityPercent: parseFloat(allocation.equityPercent),
+        bondsPercent: parseFloat(allocation.bondsPercent),
+        cashPercent: parseFloat(allocation.cashPercent),
+        otherPercent: parseFloat(allocation.otherPercent),
+      });
+    } catch (error) {
+      console.error("Error fetching allocation:", error);
+      res.status(500).json({ message: "Failed to fetch allocation" });
     }
   });
 

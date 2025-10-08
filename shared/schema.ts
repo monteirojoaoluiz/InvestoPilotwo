@@ -90,6 +90,34 @@ export const emailChangeTokens = pgTable("email_change_tokens", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Investor profiles table
+export const investorProfiles = pgTable("investor_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  riskAssessmentId: varchar("risk_assessment_id").notNull().references(() => riskAssessments.id, { onDelete: 'cascade' }),
+  riskTolerance: integer("risk_tolerance").notNull(),
+  investmentHorizon: integer("investment_horizon").notNull(),
+  riskCapacity: varchar("risk_capacity", { length: 10 }).notNull(),
+  experienceLevel: varchar("experience_level", { length: 15 }).notNull(),
+  cashOtherPreference: integer("cash_other_preference").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Asset allocations table
+export const assetAllocations = pgTable("asset_allocations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  investorProfileId: varchar("investor_profile_id").notNull().references(() => investorProfiles.id, { onDelete: 'cascade' }),
+  equityPercent: varchar("equity_percent").notNull(),
+  bondsPercent: varchar("bonds_percent").notNull(),
+  cashPercent: varchar("cash_percent").notNull(),
+  otherPercent: varchar("other_percent").notNull(),
+  holdingsCount: integer("holdings_count").notNull(),
+  allocationMetadata: jsonb("allocation_metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export type AuthToken = typeof authTokens.$inferSelect;
 export type InsertAuthToken = typeof authTokens.$inferInsert;
 
@@ -131,6 +159,12 @@ export type PortfolioRecommendation = typeof portfolioRecommendations.$inferSele
 
 export type InsertPortfolioMessage = typeof portfolioMessages.$inferInsert;
 export type PortfolioMessage = typeof portfolioMessages.$inferSelect;
+
+export type InsertInvestorProfile = typeof investorProfiles.$inferInsert;
+export type InvestorProfile = typeof investorProfiles.$inferSelect;
+
+export type InsertAssetAllocation = typeof assetAllocations.$inferInsert;
+export type AssetAllocation = typeof assetAllocations.$inferSelect;
 
 // Zod schemas
 export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments)
