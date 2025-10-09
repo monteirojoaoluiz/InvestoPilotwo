@@ -73,6 +73,7 @@ import { humanizeProfile } from "./lib/profileHumanizer";
 import { queryClient } from "./lib/queryClient";
 import { apiRequest } from "./lib/queryClient";
 import ETFCatalog from "./pages/etf-catalog";
+import PortfolioPage from "./pages/portfolio";
 import ResetPassword from "./pages/reset-password";
 
 function Dashboard() {
@@ -259,6 +260,8 @@ function Dashboard() {
 
   const handleGeneratePortfolio = async () => {
     try {
+      // Note: Portfolio generation now happens automatically via assessment auto-generation
+      // This manual trigger is kept for backwards compatibility but will regenerate
       const res = await apiRequest("POST", "/api/portfolio/generate");
       if (!res.ok) {
         throw new Error(`Failed to generate: ${res.statusText}`);
@@ -267,6 +270,8 @@ function Dashboard() {
       if (!newPortfolio) {
         throw new Error("Invalid portfolio data received");
       }
+      // Invalidate cache to fetch the new portfolio
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio"] });
       await refetchPortfolio();
       toast({
         title: "Portfolio Generated!",
@@ -1468,6 +1473,7 @@ function AuthenticatedRouter() {
                 <Route path="/dashboard" component={Dashboard} />
                 <Route path="/assessment" component={Assessment} />
                 <Route path="/etf-catalog" component={ETFCatalogPage} />
+                <Route path="/portfolio" component={PortfolioPage} />
                 <Route path="/account" component={Account} />
                 <Route path="/" component={Dashboard} />
               </Switch>

@@ -67,6 +67,7 @@ export const portfolioRecommendations = pgTable("portfolio_recommendations", {
     .notNull()
     .references(() => riskAssessments.id),
   allocations: jsonb("allocations").notNull(), // JSON array of allocation objects
+  optimization: jsonb("optimization"), // Optimization metadata (expectedReturn, volatility, sharpe, etc.)
   totalValue: integer("total_value").notNull().default(0),
   totalReturn: integer("total_return").notNull().default(0), // Stored as percentage * 100 (e.g., 8.4% = 840)
   createdAt: timestamp("created_at").defaultNow(),

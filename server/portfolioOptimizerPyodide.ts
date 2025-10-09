@@ -36,9 +36,9 @@ async function initializePyodide(): Promise<PyodideInterface> {
   isInitializing = true;
   initializationPromise = (async () => {
     console.log("Initializing Pyodide...");
-    const pyodide = await loadPyodide({
-      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/",
-    });
+    // For Node.js, we need to use the node_modules path
+    // Pyodide will auto-detect and use the correct path
+    const pyodide = await loadPyodide();
 
     console.log("Loading Python packages...");
     await pyodide.loadPackage(["numpy", "scipy"]);

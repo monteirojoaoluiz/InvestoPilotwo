@@ -158,10 +158,25 @@ export class DatabaseStorage implements IStorage {
   async createPortfolioRecommendation(
     portfolio: InsertPortfolioRecommendation,
   ): Promise<PortfolioRecommendation> {
+    console.log("=== CREATING PORTFOLIO ===");
+    console.log("Input portfolio object keys:", Object.keys(portfolio));
+    console.log("Has optimization in input?", "optimization" in portfolio);
+    console.log("Optimization value in input:", portfolio.optimization);
+    console.log("Optimization type:", typeof portfolio.optimization);
+
     const [recommendation] = await db
       .insert(portfolioRecommendations)
       .values(portfolio)
       .returning();
+
+    console.log("=== CREATED PORTFOLIO ===");
+    console.log("Returned portfolio keys:", Object.keys(recommendation));
+    console.log(
+      "Has optimization in returned?",
+      "optimization" in recommendation,
+    );
+    console.log("Optimization value in returned:", recommendation.optimization);
+
     return recommendation;
   }
 
@@ -180,6 +195,12 @@ export class DatabaseStorage implements IStorage {
         "DB query result:",
         portfolio ? "Found portfolio" : "No portfolio found",
       );
+      if (portfolio) {
+        console.log("Portfolio keys:", Object.keys(portfolio));
+        console.log("Has optimization field?", "optimization" in portfolio);
+        console.log("Optimization value:", portfolio.optimization);
+        console.log("Optimization type:", typeof portfolio.optimization);
+      }
       return portfolio;
     } catch (error) {
       console.error("DB error in getPortfolioByUserId:", error);

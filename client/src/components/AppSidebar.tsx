@@ -28,6 +28,7 @@ import {
   Lock,
   Database,
   PanelLeftIcon,
+  Briefcase,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
@@ -49,6 +50,12 @@ const menuItems = [
     url: "/assessment",
     icon: FileText,
     testId: "link-assessment",
+  },
+  {
+    title: "Portfolio",
+    url: "/portfolio",
+    icon: Briefcase,
+    testId: "link-portfolio",
   },
 ];
 

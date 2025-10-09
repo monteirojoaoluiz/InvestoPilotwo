@@ -63,12 +63,8 @@ app.use((req, res, next) => {
     throw error;
   }
 
-  // Initialize Pyodide for portfolio optimization (async, non-blocking)
-  console.log("Initializing Pyodide for portfolio optimization...");
-  import("./portfolioOptimizerPyodide")
-    .then(({ warmupPyodide }) => warmupPyodide())
-    .then(() => console.log("Pyodide initialization complete"))
-    .catch((err) => console.error("Pyodide initialization failed:", err));
+  // Portfolio optimizer is ready (TypeScript implementation - no initialization needed)
+  console.log("Portfolio optimizer ready");
 
   const server = await registerRoutes(app);
 

@@ -21,7 +21,6 @@ import yahooFinance from "yahoo-finance2";
 import { z } from "zod";
 
 import { pool } from "./db";
-import { warmupPyodide } from "./portfolioOptimizerPyodide";
 import { storage } from "./storage";
 
 const groqClient = new Groq({
@@ -998,6 +997,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Risk assessment routes
+
+  /**
+   * Helper function to generate portfolio for a user based on their assessment
+   */
+  async function generatePortfolioForUser(
+    userId: string,
+    assessmentId: string,
+  ) {
+    try {
+      console.log(`Auto-generating portfolio for user ${userId}...`);
+
+      const assessment = await storage.getRiskAssessmentByUserId(userId);
+      if (!assessment) {
+        throw new Error("Assessment not found");
+      }
+
+      // Import optimization modules
+      const {
+        assessmentToRiskProfile,
+        mapRiskProfileToParams,
+        adjustParamsForEdgeCases,
+      } = await import("./portfolioMapping");
+      const { getETFUniverse } = await import("./etfDatabase");
+      const { filterETFsByConstraints, computePortfolioStatistics } =
+        await import("./portfolioStatistics");
+      const { optimizePortfolioWithTS } = await import(
+        "./portfolioOptimizerTS"
+      );
+
+      // Convert assessment to risk profile
+      const riskProfile = assessmentToRiskProfile(assessment.answers);
+      console.log("Risk profile:", riskProfile);
+
+      // Map to optimization parameters
+      let params = mapRiskProfileToParams(riskProfile);
+      params = adjustParamsForEdgeCases(params, riskProfile);
+      console.log("Optimization parameters:", params);
+
+      // Get ETF universe
+      const allETFs = getETFUniverse();
+      console.log(`Total ETFs in universe: ${allETFs.length}`);
+
+      // Filter ETFs by constraints
+      const filteredETFs = filterETFsByConstraints(
+        allETFs,
+        params,
+        riskProfile.industryExclusions,
+      );
+      console.log(`Filtered ETFs: ${filteredETFs.length}`);
+
+      if (filteredETFs.length === 0) {
+        throw new Error("No ETFs match the investment criteria");
+      }
+
+      // Compute statistics
+      const stats = computePortfolioStatistics(
+        filteredETFs,
+        params,
+        riskProfile.industryExclusions,
+      );
+      console.log("Computed portfolio statistics");
+
+      // Run optimization
+      const optimizedPortfolio = await optimizePortfolioWithTS(
+        filteredETFs,
+        stats,
+        params,
+        riskProfile.industryExclusions,
+      );
+      console.log("Optimization complete");
+
+      // Convert to storage format
+      const allocations = optimizedPortfolio.etfDetails.map((etf) => ({
+        ticker: etf.ticker,
+        name: etf.name,
+        percentage: Math.round(etf.weight * 100 * 100) / 100, // Round to 2 decimals
+        assetType:
+          filteredETFs.find((e) => e.ticker === etf.ticker)?.assetClass ||
+          "equity",
+      }));
+
+      // Store portfolio
+      const optimizationData = {
+        expectedReturn: optimizedPortfolio.expectedReturn,
+        expectedVolatility: optimizedPortfolio.expectedVolatility,
+        sharpeRatio: optimizedPortfolio.sharpeRatio,
+        regionExposure: optimizedPortfolio.regionExposure,
+        totalFees: optimizedPortfolio.totalFees,
+        constraints: optimizedPortfolio.constraints,
+      };
+
+      console.log(
+        "Storing optimization data:",
+        JSON.stringify(optimizationData, null, 2),
+      );
+
+      const portfolio = await storage.createPortfolioRecommendation({
+        userId,
+        riskAssessmentId: assessmentId,
+        allocations,
+        optimization: optimizationData,
+        totalValue: 0,
+        totalReturn: Math.round(optimizedPortfolio.expectedReturn * 100 * 100), // Store as basis points
+      });
+
+      console.log(`Portfolio generated successfully for user ${userId}`);
+      console.log("Created portfolio ID:", portfolio.id);
+      console.log(
+        "Created portfolio has optimization?",
+        !!portfolio.optimization,
+      );
+      console.log("Created portfolio optimization:", portfolio.optimization);
+
+      return {
+        portfolio,
+        optimization: {
+          expectedReturn: optimizedPortfolio.expectedReturn,
+          expectedVolatility: optimizedPortfolio.expectedVolatility,
+          sharpeRatio: optimizedPortfolio.sharpeRatio,
+          regionExposure: optimizedPortfolio.regionExposure,
+          totalFees: optimizedPortfolio.totalFees,
+          constraints: optimizedPortfolio.constraints,
+        },
+      };
+    } catch (error) {
+      console.error("Error generating portfolio:", error);
+      throw error;
+    }
+  }
+
   app.post(
     "/api/risk-assessment",
     isAuthenticated,
@@ -1059,6 +1188,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         const assessment = await storage.createRiskAssessment(assessmentData);
 
+        // Automatically generate portfolio after assessment is saved
+        try {
+          console.log(
+            "Auto-generating portfolio after assessment completion...",
+          );
+          await generatePortfolioForUser(userId, assessment.id);
+          console.log("Portfolio auto-generation complete");
+        } catch (portfolioError) {
+          console.error("Failed to auto-generate portfolio:", portfolioError);
+          // Don't fail the assessment save if portfolio generation fails
+          // User can still see their assessment results
+        }
+
         res.json(assessment);
       } catch (error) {
         if (error instanceof z.ZodError) {
@@ -1114,8 +1256,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { getETFUniverse } = await import("./etfDatabase");
         const { filterETFsByConstraints, computePortfolioStatistics } =
           await import("./portfolioStatistics");
-        const { optimizePortfolioWithPyodide } = await import(
-          "./portfolioOptimizerPyodide"
+        const { optimizePortfolioWithTS } = await import(
+          "./portfolioOptimizerTS"
         );
 
         // Convert assessment to risk profile
@@ -1155,7 +1297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Computed portfolio statistics");
 
         // Run optimization
-        const optimizedPortfolio = await optimizePortfolioWithPyodide(
+        const optimizedPortfolio = await optimizePortfolioWithTS(
           filteredETFs,
           stats,
           params,
@@ -1220,17 +1362,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .json({ message: "Please complete risk assessment first" });
         }
 
-        const allocations = generateEtfAllocationsFromAssessment(assessment);
+        // Use the same generation logic that includes optimization data
+        const result = await generatePortfolioForUser(userId, assessment.id);
 
-        const portfolio = await storage.createPortfolioRecommendation({
-          userId,
-          riskAssessmentId: assessment.id,
-          allocations, // Pass object directly for jsonb
-          totalValue: 0,
-          totalReturn: 0,
-        });
-
-        res.json(portfolio);
+        res.json(result.portfolio);
       } catch (error) {
         console.error("Error generating portfolio:", error);
         res.status(500).json({ message: "Failed to generate portfolio" });
@@ -1298,6 +1433,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...portfolio,
           allocations: portfolio.allocations, // Already parsed object from jsonb
         };
+
+        console.log(
+          "Portfolio response includes optimization?",
+          !!response.optimization,
+        );
+        console.log("Response keys:", Object.keys(response));
+        if (response.optimization) {
+          console.log(
+            "Optimization data:",
+            JSON.stringify(response.optimization, null, 2),
+          );
+        } else {
+          console.log("Portfolio had optimization?", !!portfolio.optimization);
+          console.log("Portfolio optimization:", portfolio.optimization);
+        }
 
         res.json(response);
       } catch (error) {

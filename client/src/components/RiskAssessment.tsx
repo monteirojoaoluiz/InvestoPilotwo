@@ -66,6 +66,8 @@ export default function RiskAssessment({ onComplete }: RiskAssessmentProps) {
       try {
         console.log("Risk assessment saved successfully:", result);
         queryClient.invalidateQueries({ queryKey: ["assessment"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/portfolio"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/risk-assessment"] });
         toast({
           title: "Assessment Complete!",
           description: "Your risk profile has been saved successfully.",
