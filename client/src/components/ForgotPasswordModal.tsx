@@ -1,17 +1,26 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Mail, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProps) {
+export default function ForgotPasswordModal({
+  isOpen,
+  onClose,
+}: ForgotPasswordModalProps) {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -22,26 +31,28 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to send reset link');
+        throw new Error(error.message || "Failed to send reset link");
       }
 
       setIsSuccess(true);
       toast({
         title: "Email Sent",
-        description: "If an account exists with that email, you'll receive a password reset link.",
+        description:
+          "If an account exists with that email, you'll receive a password reset link.",
       });
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to send reset link. Please try again.",
+        description:
+          error.message || "Failed to send reset link. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -57,11 +68,12 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md w-[95vw] max-w-[400px] p-4 sm:p-6">
+      <DialogContent className="w-[95vw] max-w-[400px] p-4 sm:max-w-md sm:p-6">
         <DialogHeader>
           <DialogTitle>Reset Your Password</DialogTitle>
           <DialogDescription>
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we'll send you a link to reset your
+            password.
           </DialogDescription>
         </DialogHeader>
 
@@ -83,7 +95,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 min-h-[44px] touch-manipulation"
+                className="min-h-[44px] flex-1 touch-manipulation"
                 onClick={handleClose}
                 disabled={isLoading}
               >
@@ -91,7 +103,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               </Button>
               <Button
                 type="submit"
-                className="flex-1 min-h-[44px] touch-manipulation"
+                className="min-h-[44px] flex-1 touch-manipulation"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -110,12 +122,16 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
           </form>
         ) : (
           <div className="space-y-4">
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
               <p className="text-sm text-green-800 dark:text-green-200">
-                Check your email for a password reset link. The link will expire in 1 hour.
+                Check your email for a password reset link. The link will expire
+                in 1 hour.
               </p>
             </div>
-            <Button onClick={handleClose} className="w-full min-h-[44px] touch-manipulation">
+            <Button
+              onClick={handleClose}
+              className="min-h-[44px] w-full touch-manipulation"
+            >
               Close
             </Button>
           </div>

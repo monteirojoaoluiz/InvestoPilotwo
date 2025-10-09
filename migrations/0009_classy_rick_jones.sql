@@ -1,0 +1,1 @@
+ALTER TABLE "portfolio_recommendations" ADD COLUMN "optimization" jsonb;

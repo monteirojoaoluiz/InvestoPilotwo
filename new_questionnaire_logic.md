@@ -1,6 +1,6 @@
 # Questionnaire → Profile Scoring Spec (for implementation)
 
-This markdown is a complete, code-friendly spec of the 14-question investor questionnaire and the mapping to output features. 
+This markdown is a complete, code-friendly spec of the 14-question investor questionnaire and the mapping to output features.
 
 ---
 
@@ -8,12 +8,12 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 
 ```json
 {
-  "risk_tolerance": 0,         // number 0..100
-  "risk_capacity": 0,          // number 0..100
-  "investment_horizon": 0,     // number 0..100
-  "investor_experience": 0,    // number 0..100
-  "regions_selected": [],      // array of region codes (see Q4)
-  "industry_exclusions": []    // array of industry codes (see Q14)
+  "risk_tolerance": 0, // number 0..100
+  "risk_capacity": 0, // number 0..100
+  "investment_horizon": 0, // number 0..100
+  "investor_experience": 0, // number 0..100
+  "regions_selected": [], // array of region codes (see Q4)
+  "industry_exclusions": [] // array of industry codes (see Q14)
 }
 ```
 
@@ -23,20 +23,18 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 
 ## 1) Questions
 
-
 ### Q1 — Financial Journey
 
 **qid:** `Q1_journey`
 **type:** single
 **options:**
 
-| aid | label                                         | Effects                                 |
-| --- | --------------------------------------------- | --------------------------------------- |
-| `A` | I’m early in my career and building wealth    | `Horizon = 70`; **Capacity  = 40**  |
-| `B` | I’m mid-career and focused on growing assets  | `Horizon = 80`; **Capacity  = 70**  |
-| `C` | I’m within 10 years of retirement             | `Horizon = 0`; **Capacity  = 50**  |
-| `D` | I’m retired and prioritising income stability | `Horizon = 20`; **Capacity  = 20** |
-
+| aid | label                                         | Effects                           |
+| --- | --------------------------------------------- | --------------------------------- |
+| `A` | I’m early in my career and building wealth    | `Horizon = 70`; **Capacity = 40** |
+| `B` | I’m mid-career and focused on growing assets  | `Horizon = 80`; **Capacity = 70** |
+| `C` | I’m within 10 years of retirement             | `Horizon = 0`; **Capacity = 50**  |
+| `D` | I’m retired and prioritising income stability | `Horizon = 20`; **Capacity = 20** |
 
 ---
 
@@ -60,9 +58,9 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 
 | aid | label          | Effects                          |
 | --- | -------------- | -------------------------------- |
-| `A` | Within 5 years | `Horizon = -50`; `Tolerance −30`  |
-| `B` | In ~5–15 years  | `Horizon = -20`; `Tolerance 0`    |
-| `C` | In >15 years    | `Horizon = +20`; `Tolerance +30` |
+| `A` | Within 5 years | `Horizon = -50`; `Tolerance −30` |
+| `B` | In ~5–15 years | `Horizon = -20`; `Tolerance 0`   |
+| `C` | In >15 years   | `Horizon = +20`; `Tolerance +30` |
 
 ---
 
@@ -83,14 +81,15 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 **Effect:** sets `regions_selected` to the selected codes.
 
 ---
+
 ### Q5 — Industry Exclusions (Multi-select “keep included” UI)
 
 **qid:** `Q5_industries`
 **type:** multi-select (checkboxes where **checked = allowed**; unchecked = exclude)
 **prompt:**
 
-> *Is it okay for your portfolio to include the following?*
-> *Uncheck any you want to exclude. Leaving all checked means no exclusions. Exclusions may reduce diversification and affect returns.*
+> _Is it okay for your portfolio to include the following?_
+> _Uncheck any you want to exclude. Leaving all checked means no exclusions. Exclusions may reduce diversification and affect returns._
 
 **All possible industry codes:**
 
@@ -180,15 +179,13 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 **qid:** `Q11_investor_profile`
 **type:** single
 
-| aid | label                       | Effects                                    |
-| --- | --------------------------- | ------------------------------------------ |
-| `A` | Dividend-focused            | `Tolerance +0`; `Horizon −10`              |
-| `B` | Balanced                    | `Tolerance +10`; `Horizon +0`              |
-| `C` | Growth-focused              | `Tolerance +20`; `Horizon +10`             |
-
+| aid | label            | Effects                        |
+| --- | ---------------- | ------------------------------ |
+| `A` | Dividend-focused | `Tolerance +0`; `Horizon −10`  |
+| `B` | Balanced         | `Tolerance +10`; `Horizon +0`  |
+| `C` | Growth-focused   | `Tolerance +20`; `Horizon +10` |
 
 ---
-
 
 ### Q12 — 20% Loss Reaction
 
@@ -232,7 +229,6 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 
 ---
 
-
 ## 6) Worked Example
 
 **Responses (example):**
@@ -242,8 +238,8 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
   "Q1_journey": "B",
   "Q2_drawdowns": "B",
   "Q3_horizon_need": "C",
-  "Q4_regions": ["US","EM"],
-  "Q5_industries": ["TOBACCO","DEFENSE","GAMBLING","ADULT"], // allowed (checked)
+  "Q4_regions": ["US", "EM"],
+  "Q5_industries": ["TOBACCO", "DEFENSE", "GAMBLING", "ADULT"], // allowed (checked)
   "Q6_income_stability": "B",
   "Q7_emergency_fund": "A",
   "Q8_debt": "B",
@@ -259,6 +255,7 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 **Step-by-step computation:**
 
 ### Risk Tolerance
+
 - **Start:** base = 0
 - Q2_drawdowns (B): +0
 - Q3_horizon_need (C): +30
@@ -268,6 +265,7 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 - **Total:** 0 + 0 + 30 + 10 + 20 + 10 = **70**
 
 ### Risk Capacity
+
 - **Base:** Q1_journey (B, mid-career) = 70
 - Q6_income_stability (B): +20
 - Q7_emergency_fund (A): +20
@@ -279,6 +277,7 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 - **Result:** **100**
 
 ### Investment Horizon
+
 - **Base:** Q1_journey (B, mid-career) = 80
 - Q3_horizon_need (C, >15 years): +20
 - Q11_investor_profile (C, growth-focused): +10
@@ -286,14 +285,17 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 - **Result:** **100**
 
 ### Investor Experience
+
 - Q9_investing_experience (C, intermediate): base = 70
 - Q10_investing_knowledge (B, intermediate): +10
 - **Total:** 70 + 10 = **80**
 
 ### Regions Selected
+
 - Q4_regions: `["US","EM"]`
 
 ### Industry Exclusions
+
 - Q5_industries (checked/allowed): `["TOBACCO","DEFENSE","GAMBLING","ADULT"]`
 - All possible codes: `["TOBACCO","FOSSIL_FUELS","DEFENSE","GAMBLING","ADULT","NO_ESG_SCREEN"]`
 - Exclusions = ALL − allowed: `["FOSSIL_FUELS","NO_ESG_SCREEN"]`
@@ -306,8 +308,8 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
   "risk_capacity": 100,
   "investment_horizon": 100,
   "investor_experience": 80,
-  "regions_selected": ["US","EM"],
-  "industry_exclusions": ["FOSSIL_FUELS","NO_ESG_SCREEN"]
+  "regions_selected": ["US", "EM"],
+  "industry_exclusions": ["FOSSIL_FUELS", "NO_ESG_SCREEN"]
 }
 ```
 
@@ -315,10 +317,10 @@ This markdown is a complete, code-friendly spec of the 14-question investor ques
 
 ## 7) Implementation Checklist
 
-* [ ] Apply bases first, then add modifiers, then clamp all values to [0, 100].
-* [ ] If Q4_regions is empty → don't allow the user to proceed to the next question..
-* [ ] Q5_industries input is the "allowed" list (checked items); convert to `industry_exclusions` via set difference: ALL_CODES − allowed_codes.
-* [ ] Industry exclusions include handling of `NO_ESG_SCREEN` (if unchecked, excludes non-ESG funds).
-* [ ] If Q5_industries is empty → don't allow the user to proceed to the next question.
+- [ ] Apply bases first, then add modifiers, then clamp all values to [0, 100].
+- [ ] If Q4_regions is empty → don't allow the user to proceed to the next question..
+- [ ] Q5_industries input is the "allowed" list (checked items); convert to `industry_exclusions` via set difference: ALL_CODES − allowed_codes.
+- [ ] Industry exclusions include handling of `NO_ESG_SCREEN` (if unchecked, excludes non-ESG funds).
+- [ ] If Q5_industries is empty → don't allow the user to proceed to the next question.
 
 ---

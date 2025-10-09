@@ -23,15 +23,15 @@
 
 /* LIGHT MODE */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(0, 0, 0, 0.1);
+  --badge-outline: rgba(0, 0, 0, 0.05);
 
   /* Automatic computation of border around primary / danger buttons */
   --opaque-button-border-intensity: -8; /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --elevate-1: rgba(0, 0, 0, 0.03);
+  --elevate-2: rgba(0, 0, 0, 0.08);
 
   --background: 0 0% 100%;
 
@@ -49,7 +49,7 @@
 
   --sidebar-foreground: 210 25% 7.8431%;
 
-  --sidebar-border: 205.0000 25.0000% 90.5882%;
+  --sidebar-border: 205 25% 90.5882%;
 
   --sidebar-primary: 203.8863 88.2845% 53.1373%;
 
@@ -92,22 +92,32 @@
   --ring: 0 0% 0%;
   --chart-1: 203.8863 88.2845% 53.1373%;
   --chart-2: 159.7826 100% 36.0784%;
-  --chart-3: 42.0290 92.8251% 56.2745%;
+  --chart-3: 42.029 92.8251% 56.2745%;
   --chart-4: 147.1429 78.5047% 41.9608%;
-  --chart-5: 341.4894 75.2000% 50.9804%;
+  --chart-5: 341.4894 75.2% 50.9804%;
 
-  --font-sans: 'Space Grotesk', sans-serif;
-  --font-serif: 'Geist', sans-serif;
-  --font-mono: 'Geist Mono', monospace;
+  --font-sans: "Space Grotesk", sans-serif;
+  --font-serif: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
   --radius: 0rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
+  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-sm:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-md:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-lg:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-xl:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -115,58 +125,79 @@
 
   /* Fallback for older browsers */
   --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-primary-border: hsl(
+    from hsl(var(--sidebar-primary)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-accent-border: hsl(
+    from hsl(var(--sidebar-accent)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --primary-border: hsl(
+    from hsl(var(--primary)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --secondary-border: hsl(
+    from hsl(var(--secondary)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --muted-border: hsl(
+    from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) /
+      alpha
+  );
 
   /* Fallback for older browsers */
   --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --accent-border: hsl(
+    from hsl(var(--accent)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --destructive-border: hsl(
+    from hsl(var(--destructive)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
 }
 
 .dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --button-outline: rgba(255, 255, 255, 0.1);
+  --badge-outline: rgba(255, 255, 255, 0.05);
 
-  --opaque-button-border-intensity: 9;  /* In terms of percentages */
+  --opaque-button-border-intensity: 9; /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(255, 255, 255, 0.04);
+  --elevate-2: rgba(255, 255, 255, 0.09);
 
   --background: 0 0% 0%;
 
   --foreground: 200 6.6667% 91.1765%;
 
-  --border: 210 5.2632% 14.9020%;
+  --border: 210 5.2632% 14.902%;
 
   --card: 228 9.8039% 10%;
 
-  --card-foreground: 0 0% 85.0980%;
+  --card-foreground: 0 0% 85.098%;
 
   --card-border: 206 16% 26%;
 
   --sidebar: 228 9.8039% 10%;
 
-  --sidebar-foreground: 0 0% 85.0980%;
+  --sidebar-foreground: 0 0% 85.098%;
 
   --sidebar-border: 205.7143 15.7895% 26.0784%;
 
@@ -176,7 +207,7 @@
 
   --sidebar-accent: 205.7143 70% 7.8431%;
 
-  --sidebar-accent-foreground: 203.7736 87.6033% 52.5490%;
+  --sidebar-accent-foreground: 203.7736 87.6033% 52.549%;
 
   --sidebar-ring: 202.8169 89.1213% 53.1373%;
 
@@ -186,11 +217,11 @@
 
   --popover-border: 206 16% 26%;
 
-  --primary: 203.7736 87.6033% 52.5490%;
+  --primary: 203.7736 87.6033% 52.549%;
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 195.0000 15.3846% 94.9020%;
+  --secondary: 195 15.3846% 94.902%;
 
   --secondary-foreground: 210 25% 7.8431%;
 
@@ -201,7 +232,7 @@
 
   --accent: 205.7143 70% 7.8431%;
 
-  --accent-foreground: 203.7736 87.6033% 52.5490%;
+  --accent-foreground: 203.7736 87.6033% 52.549%;
 
   --destructive: 356.3033 90.5579% 54.3137%;
 
@@ -211,25 +242,34 @@
   --ring: 202.8169 89.1213% 53.1373%;
   --chart-1: 203.8863 88.2845% 53.1373%;
   --chart-2: 159.7826 100% 36.0784%;
-  --chart-3: 42.0290 92.8251% 56.2745%;
+  --chart-3: 42.029 92.8251% 56.2745%;
   --chart-4: 147.1429 78.5047% 41.9608%;
-  --chart-5: 341.4894 75.2000% 50.9804%;
+  --chart-5: 341.4894 75.2% 50.9804%;
 
-  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
+  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-sm:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-md:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-lg:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-xl:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
   --radius: 1.3rem;
   --spacing: 0.25rem;
   --font-mono: Menlo, monospace;
   --font-sans: Open Sans, sans-serif;
   --font-serif: Georgia, serif;
   --tracking-normal: 0em;
-
 }
 
 @layer base {
@@ -244,7 +284,7 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
@@ -279,7 +319,6 @@
  * need to be distinguished from eachother visually.
  */
 @layer utilities {
-
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;
@@ -303,7 +342,9 @@
     }
 
     /* Prevent any element from causing horizontal scroll - but allow vertical scrolling */
-    body, html, #root {
+    body,
+    html,
+    #root {
       max-width: 100vw !important;
       overflow-x: hidden !important;
     }
@@ -317,12 +358,24 @@
 
     /* General containers should allow vertical scrolling, but be more specific about what gets horizontal scroll prevention */
     /* Exclude elements that specifically need horizontal scrolling */
-    div:not(.container):not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
-    section:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
-    article:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
-    aside:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
-    nav:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
-    header:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not([class*="overflow-x-auto"]):not([class*="overflow-x"]) {
+    div:not(.container):not([class*="container"]):not(.mx-auto):not(
+        [class*="max-w"]
+      ):not([class*="overflow-x-auto"]):not([class*="overflow-x"]),
+    section:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not(
+        [class*="overflow-x-auto"]
+      ):not([class*="overflow-x"]),
+    article:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not(
+        [class*="overflow-x-auto"]
+      ):not([class*="overflow-x"]),
+    aside:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not(
+        [class*="overflow-x-auto"]
+      ):not([class*="overflow-x"]),
+    nav:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not(
+        [class*="overflow-x-auto"]
+      ):not([class*="overflow-x"]),
+    header:not([class*="container"]):not(.mx-auto):not([class*="max-w"]):not(
+        [class*="overflow-x-auto"]
+      ):not([class*="overflow-x"]) {
       max-width: 100vw !important;
       overflow-x: hidden !important;
       overflow-y: visible !important;
@@ -496,11 +549,11 @@
 
   /* Hide scrollbars for horizontal scrolling elements */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none; /* Chrome, Safari and Opera */
   }
 
   /* Smooth horizontal scrolling for touch devices */
@@ -563,10 +616,11 @@
   /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
    * buttons/badges can remove the automatic brightness adjustment on interactions
    * and program their own. */
-  .no-default-hover-elevate {}
+  .no-default-hover-elevate {
+  }
 
-  .no-default-active-elevate {}
-
+  .no-default-active-elevate {
+  }
 
   /**
    * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
@@ -645,12 +699,12 @@
     scroll-behavior: smooth;
     overscroll-behavior-x: contain;
   }
-  
+
   .snap-x {
     scroll-snap-type: x proximity;
     scroll-padding-inline: 1rem;
   }
-  
+
   .snap-start {
     scroll-snap-align: start;
   }

@@ -1,11 +1,12 @@
 // Reference: javascript_database integration
-import pkg from 'pg';
-const { Pool } = pkg;
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import * as schema from "@shared/schema";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import path from "path";
+import pkg from "pg";
+import { fileURLToPath } from "url";
+
+const { Pool } = pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,12 +17,15 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-console.log('Initializing database connection...');
+console.log("Initializing database connection...");
 
 // Use standard PostgreSQL connection for better Render compatibility
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
 });
 
 export const db = drizzle({ client: pool, schema });
@@ -29,12 +33,12 @@ export const db = drizzle({ client: pool, schema });
 // Run migrations on startup
 export async function runMigrations() {
   try {
-    console.log('Running database migrations...');
-    const migrationsFolder = path.join(__dirname, '../migrations');
+    console.log("Running database migrations...");
+    const migrationsFolder = path.join(__dirname, "../migrations");
     await migrate(db, { migrationsFolder });
-    console.log('Migrations completed successfully');
+    console.log("Migrations completed successfully");
   } catch (error) {
-    console.error('Migration error:', error);
+    console.error("Migration error:", error);
     throw error;
   }
 }

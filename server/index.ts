@@ -1,12 +1,13 @@
-import 'dotenv/config';
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+
 import { errorHandler, notFoundHandler } from "./errorHandler";
 import { logger } from "./logger";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.set('trust proxy', 1); // Trust proxy for session cookies in production
+app.set("trust proxy", 1); // Trust proxy for session cookies in production
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -43,17 +44,27 @@ app.use((req, res, next) => {
 (async () => {
   // Test database connection and run migrations
   try {
-    const { pool, runMigrations } = await import('./db');
-    console.log('Testing database connection...');
-    const result = await pool.query('SELECT NOW()');
-    console.log('Database connection successful:', result.rows[0]);
-    
-    // Run migrations
-    await runMigrations();
+    const { pool, runMigrations } = await import("./db");
+    console.log("Testing database connection...");
+    const result = await pool.query("SELECT NOW()");
+    console.log("Database connection successful:", result.rows[0]);
+
+    // Run migrations only in production
+    // For local dev, use `npm run db:push` instead
+    if (process.env.NODE_ENV === "production") {
+      await runMigrations();
+    } else {
+      console.log(
+        "Skipping migrations in development mode. Use `npm run db:push` to sync schema.",
+      );
+    }
   } catch (error) {
-    console.error('Database initialization failed:', error);
+    console.error("Database initialization failed:", error);
     throw error;
   }
+
+  // Portfolio optimizer is ready (TypeScript implementation - no initialization needed)
+  console.log("Portfolio optimizer ready");
 
   const server = await registerRoutes(app);
 
@@ -67,7 +78,7 @@ app.use((req, res, next) => {
   }
 
   // 404 handler for undefined API routes
-  app.use('/api/*', notFoundHandler);
+  app.use("/api/*", notFoundHandler);
 
   // Global error handler (must be last)
   app.use(errorHandler);
@@ -76,12 +87,15 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-  }, () => {
-    log(`serving on port ${port}`);
-    logger.info(`Server started on port ${port}`);
-  });
+  const port = parseInt(process.env.PORT || "5000", 10);
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+    },
+    () => {
+      log(`serving on port ${port}`);
+      logger.info(`Server started on port ${port}`);
+    },
+  );
 })();

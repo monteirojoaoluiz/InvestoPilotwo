@@ -4,12 +4,14 @@ import { Link } from "wouter";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md mx-4">
+    <div className="flex min-h-screen w-full items-center justify-center bg-background">
+      <Card className="mx-4 w-full max-w-md">
         <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
+          <div className="mb-4 flex gap-2">
             <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-foreground">404 Page Not Found</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              404 Page Not Found
+            </h1>
           </div>
 
           <p className="mt-4 text-sm text-muted-foreground">
@@ -19,7 +21,7 @@ export default function NotFound() {
           <div className="mt-6">
             <Link
               to="/"
-              className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Go to Homepage
             </Link>

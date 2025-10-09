@@ -1,5 +1,14 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, jsonb, index, boolean, integer } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  timestamp,
+  jsonb,
+  index,
+  boolean,
+  integer,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -16,7 +25,9 @@ export const sessions = pgTable(
 
 // User storage table (mandatory for Replit Auth)
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
   password: varchar("password"),
   firstName: varchar("first_name"),
@@ -30,8 +41,12 @@ export const users = pgTable("users", {
 
 // Risk assessment table
 export const riskAssessments = pgTable("risk_assessments", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id),
   // Store raw questionnaire answers
   answers: jsonb("answers").notNull(),
   // Store computed profile features
@@ -42,10 +57,17 @@ export const riskAssessments = pgTable("risk_assessments", {
 
 // Portfolio recommendations table
 export const portfolioRecommendations = pgTable("portfolio_recommendations", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  riskAssessmentId: varchar("risk_assessment_id").notNull().references(() => riskAssessments.id),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id),
+  riskAssessmentId: varchar("risk_assessment_id")
+    .notNull()
+    .references(() => riskAssessments.id),
   allocations: jsonb("allocations").notNull(), // JSON array of allocation objects
+  optimization: jsonb("optimization"), // Optimization metadata (expectedReturn, volatility, sharpe, etc.)
   totalValue: integer("total_value").notNull().default(0),
   totalReturn: integer("total_return").notNull().default(0), // Stored as percentage * 100 (e.g., 8.4% = 840)
   createdAt: timestamp("created_at").defaultNow(),
@@ -54,16 +76,24 @@ export const portfolioRecommendations = pgTable("portfolio_recommendations", {
 
 // Portfolio chat messages table
 export const portfolioMessages = pgTable("portfolio_messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  portfolioId: varchar("portfolio_id").notNull().references(() => portfolioRecommendations.id),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id),
+  portfolioId: varchar("portfolio_id")
+    .notNull()
+    .references(() => portfolioRecommendations.id),
   content: text("content").notNull(),
   sender: varchar("sender").notNull(), // 'user' or 'ai'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const authTokens = pgTable("auth_tokens", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   email: varchar("email").notNull(),
   token: varchar("token").unique().notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -72,8 +102,12 @@ export const authTokens = pgTable("auth_tokens", {
 });
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id),
   token: varchar("token").unique().notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   used: boolean("used").default(false),
@@ -81,8 +115,12 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
 });
 
 export const emailChangeTokens = pgTable("email_change_tokens", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id),
   pendingEmail: varchar("pending_email").notNull(),
   token: varchar("token").unique().notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -104,20 +142,28 @@ export const insertAuthTokenSchema = createInsertSchema(authTokens).omit({
   createdAt: true,
 });
 
-export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
+export const insertPasswordResetTokenSchema = createInsertSchema(
+  passwordResetTokens,
+).omit({
   id: true,
   createdAt: true,
 });
 
-export const insertEmailChangeTokenSchema = createInsertSchema(emailChangeTokens).omit({
+export const insertEmailChangeTokenSchema = createInsertSchema(
+  emailChangeTokens,
+).omit({
   id: true,
   createdAt: true,
 });
 
 export type InsertAuthTokenInput = z.infer<typeof insertAuthTokenSchema>;
-export type InsertPasswordResetTokenInput = z.infer<typeof insertPasswordResetTokenSchema>;
+export type InsertPasswordResetTokenInput = z.infer<
+  typeof insertPasswordResetTokenSchema
+>;
 
-export type InsertEmailChangeTokenInput = z.infer<typeof insertEmailChangeTokenSchema>;
+export type InsertEmailChangeTokenInput = z.infer<
+  typeof insertEmailChangeTokenSchema
+>;
 
 // Schema types
 export type UpsertUser = typeof users.$inferInsert;
@@ -126,29 +172,37 @@ export type User = typeof users.$inferSelect;
 export type InsertRiskAssessment = typeof riskAssessments.$inferInsert;
 export type RiskAssessment = typeof riskAssessments.$inferSelect;
 
-export type InsertPortfolioRecommendation = typeof portfolioRecommendations.$inferInsert;
-export type PortfolioRecommendation = typeof portfolioRecommendations.$inferSelect;
+export type InsertPortfolioRecommendation =
+  typeof portfolioRecommendations.$inferInsert;
+export type PortfolioRecommendation =
+  typeof portfolioRecommendations.$inferSelect;
 
 export type InsertPortfolioMessage = typeof portfolioMessages.$inferInsert;
 export type PortfolioMessage = typeof portfolioMessages.$inferSelect;
 
 // Zod schemas
-export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments)
-  .omit({
-    id: true,
-    userId: true,
-    createdAt: true,
-    updatedAt: true,
-  });
+export const insertRiskAssessmentSchema = createInsertSchema(
+  riskAssessments,
+).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
-export const insertPortfolioMessageSchema = createInsertSchema(portfolioMessages)
-  .omit({
-    id: true,
-    userId: true,
-    portfolioId: true,
-    createdAt: true,
-    sender: true,
-  });
+export const insertPortfolioMessageSchema = createInsertSchema(
+  portfolioMessages,
+).omit({
+  id: true,
+  userId: true,
+  portfolioId: true,
+  createdAt: true,
+  sender: true,
+});
 
-export type InsertRiskAssessmentInput = z.infer<typeof insertRiskAssessmentSchema>;
-export type InsertPortfolioMessageInput = z.infer<typeof insertPortfolioMessageSchema>;
+export type InsertRiskAssessmentInput = z.infer<
+  typeof insertRiskAssessmentSchema
+>;
+export type InsertPortfolioMessageInput = z.infer<
+  typeof insertPortfolioMessageSchema
+>;

@@ -12,11 +12,15 @@ mdc: true
 ---
 
 ---
+
 layout: cover
 class: brand-cover text-white
 background: https://source.unsplash.com/collection/94734566/1920x1080
+
 ---
+
 # InvestoPilot Risk Assessment
+
 ### Translating investor conversations into confident portfolio decisions
 
 <div class="tagline mt-6 max-w-2xl">
@@ -31,8 +35,9 @@ background: https://source.unsplash.com/collection/94734566/1920x1080
 </div>
 
 ---
-class: bg-slate-50/60
----
+
+## class: bg-slate-50/60
+
 # Executive Snapshot
 
 <div class="grid grid-cols-12 gap-6 mt-8">
@@ -59,8 +64,9 @@ class: bg-slate-50/60
 </div>
 
 ---
-class: brand-light
----
+
+## class: brand-light
+
 # Blueprint: From Responses to Profile
 
 <div class="grid grid-cols-12 gap-8 mt-6 items-center">
@@ -95,6 +101,7 @@ Risk capacity drops to **0** if the investor lacks an emergency fund, ensuring s
 :::
 
 ---
+
 # What We Measure
 
 <div class="grid grid-cols-12 gap-6 mt-6">
@@ -122,8 +129,9 @@ Risk capacity drops to **0** if the investor lacks an emergency fund, ensuring s
 </div>
 
 ---
-class: bg-slate-50/50
----
+
+## class: bg-slate-50/50
+
 # Scoring Pipeline
 
 <div class="timeline mt-6">
@@ -163,6 +171,7 @@ class: bg-slate-50/50
 </div>
 
 ---
+
 # Question Categories
 
 <div class="grid grid-cols-12 gap-6 mt-8 text-sm leading-relaxed">
@@ -184,8 +193,9 @@ class: bg-slate-50/50
 </div>
 
 ---
-class: brand-light
----
+
+## class: brand-light
+
 # Dimension Deep Dive
 
 <div class="grid grid-cols-12 gap-6 mt-6 text-sm">
@@ -235,6 +245,7 @@ class: brand-light
 </div>
 
 ---
+
 # Guardrails & Overrides
 
 <div class="grid grid-cols-12 gap-8 mt-8 items-start">
@@ -260,8 +271,9 @@ class: brand-light
 </div>
 
 ---
-class: bg-slate-50/60
----
+
+## class: bg-slate-50/60
+
 # Preferences & ESG Alignment
 
 <div class="grid grid-cols-12 gap-6 mt-8">
@@ -292,6 +304,7 @@ class: bg-slate-50/60
 </div>
 
 ---
+
 # Worked Example
 
 <div class="grid grid-cols-12 gap-6 text-sm mt-6">
@@ -327,6 +340,7 @@ class: bg-slate-50/60
 </div>
 
 ---
+
 # Design Principles & Use Cases
 
 <div class="grid grid-cols-12 gap-6 mt-8 text-sm">
@@ -353,10 +367,14 @@ class: bg-slate-50/60
 </div>
 
 ---
+
 layout: center
 class: text-center
+
 ---
+
 # Implementation Complete ✓
+
 ## From questionnaire to documented investor profile
 
 <div class="mt-8 text-base text-gray-300">
@@ -729,4 +747,3 @@ class: text-center
   }
 }
 </style>
-

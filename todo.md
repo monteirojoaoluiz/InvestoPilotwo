@@ -1,23 +1,24 @@
 [ ] Auto Scroll on chat with your portfolio ai element
 
 ### Portfolio Features
+
 - [ ] **Asset-Level Details**
   - Add ETF detail modal with expense ratio, holdings, description
   - Display top 10 holdings for each ETF
-
 
 - [ ] **Risk Analytics**
   - Value at Risk (VaR) calculation
   - Display portfolio diversification score
 
   ### Financial Regulations & Disclaimers
+
 - [ ] **Investment Disclaimer**
   - Add prominent disclaimer on all portfolio pages
   - Include "Not Financial Advice" notice
   - Link to SEC investor resources
   - Add risk warnings for volatile assets
 
-<!-- 
+<!--
 Ignore all below
 
 [x] remove Risk Tolerance and Risk Capacity from account information under account page
@@ -54,7 +55,7 @@ Ignore all below
   - Implement express-rate-limit on `/api/auth/*` endpoints
   - Set: 5 failed login attempts per 15 minutes per IP
   - Set: 3 registration attempts per hour per IP
-  
+
 - [x] **Password Reset Flow**
   - Add "Forgot Password" link on login modal
   - Generate secure reset tokens (crypto.randomBytes)
@@ -329,7 +330,7 @@ Ignore all below
   - Cards overflow viewport causing horizontal scroll
   - Issue: `App.tsx:251` - Dashboard wrapper needs better width constraints
   - Fix: Add `max-w-[100vw]` and ensure all child elements respect parent width
-  
+
 - [ ] **Performance chart causes horizontal overflow**
   - LineChart has `minWidth={300}` which forces horizontal scroll on screens < 300px
   - Issue: `App.tsx:535` - ResponsiveContainer minWidth property
@@ -348,7 +349,7 @@ Ignore all below
   - Root cause: `aspect-square` not enforced properly, width/height mismatch
   - Fix: Increase size to `h-6 w-6` (24px minimum for touch), add `flex-shrink-0`
   - Ensure `.radio-mobile-circle` CSS class properly applies `border-radius: 50%` and equal width/height
-  
+
 - [ ] **Radio buttons too small for touch targets**
   - Current size (16px) is below minimum 44x44px touch target guideline
   - Fix: Increase to at least `h-11 w-11` (44px) with proper spacing
