@@ -69,16 +69,14 @@ export function useStreamingChat({
                 // Add a small delay to slow down the streaming effect (5ms per chunk)
                 await delay(5);
               } else if (data.type === "complete") {
-                // Message complete, refresh the list
+                // Message complete, update query data directly
                 setIsStreaming(false);
                 setStreamingMessage("");
-                if (!isNewChat) {
-                  queryClient.invalidateQueries({
-                    queryKey: ["/api/portfolio", portfolioId, "messages"],
-                  });
-                } else {
+
+                if (isNewChat) {
+                  // For new chat, append the new messages to existing data
                   const currentMessages =
-                    (queryClient.getQueryData(["/api/portfolio", portfolioId, "messages"]) as
+                    (queryClient.getQueryData(["messages", portfolioId]) as
                       | Message[]
                       | undefined) || [];
                   const transformedMessages = [
@@ -96,10 +94,34 @@ export function useStreamingChat({
                     },
                   ] as Message[];
                   queryClient.setQueryData(
-                    ["/api/portfolio", portfolioId, "messages"],
+                    ["messages", portfolioId],
                     [...currentMessages, ...transformedMessages],
                   );
                   setIsNewChat(false);
+                } else {
+                  // For existing chat, append the new messages to existing data
+                  const currentMessages =
+                    (queryClient.getQueryData(["messages", portfolioId]) as
+                      | Message[]
+                      | undefined) || [];
+                  const transformedMessages = [
+                    {
+                      id: userMessageData.id,
+                      content: userMessageData.content,
+                      sender: userMessageData.sender,
+                      timestamp: new Date(userMessageData.createdAt),
+                    },
+                    {
+                      id: data.data.id,
+                      content: data.data.content,
+                      sender: data.data.sender,
+                      timestamp: new Date(data.data.createdAt),
+                    },
+                  ] as Message[];
+                  queryClient.setQueryData(
+                    ["messages", portfolioId],
+                    [...currentMessages, ...transformedMessages],
+                  );
                 }
               } else if (data.type === "error") {
                 throw new Error(data.data.message);
