@@ -385,14 +385,28 @@ function Dashboard() {
                     <PieChart>
                       <Pie
                         data={(portfolioData.allocations || [])?.map(
-                          (a: any) => ({
-                            name: a?.ticker || a?.name || "Unknown",
-                            value:
-                              typeof a?.percentage === "number"
-                                ? a.percentage
-                                : 0,
-                            color: a?.color || "#8884d8",
-                          }),
+                          (a: any, index: number) => {
+                            const colors = [
+                              "#3b82f6", // blue
+                              "#10b981", // green
+                              "#f59e0b", // amber
+                              "#ef4444", // red
+                              "#8b5cf6", // violet
+                              "#ec4899", // pink
+                              "#06b6d4", // cyan
+                              "#f97316", // orange
+                              "#14b8a6", // teal
+                              "#a855f7", // purple
+                            ];
+                            return {
+                              name: a?.ticker || a?.name || "Unknown",
+                              value:
+                                typeof a?.percentage === "number"
+                                  ? a.percentage
+                                  : 0,
+                              color: colors[index % colors.length],
+                            };
+                          },
                         )}
                         cx="50%"
                         cy="50%"
@@ -403,12 +417,26 @@ function Dashboard() {
                         stroke="none"
                       >
                         {(portfolioData.allocations || [])?.map(
-                          (entry: any, index: number) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={entry?.color || "#8884d8"}
-                            />
-                          ),
+                          (entry: any, index: number) => {
+                            const colors = [
+                              "#3b82f6", // blue
+                              "#10b981", // green
+                              "#f59e0b", // amber
+                              "#ef4444", // red
+                              "#8b5cf6", // violet
+                              "#ec4899", // pink
+                              "#06b6d4", // cyan
+                              "#f97316", // orange
+                              "#14b8a6", // teal
+                              "#a855f7", // purple
+                            ];
+                            return (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={colors[index % colors.length]}
+                              />
+                            );
+                          },
                         )}
                       </Pie>
                       <Tooltip
@@ -421,41 +449,57 @@ function Dashboard() {
                 {/* Allocation List */}
                 <div className="w-full space-y-3">
                   {(portfolioData.allocations || [])?.map(
-                    (a: any, index: number) => (
-                      <div
-                        key={`${a?.ticker || a?.name || `allocation-${index}`}`}
-                        className="flex cursor-pointer items-center justify-between rounded py-2 hover:bg-muted/50"
-                        onClick={() => {
-                          if (a?.ticker) {
-                            setSelectedTicker(a.ticker);
-                            setModalOpen(true);
-                          }
-                        }}
-                      >
-                        <div className="flex flex-1 items-center gap-3">
-                          <div
-                            className="h-4 w-4 flex-shrink-0 rounded-full"
-                            style={{ backgroundColor: a?.color || "#8884d8" }}
-                          />
-                          <div>
+                    (a: any, index: number) => {
+                      const colors = [
+                        "#3b82f6", // blue
+                        "#10b981", // green
+                        "#f59e0b", // amber
+                        "#ef4444", // red
+                        "#8b5cf6", // violet
+                        "#ec4899", // pink
+                        "#06b6d4", // cyan
+                        "#f97316", // orange
+                        "#14b8a6", // teal
+                        "#a855f7", // purple
+                      ];
+                      return (
+                        <div
+                          key={`${a?.ticker || a?.name || `allocation-${index}`}`}
+                          className="flex cursor-pointer items-center justify-between rounded py-2 hover:bg-muted/50"
+                          onClick={() => {
+                            if (a?.ticker) {
+                              setSelectedTicker(a.ticker);
+                              setModalOpen(true);
+                            }
+                          }}
+                        >
+                          <div className="flex flex-1 items-center gap-3">
+                            <div
+                              className="h-4 w-4 flex-shrink-0 rounded-full"
+                              style={{
+                                backgroundColor: colors[index % colors.length],
+                              }}
+                            />
+                            <div>
+                              <div className="text-sm font-semibold">
+                                {a?.ticker || a?.name || "Unknown"}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {a?.assetType || "ETF"}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
                             <div className="text-sm font-semibold">
-                              {a?.ticker || a?.name || "Unknown"}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {a?.assetType || "ETF"}
+                              {typeof a?.percentage === "number"
+                                ? a.percentage
+                                : 0}
+                              %
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm font-semibold">
-                            {typeof a?.percentage === "number"
-                              ? a.percentage
-                              : 0}
-                            %
-                          </div>
-                        </div>
-                      </div>
-                    ),
+                      );
+                    },
                   )}
                 </div>
               </div>

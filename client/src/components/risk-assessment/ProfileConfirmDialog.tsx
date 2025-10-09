@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { InvestorProfile } from "@/lib/profileHumanizer";
+import { useLocation } from "wouter";
 
 import ProfileDisplay from "../ProfileDisplay";
 
@@ -24,10 +25,17 @@ export default function ProfileConfirmDialog({
   onConfirm,
   onCancel,
 }: ProfileConfirmDialogProps) {
+  const [, setLocation] = useLocation();
+
   if (!investorProfile) return null;
 
+  const handleClose = () => {
+    onCancel();
+    setLocation("/dashboard");
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="max-h-[85vh] w-[95vw] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Modify Investor Profile?</DialogTitle>
@@ -42,9 +50,10 @@ export default function ProfileConfirmDialog({
         </div>
 
         <DialogFooter className="flex flex-col gap-2 sm:flex-row">
-          <Button variant="outline" onClick={onCancel} className="flex-1">
+          <Button className="flex-1" variant="outline" onClick={handleClose}>
             Keep Current Profile
           </Button>
+
           <Button onClick={onConfirm} className="flex-1">
             Modify Profile
           </Button>
