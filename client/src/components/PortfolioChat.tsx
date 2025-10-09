@@ -14,9 +14,9 @@ import { useState, useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { ChatInput } from "./ChatInput";
-import { ChatMessage } from "./ChatMessage";
-import { SuggestedQuestions } from "./SuggestedQuestions";
+import { ChatInput } from "./chat/ChatInput";
+import { ChatMessage } from "./chat/ChatMessage";
+import { SuggestedQuestions } from "./chat/SuggestedQuestions";
 
 interface PortfolioChatProps {
   onSendMessage?: (message: string) => void;
@@ -173,7 +173,7 @@ export default function PortfolioChat({
       setMessage("");
 
       // Set the messages query data to empty array immediately
-      queryClient.setQueryData(["messages", portfolioId], []);
+      queryClient.setQueryData(["/api/portfolio", portfolioId, "messages"], []);
 
       // Mark that we're in new chat mode to prevent query invalidation on first message
       setIsNewChat(true);

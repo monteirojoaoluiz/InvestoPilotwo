@@ -74,11 +74,11 @@ export function useStreamingChat({
                 setStreamingMessage("");
                 if (!isNewChat) {
                   queryClient.invalidateQueries({
-                    queryKey: ["messages", portfolioId],
+                    queryKey: ["/api/portfolio", portfolioId, "messages"],
                   });
                 } else {
                   const currentMessages =
-                    (queryClient.getQueryData(["messages", portfolioId]) as
+                    (queryClient.getQueryData(["/api/portfolio", portfolioId, "messages"]) as
                       | Message[]
                       | undefined) || [];
                   const transformedMessages = [
@@ -96,7 +96,7 @@ export function useStreamingChat({
                     },
                   ] as Message[];
                   queryClient.setQueryData(
-                    ["messages", portfolioId],
+                    ["/api/portfolio", portfolioId, "messages"],
                     [...currentMessages, ...transformedMessages],
                   );
                   setIsNewChat(false);

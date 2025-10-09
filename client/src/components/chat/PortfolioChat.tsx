@@ -190,7 +190,7 @@ export default function PortfolioChat({
       setMessage("");
 
       // Set the messages query data to empty array immediately
-      queryClient.setQueryData(["messages", portfolioId], []);
+      queryClient.setQueryData(["/api/portfolio", portfolioId, "messages"], []);
 
       // Mark that we're in new chat mode to prevent query invalidation on first message
       setIsNewChat(true);
